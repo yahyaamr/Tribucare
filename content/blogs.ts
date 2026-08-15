@@ -45,7 +45,7 @@ export const blogPosts: BlogPost[] = [
       role: "Medical Advisory Lead",
       avatar: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=150&q=80",
     },
-    image: "/brand/blog/polynucleotide-boosters.png",
+    image: "/brand/blog/polynucleotide-boosters.webp",
     featured: true,
     content: {
       intro:
@@ -86,7 +86,7 @@ export const blogPosts: BlogPost[] = [
       role: "Consumer Beauty Specialist",
       avatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80",
     },
-    image: "/brand/blog/home-beauty-device.png",
+    image: "/brand/blog/home-beauty-device.webp",
     featured: false,
     content: {
       intro:
@@ -123,7 +123,7 @@ export const blogPosts: BlogPost[] = [
       role: "Medical Advisory Lead",
       avatar: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=150&q=80",
     },
-    image: "/brand/blog/zimmer-cryotherapy.png",
+    image: "/brand/blog/zimmer-cryotherapy.webp",
     featured: false,
     content: {
       intro:
@@ -153,7 +153,7 @@ export const blogPosts: BlogPost[] = [
       role: "Senior Formulation Scientist",
       avatar: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&q=80",
     },
-    image: "/brand/blog/cica-skincare.png",
+    image: "/brand/blog/cica-skincare.webp",
     featured: false,
     content: {
       intro:
@@ -183,7 +183,7 @@ export const blogPosts: BlogPost[] = [
       role: "Clinical Education Director",
       avatar: "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=150&q=80",
     },
-    image: "/brand/blog/medical-education.png",
+    image: "/brand/blog/medical-education.webp",
     featured: false,
     content: {
       intro:
@@ -209,7 +209,7 @@ export const blogPosts: BlogPost[] = [
       role: "Healthcare & Market Intelligence",
       avatar: "/brand/logos/tribucare-mark.png",
     },
-    image: "/brand/blog/aesthetic-trends-mena.png",
+    image: "/brand/blog/aesthetic-trends-mena.webp",
     featured: false,
     content: {
       intro:

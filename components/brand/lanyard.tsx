@@ -102,6 +102,9 @@ type LanyardProps = {
    *  the anchor the card comes to rest, so it is what positions the card once
    *  the anchor is pinned to the top of the canvas. */
   segmentLength?: number;
+  /** Whether the scene is on screen. False parks both the render loop and the
+   *  physics step, so a scrolled-past canvas costs nothing per frame. */
+  running?: boolean;
   className?: string;
 };
 
@@ -121,6 +124,7 @@ export default function Lanyard({
   lanyardImage = null,
   lanyardWidth = 1,
   segmentLength = 1,
+  running = true,
   className,
 }: LanyardProps) {
   const [isMobile, setIsMobile] = useState(false);
@@ -145,6 +149,9 @@ export default function Lanyard({
       <Canvas
         camera={{ fov }}
         dpr={[1, isMobile ? 1.5 : 2]}
+        // Scrolled off screen the loop stops entirely rather than rendering
+        // frames nobody sees — the physics is paused in step with it below.
+        frameloop={running ? "always" : "never"}
         gl={{ alpha: transparent }}
         onCreated={({ gl }) =>
           gl.setClearColor(new THREE.Color(0x000000), transparent ? 0 : 1)
@@ -166,7 +173,7 @@ export default function Lanyard({
               card is tall, so they are stiff relative to the load they carry:
               at 1/30 the solver leaves enough residual error per step that the
               band visibly stretches and the card hangs well below the clip. */}
-          <Physics gravity={gravity} timeStep={1 / 60}>
+          <Physics gravity={gravity} timeStep={1 / 60} paused={!running}>
             <Band
               isMobile={isMobile}
               frontImage={frontImage}

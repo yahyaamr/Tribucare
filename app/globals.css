@@ -387,6 +387,20 @@
   will-change: transform;
 }
 
+/* Touch devices drop the ambient drift entirely.
+   The field is a large masked SVG, so animating it keeps a filtered layer live
+   for the whole session and forces anything blurring over it to recompute every
+   frame. At 62s the motion is barely readable anyway — it is not worth a
+   permanent GPU cost on the hardware least able to absorb it. `will-change` is
+   cleared with it, or the promoted layer outlives the animation that justified
+   it. */
+@media (pointer: coarse) {
+  .wave-drift {
+    animation: none;
+    will-change: auto;
+  }
+}
+
 /* --------------------------------------------------------------------------
    Scroll-reveal
    The hidden state applies from first paint (no flash of visible-then-hidden),

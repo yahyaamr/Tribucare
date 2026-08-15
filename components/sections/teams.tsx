@@ -115,7 +115,7 @@ export function Teams() {
           <Reveal className="h-full lg:col-span-4" delay={120} from="left">
             <article className="group relative flex h-full min-h-[28rem] flex-col overflow-hidden rounded-2xl border border-brand-200/80 bg-brand-950 text-white shadow-sm transition-all duration-500 hover:shadow-xl">
               <Image
-                src="/brand/team-photo.jpg"
+                src="/brand/team-photo.webp"
                 alt="TribuCare Team"
                 fill
                 sizes="(max-width: 1024px) 100vw, 33vw"

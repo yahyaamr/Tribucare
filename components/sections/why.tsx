@@ -70,7 +70,7 @@ export function Why() {
           stacked and there is no room for that, so it drops back into the flow
           of the grid. */}
       <div className="max-lg:hidden absolute inset-0 z-0">
-        <LanyardCanvas />
+        <LanyardCanvas enableQuery="(min-width: 1024px)" />
       </div>
 
       {/* Above the canvas, but transparent to the pointer so a drag reaches the
@@ -101,7 +101,9 @@ export function Why() {
               landscape phones don't qualify) — portrait and phone layouts drop
               it entirely. */}
           <div className="pointer-events-auto hidden h-[40rem] [@media(orientation:landscape)_and_(min-height:600px)_and_(max-width:1023px)]:block">
-            <LanyardCanvas />
+            {/* Query mirrors the class above: CSS decides which host is shown,
+                this decides which one loads 3MB of scene. They must agree. */}
+            <LanyardCanvas enableQuery="(orientation: landscape) and (min-height: 600px) and (max-width: 1023px)" />
           </div>
 
           {/* Holds the left column open, now that nothing is laid out in it. */}

@@ -9,7 +9,7 @@ import { hero, verticals } from "@/content/site";
 const VERTICAL_ICONS = [Stethoscope, Zap, Droplet] as const;
 
 const MARK = {
-  src: "/brand/tribu-3d-mark.png",
+  src: "/brand/tribu-3d-mark.webp",
   width: 1254,
   height: 1254,
 } as const;
@@ -125,7 +125,9 @@ export function Hero() {
             height={MARK.height}
             priority
             sizes={MARK_SIZES}
-            className="ml-[-6%] w-[112%] max-w-none select-none drop-shadow-[0_36px_70px_rgb(2_20_20/0.5)]"
+            // Shallower blur radius than the desktop mark carries: this one
+            // runs at 112vw, and drop-shadow cost scales with radius × area.
+            className="ml-[-6%] w-[112%] max-w-none select-none drop-shadow-[0_16px_28px_rgb(2_20_20/0.45)]"
           />
         </div>
 
@@ -139,7 +141,13 @@ export function Hero() {
                 key={vertical.id}
                 delay={360 + i * 110}
                 travel="28px"
-                className="bg-brand-900/72 backdrop-blur-md"
+                // The blur is deliberately desktop-only. These cards sit
+                // directly over the drifting wave field, so a backdrop-filter
+                // here has to re-blur its backdrop on every frame of that
+                // animation — which is what made scrolling the hero drop frames
+                // on phones. Below lg the tint carries the same separation with
+                // a higher-opacity fill and no per-frame cost.
+                className="bg-brand-900/92 lg:bg-brand-900/72 lg:backdrop-blur-md"
               >
                 <a
                   href="#expertise"
