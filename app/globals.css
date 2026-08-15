@@ -4,12 +4,63 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ==========================================================================
+   TRIBUCARE BRAND TOKENS
+   Derived from the company-profile deck: deep teal ground, orange + cyan
+   circuit accents, thin-stroke wave fields, near-white editorial space.
+   ========================================================================== */
+
+@theme {
+  /* Signature teal — brand-700 (#0e6a69) is the deck's section ground */
+  --color-brand-50: #eff9f8;
+  --color-brand-100: #d6f0ee;
+  --color-brand-200: #ade1de;
+  --color-brand-300: #7bccc9;
+  --color-brand-400: #45b2af;
+  --color-brand-500: #1e9694;
+  --color-brand-600: #12807e;
+  --color-brand-700: #0e6a69;
+  --color-brand-800: #0a5251;
+  --color-brand-900: #073c3c;
+  --color-brand-950: #042726;
+
+  /* Circuit cyan — the right-hand traces in the shield monogram */
+  --color-circuit-300: #7fdcec;
+  --color-circuit-400: #4cc9de;
+  --color-circuit-500: #2bb3cb;
+
+  /* Circuit orange — the left-hand traces, numerals, and pill badges */
+  --color-signal-300: #ffcd80;
+  --color-signal-400: #ffb84d;
+  --color-signal-500: #f5a623;
+  --color-signal-600: #de8c0d;
+
+  /* Ink — teal-black, never pure black */
+  --color-ink: #072a2a;
+  --color-ink-soft: #3c5b5b;
+  --color-ink-faint: #6b8687;
+
+  --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* ---- Motion vocabulary -------------------------------------------------
+     One set of curves and durations for the whole site, so a hover, a reveal
+     and a panel transition all decelerate the same way. `--ease-out` is the
+     house curve: a long tail that arrives quickly and settles softly. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --duration-fast: 180ms;
+  --duration-base: 320ms;
+  --duration-slow: 560ms;
+  --duration-reveal: 820ms;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -18,11 +69,6 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -48,83 +94,473 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* shadcn contract, retuned to the brand so <Button> inherits it */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: #ffffff;
+  --foreground: #072a2a;
+  --card: #ffffff;
+  --card-foreground: #072a2a;
+  --popover: #ffffff;
+  --popover-foreground: #072a2a;
+  --primary: #0e6a69;
+  --primary-foreground: #ffffff;
+  --secondary: #eff9f8;
+  --secondary-foreground: #0a5251;
+  --muted: #f3faf9;
+  --muted-foreground: #3c5b5b;
+  --accent: #eff9f8;
+  --accent-foreground: #0a5251;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --border: #dceceb;
+  --input: #dceceb;
+  --ring: #45b2af;
+  --radius: 0.75rem;
+  --sidebar: #eff9f8;
+  --sidebar-foreground: #072a2a;
+  --sidebar-primary: #0e6a69;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #d6f0ee;
+  --sidebar-accent-foreground: #0a5251;
+  --sidebar-border: #dceceb;
+  --sidebar-ring: #45b2af;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
-  body {
-    @apply bg-background text-foreground;
-  }
+
   html {
     @apply font-sans;
+    /* Clears the notched header (strip + bar = 60px) plus 20px of breathing
+       room. Keep in step with ANCHOR_OFFSET in components/site/smooth-scroll. */
+    scroll-padding-top: 5rem;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Native smooth scroll is the no-JS / pre-hydration fallback only. Once Lenis
+     mounts it adds `.lenis` and drives scrolling itself; leaving this on would
+     have the browser easing toward a target Lenis is already easing toward,
+     which reads as a stutter. */
+  html:not(.lenis) {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display;
+    font-feature-settings: "ss01";
+  }
+
+  /* Visible, brand-coloured focus ring everywhere */
+  :focus-visible {
+    outline: 2px solid var(--color-circuit-400);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  ::selection {
+    background: var(--color-brand-200);
+    color: var(--color-brand-950);
+  }
+}
+
+/* ==========================================================================
+   BRAND UTILITIES
+   ========================================================================== */
+
+/* Uppercase technical label — the deck's small-caps annotation voice */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+/* Deep-teal section ground with the deck's soft light-bloom */
+@utility ground-deep {
+  background-color: var(--color-brand-900);
+  background-image:
+    radial-gradient(
+      120% 90% at 78% 8%,
+      rgb(30 150 148 / 0.5) 0%,
+      transparent 58%
+    ),
+    radial-gradient(
+      90% 70% at 6% 96%,
+      rgb(10 82 81 / 0.85) 0%,
+      transparent 60%
+    );
+}
+
+/* Near-white ground with the cover slide's top-left teal bloom */
+@utility ground-light {
+  background-color: #ffffff;
+  background-image: radial-gradient(
+    75% 60% at 4% 0%,
+    rgb(69 178 175 / 0.16) 0%,
+    transparent 62%
+  );
+}
+
+/* Layered card stack: each card pins a little lower than the last, so the
+   previous card's top edge stays visible as the next scrolls over it. */
+.stack-card {
+  position: sticky;
+  top: var(--stack-top, 6rem);
+}
+
+/* ==========================================================================
+   SURFACES — one card language, one icon language. Every card and icon plate
+   on the site resolves to one of these, so a blog card and a department card
+   read as the same family rather than two designers' work.
+   ========================================================================== */
+
+/* The standard raised panel: white on a light ground, hairline brand border. */
+@utility card-surface {
+  border: 1px solid var(--color-brand-100);
+  background-color: #ffffff;
+  border-radius: var(--radius-2xl);
+  box-shadow: 0 1px 2px rgb(7 42 42 / 0.04);
+}
+
+/* Adds the shared hover response — lift, warmer border, deeper shadow. Pair
+   with `card-surface`. Motion is transform + shadow only, so it composites. */
+@utility card-interactive {
+  transition:
+    transform var(--duration-slow) var(--ease-out),
+    border-color var(--duration-slow) var(--ease-out),
+    box-shadow var(--duration-slow) var(--ease-out);
+
+  &:hover {
+    transform: translate3d(0, -4px, 0);
+    border-color: var(--color-brand-300);
+    box-shadow: 0 30px 60px -38px rgb(14 106 105 / 0.55);
+  }
+}
+
+/* Circular icon plate on light grounds — Mission & Vision's treatment, now the
+   single icon language site-wide (Teams and Partner previously used squircles). */
+@utility icon-disc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(infinity * 1px);
+  background-color: var(--color-brand-50);
+  color: var(--color-brand-600);
+  transition:
+    background-color var(--duration-slow) var(--ease-out),
+    color var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out);
+}
+
+/* Same plate inverted, for deep-teal grounds. */
+@utility icon-disc-dark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(infinity * 1px);
+  background-color: rgb(69 178 175 / 0.2);
+  color: var(--color-brand-200);
+  box-shadow: inset 0 0 0 1px rgb(123 204 201 / 0.2);
+  transition:
+    background-color var(--duration-slow) var(--ease-out),
+    color var(--duration-slow) var(--ease-out),
+    transform var(--duration-slow) var(--ease-out);
+}
+
+/* ==========================================================================
+   NOTCHED HEADER
+   The header is one continuous surface rather than a slab floating over the
+   page: a full-width band whose centre section drops lower, joined to the
+   shallower ends by concave fillets instead of hard steps.
+
+   Each fillet is a square of the bar's own colour with a quarter-disc masked
+   out of it, so the curve is real geometry — it stays crisp at any zoom and
+   needs no SVG that would distort when the bar stretches.
+
+   `--notch` drives both the fillet's size and its arc, so the two can never
+   drift apart; set it once on the bar and the fillets inherit it.
+   ========================================================================== */
+
+.notch-fillet {
+  width: var(--notch, 2rem);
+  height: var(--notch, 2rem);
+}
+
+/* Sits to the LEFT of the top bar — arc centred on its own bottom-left corner. */
+.notch-fillet-left {
+  -webkit-mask-image: radial-gradient(
+    circle at 0 100%,
+    transparent calc(var(--notch, 2rem) - 1.5px),
+    #000 calc(var(--notch, 2rem) + 0.5px)
+  );
+  mask-image: radial-gradient(
+    circle at 0 100%,
+    transparent calc(var(--notch, 2rem) - 1.5px),
+    #000 calc(var(--notch, 2rem) + 0.5px)
+  );
+}
+
+/* Sits to the RIGHT of the top bar — arc centred on its own bottom-right corner. */
+.notch-fillet-right {
+  -webkit-mask-image: radial-gradient(
+    circle at 100% 100%,
+    transparent calc(var(--notch, 2rem) - 1.5px),
+    #000 calc(var(--notch, 2rem) + 0.5px)
+  );
+  mask-image: radial-gradient(
+    circle at 100% 100%,
+    transparent calc(var(--notch, 2rem) - 1.5px),
+    #000 calc(var(--notch, 2rem) + 0.5px)
+  );
+}
+
+/* Sits to the LEFT of the bottom bar — arc centred on its own top-left corner. */
+.notch-fillet-bottom-left {
+  -webkit-mask-image: radial-gradient(
+    circle at 0 0,
+    transparent calc(var(--notch, 2rem) - 1.5px),
+    #000 calc(var(--notch, 2rem) + 0.5px)
+  );
+  mask-image: radial-gradient(
+    circle at 0 0,
+    transparent calc(var(--notch, 2rem) - 1.5px),
+    #000 calc(var(--notch, 2rem) + 0.5px)
+  );
+}
+
+/* Sits to the RIGHT of the bottom bar — arc centred on its own top-right corner. */
+.notch-fillet-bottom-right {
+  -webkit-mask-image: radial-gradient(
+    circle at 100% 0,
+    transparent calc(var(--notch, 2rem) - 1.5px),
+    #000 calc(var(--notch, 2rem) + 0.5px)
+  );
+  mask-image: radial-gradient(
+    circle at 100% 0,
+    transparent calc(var(--notch, 2rem) - 1.5px),
+    #000 calc(var(--notch, 2rem) + 0.5px)
+  );
+}
+
+/* ==========================================================================
+   MOTION — connection, movement, technology. Never decoration for its own sake.
+   ========================================================================== */
+
+@keyframes drift-x {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* Gentle idle drift. Sits on a child of the pointer-driven wrapper so the two
+   transforms compose instead of overwriting each other. */
+@keyframes float-idle {
+  0%,
+  100% {
+    transform: translate3d(0, -7px, 0);
+  }
+  50% {
+    transform: translate3d(0, 7px, 0);
+  }
+}
+
+.float-idle {
+  animation: float-idle 7.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+.wave-drift {
+  animation: drift-x 62s linear infinite;
+  will-change: transform;
+}
+
+/* --------------------------------------------------------------------------
+   Scroll-reveal
+   The hidden state applies from first paint (no flash of visible-then-hidden),
+   and a <noscript> override in the document restores visibility when
+   JavaScript is unavailable. Content is always present in the HTML either way.
+
+   Direction lives in `data-reveal-from` so one IntersectionObserver drives
+   every flavour and each variant stays a single composited transform.
+   -------------------------------------------------------------------------- */
+
+[data-reveal] {
+  --reveal-travel: 20px;
+}
+
+/* Travelling variants — the observed element moves itself. */
+[data-reveal="pending"]:not([data-reveal-from="mask"]) {
+  opacity: 0;
+  transform: translate3d(0, var(--reveal-travel), 0);
+}
+
+[data-reveal="pending"][data-reveal-from="down"] {
+  transform: translate3d(0, calc(var(--reveal-travel) * -1), 0);
+}
+
+[data-reveal="pending"][data-reveal-from="left"] {
+  transform: translate3d(calc(var(--reveal-travel) * -1), 0, 0);
+}
+
+[data-reveal="pending"][data-reveal-from="right"] {
+  transform: translate3d(var(--reveal-travel), 0, 0);
+}
+
+[data-reveal="pending"][data-reveal-from="scale"] {
+  transform: scale(0.96);
+}
+
+[data-reveal="in"]:not([data-reveal-from="mask"]) {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--reveal-duration, var(--duration-reveal)) var(--ease-out),
+    transform var(--reveal-duration, var(--duration-reveal)) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+/* Masked line rise for headlines.
+   The observed element is the clipping wrapper, which stays put and always has
+   area; its child is what travels. Putting the observer on the child instead
+   deadlocks: a child translated fully out of an `overflow: hidden` parent is
+   clipped to a sliver, and once that sliver falls under the observer's
+   threshold — which happens as soon as a headline line wraps — it can never
+   report as intersecting, and the line stays invisible for good. */
+[data-reveal="pending"][data-reveal-from="mask"] > * {
+  opacity: 0;
+  transform: translate3d(0, 100%, 0);
+}
+
+[data-reveal="in"][data-reveal-from="mask"] > * {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity var(--reveal-duration, var(--duration-reveal)) var(--ease-out),
+    transform var(--reveal-duration, var(--duration-reveal)) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+
+/* --------------------------------------------------------------------------
+   Scroll progress rail
+   Runs on the compositor via a scroll-driven animation where supported; the
+   ScrollProgress component only attaches a JS fallback when it is not.
+   -------------------------------------------------------------------------- */
+
+@keyframes scroll-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.scroll-progress {
+  transform: scaleX(var(--scroll-progress, 0));
+  transform-origin: 0 50%;
+  will-change: transform;
+}
+
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    animation: scroll-progress linear forwards;
+    animation-timeline: scroll(root block);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Lenis — the rules the library needs to own the scroll container.
+   Inlined rather than importing `lenis/dist/lenis.css` so all global styling
+   stays in this file and no extra stylesheet request is made.
+   -------------------------------------------------------------------------- */
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   DISCLOSURE — the FAQ answers ease open.
+
+   A closed <details> doesn't render its content at all, so the panel can't be
+   transitioned directly; ::details-content is the handle for it, and
+   allow-discrete keeps the element around long enough for the close to play.
+   `interpolate-size` is what lets the height animate to `auto` rather than a
+   guessed pixel value. Where either is unsupported the answer simply snaps
+   open, exactly as it did before.
+   -------------------------------------------------------------------------- */
+
+@supports (interpolate-size: allow-keywords) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
+}
+
+.disclosure::details-content {
+  block-size: 0;
+  overflow: clip;
+  opacity: 0;
+  transition:
+    block-size 420ms cubic-bezier(0.32, 0.72, 0.3, 1),
+    opacity 260ms ease-in,
+    content-visibility 420ms allow-discrete;
+}
+
+.disclosure[open]::details-content {
+  block-size: auto;
+  opacity: 1;
+}
+
+/* ==========================================================================
+   REDUCED MOTION — one switch that neutralises everything above.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html:not(.lenis) {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  [data-reveal="pending"],
+  [data-reveal="pending"][data-reveal-from="down"],
+  [data-reveal="pending"][data-reveal-from="left"],
+  [data-reveal="pending"][data-reveal-from="right"],
+  [data-reveal="pending"][data-reveal-from="scale"],
+  [data-reveal="pending"][data-reveal-from="mask"] > * {
+    opacity: 1;
+    transform: none;
   }
 }
