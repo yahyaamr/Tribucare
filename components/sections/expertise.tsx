@@ -101,7 +101,11 @@ export function Expertise() {
               className="stack-card"
               style={
                 {
-                  "--stack-top": `clamp(1.5rem, ${3 + i * 1.25}dvh, ${6 + i * 1.75}rem)`,
+                  // Clears the notched header (60px) with room to breathe, so a
+                  // pinned card never crowds the nav, then steps each card down
+                  // by a fixed increment to keep the previous card's top edge
+                  // readable behind it.
+                  "--stack-top": `clamp(5.5rem, ${8 + i * 1.25}dvh, ${7.5 + i * 1.75}rem)`,
                 } as React.CSSProperties
               }
             >

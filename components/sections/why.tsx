@@ -1,43 +1,15 @@
-import {
-  Award,
-  BookOpen,
-  GraduationCap,
-  Handshake,
-  Heart,
-  LifeBuoy,
-  Lightbulb,
-  ShieldCheck,
-  Target,
-  UserCheck,
-  Users,
-  Zap,
-  type LucideIcon,
-} from "lucide-react";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal } from "@/components/site/reveal";
+import { ScrollColumn } from "@/components/site/scroll-column";
 import { LanyardCanvas } from "@/components/brand/lanyard-canvas";
-import { coreValues } from "@/content/site";
-
-const ICONS: Record<string, LucideIcon> = {
-  heart: Heart,
-  handshake: Handshake,
-  lightbulb: Lightbulb,
-  target: Target,
-  users: Users,
-  zap: Zap,
-  award: Award,
-  "shield-check": ShieldCheck,
-  "graduation-cap": GraduationCap,
-  "user-check": UserCheck,
-  "life-buoy": LifeBuoy,
-  "book-open": BookOpen,
-};
+import { EventCard } from "@/components/events/event-card";
+import { events } from "@/content/site";
 
 export function Why() {
   return (
     <section
-      id="values"
-      className="ground-deep relative isolate overflow-hidden py-24 md:py-32"
+      id="events"
+      className="ground-deep relative isolate overflow-hidden py-24 md:py-32 lg:py-40"
     >
       {/* Decorative background T vector shape */}
       <div
@@ -66,7 +38,7 @@ export function Why() {
 
           It gets the whole section as its canvas: no box to hang in, so the
           card swings and spins across the full width and height, passing behind
-          the heading and the value cards on the way. Below lg the section is
+          the heading and the event cards on the way. Below lg the section is
           stacked and there is no room for that, so it drops back into the flow
           of the grid. */}
       <div className="max-lg:hidden absolute inset-0 z-0">
@@ -74,27 +46,30 @@ export function Why() {
       </div>
 
       {/* Above the canvas, but transparent to the pointer so a drag reaches the
-          card wherever it has floated to. The value cards take their own
+          card wherever it has floated to. The event cards take their own
           events back below. */}
       <Shell className="pointer-events-none relative z-10">
         <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <Reveal className="lg:col-span-7">
-            <Eyebrow tone="light">{coreValues.eyebrow}</Eyebrow>
+            <Eyebrow tone="light">{events.eyebrow}</Eyebrow>
             <h2 className="mt-6 font-display text-[clamp(2.125rem,4.6vw,3.5rem)] font-semibold leading-[1.03] tracking-[-0.025em] text-white text-balance">
-              {coreValues.headlineLead}{" "}
-              <span className="text-brand-300">
-                {coreValues.headlineAccent}
-              </span>
+              {events.headlineLead}{" "}
+              <span className="text-brand-300">{events.headlineAccent}</span>
             </h2>
           </Reveal>
           <Reveal className="lg:col-span-5" delay={100} from="right">
             <p className="text-[1.0625rem] leading-relaxed text-brand-100/80">
-              {coreValues.intro}
+              {events.intro}
             </p>
           </Reveal>
         </div>
 
-        <div className="mt-16 grid gap-10 lg:grid-cols-2">
+        {/* From lg the lanyard hangs from the top of the section on a fixed
+            rope, so the card graphic settles around the section's middle. The
+            scroll column is pushed down to meet it — `lg:mt-24` on top of the
+            shared `mt-16` — so the two columns read as one centred pair rather
+            than a tall list beside a low card. */}
+        <div className="mt-16 grid gap-10 lg:mt-30 lg:grid-cols-2 lg:items-center">
           {/* The stacked layout's home for the lanyard; from lg the full-bleed
               layer behind this section takes over. Below lg it only renders in
               landscape tablet viewports (real height, not just width, so tall
@@ -109,38 +84,25 @@ export function Why() {
           {/* Holds the left column open, now that nothing is laid out in it. */}
           <div aria-hidden="true" className="hidden lg:block" />
 
-          <ul className="pointer-events-auto grid h-[34rem] auto-rows-min grid-cols-2 gap-px overflow-y-auto overscroll-contain rounded-3xl border border-white/10 bg-white/10 lg:h-[40rem]">
-            {coreValues.items.map((value, i) => {
-              const Icon = ICONS[value.icon];
-              return (
-                <Reveal as="li" key={value.title} delay={(i % 4) * 80} from="scale">
-                  <div className="group h-full bg-brand-900 p-7 transition-colors duration-500 hover:bg-brand-800">
-                    {/* Inverse of the light value cards in Mission & Vision: a tinted
-                      disc with a lighter mark, rather than the reverse. */}
-                    <span className="icon-disc-dark size-12 group-hover:scale-110 group-hover:bg-brand-400/30 group-hover:text-white">
-                      {Icon && (
-                        <Icon
-                          className="size-6"
-                          strokeWidth={1.75}
-                          aria-hidden="true"
-                        />
-                      )}
-                    </span>
-                    <h3 className="mt-5 font-display text-[1.0625rem] font-semibold leading-snug text-white">
-                      {value.title}
-                    </h3>
-                    <p className="mt-3 text-[0.875rem] leading-relaxed text-brand-200/75">
-                      {value.body}
-                    </p>
-                    <span
-                      aria-hidden="true"
-                      className="mt-6 block h-px w-8 origin-left bg-signal-500/60 transition-transform duration-500 group-hover:scale-x-[3]"
-                    />
-                  </div>
-                </Reveal>
-              );
-            })}
-          </ul>
+          {/* Free-standing cards scrolling in an unframed column. `pr-3` leaves
+              the scrollbar a lane of its own so it never overlaps a card's
+              rounded edge. */}
+          <ScrollColumn
+            aria-label={events.eyebrow}
+            className="pointer-events-auto flex h-[34rem] flex-col gap-8 pr-3 lg:h-[40rem]"
+          >
+            {events.items.map((event, i) => (
+              <Reveal
+                as="li"
+                key={event.title}
+                delay={Math.min(i, 4) * 80}
+                from="scale"
+                className="shrink-0"
+              >
+                <EventCard event={event} />
+              </Reveal>
+            ))}
+          </ScrollColumn>
         </div>
       </Shell>
     </section>

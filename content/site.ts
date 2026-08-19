@@ -268,6 +268,10 @@ export const mlayChannels = {
  * Core values, carried over verbatim from TribuCare's previous website — the
  * client confirmed the wording is current, so it supersedes the deck-derived
  * "why partner with us" pillars that used to sit here.
+ *
+ * These now render as the horizontal card rail beneath the reach figures: the
+ * numbers say how big the operation is, the values say how it is run, and the
+ * two read as one argument rather than two sections making it separately.
  */
 export const coreValues = {
   eyebrow: "Core Values & Support",
@@ -336,6 +340,95 @@ export const coreValues = {
       icon: "book-open",
       title: "Product Education",
       body: "Clear clinical and product information for the teams recommending and applying our brands.",
+    },
+  ],
+} as const;
+
+/**
+ * Events & News.
+ *
+ * ⚠️ PLACEHOLDER CONTENT — every entry below is invented to make the layout
+ * legible while the real listings are gathered. This is the one deliberate
+ * exception to the sourcing rule at the top of this file. Each item carries
+ * `placeholder: true` so the whole set can be found and swapped in one pass;
+ * delete the flag as each real event lands, and delete this notice once none
+ * remain.
+ *
+ * `icon` keys map to lucide components in the Events section.
+ * `status` drives the badge tone: "upcoming" reads warm, "past" reads quiet.
+ */
+export const events = {
+  eyebrow: "Events & News",
+  headlineLead: "Where TribuCare",
+  headlineAccent: "shows up.",
+  intro:
+    "Congresses, hands-on training days, brand launches and regional exhibitions — the calendar behind the education and support our partners rely on.",
+  items: [
+    {
+      placeholder: true,
+      icon: "graduation-cap",
+      status: "upcoming",
+      type: "Training Day",
+      title: "Rejuran injection protocol workshop",
+      image: "/brand/blog/polynucleotide-boosters.webp",
+      date: "September 2026",
+      location: "Cairo, Egypt",
+      body: "A hands-on session for dermatologists covering patient selection, technique and post-treatment care across the Rejuran line.",
+    },
+    {
+      placeholder: true,
+      icon: "presentation",
+      status: "upcoming",
+      type: "Congress",
+      title: "MENA Dermatology & Aesthetics Congress",
+      image: "/brand/blog/aesthetic-trends-mena.webp",
+      date: "October 2026",
+      location: "Dubai, UAE",
+      body: "TribuCare exhibits alongside its device partners, with live demonstrations of the professional laser and body-contouring platforms.",
+    },
+    {
+      placeholder: true,
+      icon: "sparkles",
+      status: "upcoming",
+      type: "Brand Launch",
+      title: "Altesse Soin seasonal line launch",
+      image: "/brand/blog/cica-skincare.webp",
+      date: "November 2026",
+      location: "Mall of Arabia, Giza",
+      body: "In-store launch event introducing the newest medicated skincare range to consumers and pharmacy partners.",
+    },
+    {
+      placeholder: true,
+      icon: "store",
+      status: "past",
+      type: "Retail",
+      title: "MLAY flagship opening — San Stefano",
+      image: "/brand/blog/home-beauty-device.webp",
+      date: "May 2026",
+      location: "Alexandria, Egypt",
+      body: "The fourth flagship branch opened with live device demonstrations and consultations across the full home-use beauty range.",
+    },
+    {
+      placeholder: true,
+      icon: "microscope",
+      status: "past",
+      type: "Symposium",
+      title: "Clinical evidence symposium",
+      image: "/brand/blog/zimmer-cryotherapy.webp",
+      date: "March 2026",
+      location: "Cairo, Egypt",
+      body: "A physician-led review of published outcomes for the technologies TribuCare represents across its dermatology vertical.",
+    },
+    {
+      placeholder: true,
+      icon: "handshake",
+      status: "past",
+      type: "Partnership",
+      title: "Distribution agreement announced",
+      image: "/brand/blog/medical-education.webp",
+      date: "January 2026",
+      location: "Egypt & MENA",
+      body: "TribuCare extended its regional distribution footprint with a new European device manufacturer joining the portfolio.",
     },
   ],
 } as const;
@@ -523,7 +616,7 @@ export const footerNav = [
     links: [
       { label: "About", href: "/#about" },
       { label: "Our Expertise", href: "/#expertise" },
-      { label: "Core Values", href: "/#values" },
+      { label: "Events & News", href: "/#events" },
       { label: "Insights & Blog", href: "/blog" },
       { label: "Partnerships", href: "/#partner" },
     ],

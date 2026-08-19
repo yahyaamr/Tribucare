@@ -4,6 +4,7 @@ import { SiteNav } from "@/components/site/nav";
 import { Footer } from "@/components/sections/footer";
 import { SmoothScroll } from "@/components/site/smooth-scroll";
 import { company, brandGroups } from "@/content/site";
+import { siteUrl, isSiteUrlConfigured } from "@/lib/site";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -25,11 +26,8 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-/** Set NEXT_PUBLIC_SITE_URL once the production domain is confirmed. */
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-
 export const metadata: Metadata = {
-  ...(siteUrl ? { metadataBase: new URL(siteUrl) } : {}),
+  metadataBase: new URL(siteUrl),
   title: {
     default:
       "TribuCare — Healthcare & Beauty Group | Dermatology, Beauty Tech & Skincare",
@@ -86,7 +84,7 @@ const organizationSchema = {
   "@type": "Organization",
   name: company.name,
   description: company.description,
-  ...(siteUrl ? { url: siteUrl } : {}),
+  ...(isSiteUrlConfigured ? { url: siteUrl } : {}),
   parentOrganization: {
     "@type": "Organization",
     name: "Mondial Investissement Corporation",

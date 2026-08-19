@@ -218,6 +218,115 @@
   top: var(--stack-top, 6rem);
 }
 
+/* --------------------------------------------------------------------------
+   RAIL — the one horizontal-scroll language on the site. Any row that carries
+   more cards than fit uses this, so a values rail and an events rail behave
+   identically rather than each inventing its own scroll feel.
+
+   Lenis only drives vertical scroll, so the horizontal axis stays native here
+   and needs no `data-lenis-prevent`. The scrollbar is hidden because the rail
+   always ships a visible edge-fade and a "drag" affordance instead.
+   -------------------------------------------------------------------------- */
+
+/* No scroll-snap here on purpose. `<Rail>` eases the wheel through its own rAF
+   loop, and proximity snapping fires once that glide settles — yanking the rail
+   a second time and undoing the smoothness the loop exists to provide. */
+@utility rail {
+  display: flex;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Each card in a rail. `flex: none` stops the cards being squeezed to fit,
+   which is the whole point of scrolling them. */
+@utility rail-item {
+  flex: none;
+}
+
+/* Soft edges on a rail, so cards dissolve at both ends instead of being sliced
+   off by the container.
+
+   This is a mask on the rail itself rather than two gradient panels laid over
+   it: the sections these sit in carry a wave field and a radial bloom, and an
+   opaque gradient in the ground colour would blank those out in a visible
+   rectangle. Masking fades the cards and leaves the background untouched.
+
+   The three insets have to move together or the rail misbehaves:
+     - `padding-inline` keeps the resting first and last card clear of the soft
+       edge instead of sitting under it,
+     - `margin-inline` gives that padding straight back, so a rail inside
+       <Shell> still starts level with the content above it,
+     - `scroll-padding-inline` stops scroll-snap treating the padding as slack
+       and immediately scrolling the first card back under the fade.
+
+   `--rail-fade` tracks Shell's own gutter at each breakpoint. That keeps the
+   rail flush with the section's edges rather than overflowing the viewport,
+   which a fixed inset would do on phones. */
+@utility rail-fade {
+  --rail-fade: 1.25rem;
+
+  @media (width >= 40rem) {
+    --rail-fade: 2rem;
+  }
+
+  @media (width >= 64rem) {
+    --rail-fade: 3rem;
+  }
+
+  @media (width >= 80rem) {
+    --rail-fade: 4rem;
+  }
+
+  margin-inline: calc(var(--rail-fade) * -1);
+  padding-inline: var(--rail-fade);
+  scroll-padding-inline: var(--rail-fade);
+
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--rail-fade),
+    #000 calc(100% - var(--rail-fade)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--rail-fade),
+    #000 calc(100% - var(--rail-fade)),
+    transparent 100%
+  );
+}
+
+/* Scrollable column with a scrollbar that belongs to the design rather than
+   the OS. Used where free-standing cards scroll with no frame around them, so
+   the default chrome-white bar would be the loudest thing in the section. */
+@utility scroll-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(123 204 201 / 0.28) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background-color: rgb(123 204 201 / 0.28);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(123 204 201 / 0.45);
+  }
+}
+
 /* ==========================================================================
    SURFACES — one card language, one icon language. Every card and icon plate
    on the site resolves to one of these, so a blog card and a department card
@@ -510,8 +619,17 @@ html.lenis body {
   overflow: clip;
 }
 
+/* Lenis ships this as `overscroll-behavior: contain` on every prevented
+   subtree. We keep the horizontal half — a rail should never chain sideways —
+   but leave the vertical axis free.
+
+   The wheel is already handled explicitly by `useEasedScroll`, which forwards
+   to Lenis at either end, so containing Y buys nothing there. All it would do
+   is stop *touch* chaining to the page once a column is scrolled out, which on
+   a phone — where a 34rem column fills most of the screen — turns the section
+   into a dead end no gesture can escape. */
 .lenis [data-lenis-prevent] {
-  overscroll-behavior: contain;
+  overscroll-behavior-x: contain;
 }
 
 .lenis.lenis-smooth iframe {

@@ -1,8 +1,39 @@
+import {
+  Award,
+  BookOpen,
+  GraduationCap,
+  Handshake,
+  Heart,
+  LifeBuoy,
+  Lightbulb,
+  ShieldCheck,
+  Target,
+  UserCheck,
+  Users,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal } from "@/components/site/reveal";
+import { Rail } from "@/components/site/rail";
 import { Counter } from "@/components/site/counter";
 import { WaveField } from "@/components/brand/wave-field";
-import { reach, mlayChannels } from "@/content/site";
+import { reach, mlayChannels, coreValues } from "@/content/site";
+
+const ICONS: Record<string, LucideIcon> = {
+  heart: Heart,
+  handshake: Handshake,
+  lightbulb: Lightbulb,
+  target: Target,
+  users: Users,
+  zap: Zap,
+  award: Award,
+  "shield-check": ShieldCheck,
+  "graduation-cap": GraduationCap,
+  "user-check": UserCheck,
+  "life-buoy": LifeBuoy,
+  "book-open": BookOpen,
+};
 
 export function Reach() {
   return (
@@ -16,7 +47,7 @@ export function Reach() {
       <Shell className="relative">
         <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <Reveal className="lg:col-span-7">
-            <Eyebrow tone="light">Our Reach</Eyebrow>
+            <Eyebrow tone="light">{coreValues.eyebrow}</Eyebrow>
             <h2 className="mt-6 font-display text-[clamp(2.125rem,4.6vw,3.5rem)] font-semibold leading-[1.03] tracking-[-0.025em] text-white text-balance">
               Scale that a global brand{" "}
               <br />
@@ -54,6 +85,68 @@ export function Reach() {
           ))}
         </ul>
 
+        {/* Core values rail.
+            The numbers above state the size of the operation; these state how
+            it is run, so they belong to the same argument rather than a section
+            of their own — which is why the section carries one heading, not a
+            second one introducing the rail.
+
+            Kept inside <Shell>: the rail scrolls within the section's own
+            column rather than bleeding to the viewport edge, and `rail-fade`
+            softens both ends so the row reads as continuing past its bounds. */}
+        <div className="mt-20 md:mt-24">
+          <Reveal>
+            <div className="flex justify-end border-t border-white/10 pt-8">
+              <p className="text-[0.8125rem] text-brand-100/50">
+                Drag or scroll for more →
+              </p>
+            </div>
+          </Reveal>
+
+          <Rail aria-label={coreValues.eyebrow} className="mt-8 gap-5 pb-4">
+            {coreValues.items.map((value, i) => {
+              const Icon = ICONS[value.icon];
+              return (
+                <Reveal
+                  as="li"
+                  key={value.title}
+                  // Caps the stagger: past the fourth card the delay would be
+                  // longer than the reveal itself, and off-screen cards would
+                  // still be waiting their turn when they scroll into view.
+                  delay={Math.min(i, 4) * 70}
+                  from="scale"
+                  className="rail-item w-[17.5rem] sm:w-[19rem]"
+                >
+                  <div className="group h-full rounded-3xl border border-white/10 bg-white/[0.04] p-7 transition-colors duration-500 hover:border-brand-400/40 hover:bg-white/[0.07]">
+                    <span className="icon-disc-dark size-12 group-hover:scale-110 group-hover:bg-brand-400/30 group-hover:text-white">
+                      {Icon && (
+                        <Icon
+                          className="size-6"
+                          strokeWidth={1.75}
+                          aria-hidden="true"
+                        />
+                      )}
+                    </span>
+                    <h3 className="mt-5 font-display text-[1.0625rem] font-semibold leading-snug text-white">
+                      {value.title}
+                    </h3>
+                    <p className="mt-3 text-[0.875rem] leading-relaxed text-brand-200/75">
+                      {value.body}
+                    </p>
+                    <span
+                      aria-hidden="true"
+                      className="mt-6 block h-px w-8 origin-left bg-signal-500/60 transition-transform duration-500 group-hover:scale-x-[3]"
+                    />
+                  </div>
+                </Reveal>
+              );
+            })}
+          </Rail>
+        </div>
+
+        {/* Flagship branches close the section: the numbers give the scale, the
+            values give the conduct, and these name the places you can walk into
+            — the concrete end of the same argument. */}
         <Reveal delay={120}>
           <div className="mt-14 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-white/10 pt-8">
             <span className="eyebrow text-brand-300">Flagship branches</span>
