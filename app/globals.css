@@ -211,11 +211,42 @@
   );
 }
 
-/* Layered card stack: each card pins a little lower than the last, so the
-   previous card's top edge stays visible as the next scrolls over it. */
+/* Layered card stack: a card holds still while the next one scrolls up over it.
+
+   Which EDGE the card pins by is the whole design, and it differs by viewport
+   because the card's own proportions do.
+
+   Below `lg` the card's grid is single-column — media band above, copy below —
+   and it runs ~1080px, taller than any phone. Pinning that by its top freezes
+   it the moment its top edge meets the header, with a third of the copy still
+   below the fold, and slides the next card over content that was never
+   readable. So it pins by its last line instead, via `--stack-read`
+   (`viewportHeight - cardHeight`, negative for a card that overflows the
+   screen): the card scrolls its whole length, and only once its bottom edge
+   lands on the bottom of the screen does it catch and let the next card climb
+   over it. Overlap therefore begins exactly where reading ends.
+
+   `--stack-read` is measured in components/site/card-stack.tsx, because `top`
+   has no term for the element's own height. The fallback below is deliberately
+   far off-screen: until the measurement lands, a card simply scrolls past
+   without catching, which is inert rather than wrong.
+
+   At `lg` the grid goes two-column and the card collapses to ~700px, which the
+   viewport holds whole. There the top-pin is right, and `--stack-top` steps
+   each card a little lower so the previous card's top edge stays visible behind
+   it — a layered stack of edges rather than a takeover. The height floor is
+   that same ~700px from the other side: a landscape phone is wide enough for
+   the two-column card but too short to hold it, so it keeps the read-through
+   pin. */
 .stack-card {
   position: sticky;
-  top: var(--stack-top, 6rem);
+  top: var(--stack-read, -100dvh);
+}
+
+@media (width >= 64rem) and (height >= 44rem) {
+  .stack-card {
+    top: var(--stack-top, 6rem);
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -403,19 +434,51 @@
 .notch-fillet {
   width: var(--notch, 2rem);
   height: var(--notch, 2rem);
+
+  /* Half-width of the mask's alpha ramp — see the arcs below.
+
+     The ramp IS the arc's anti-aliasing: the box being painted is a plain
+     rectangle, so the curve exists only in the mask's gradient and gets no
+     shape-AA from the rasteriser. It used to be a flat 1.5px/0.5px, which on a
+     phone is ~6 device pixels of gradient laid across an arc just 24px wide,
+     and read as a visibly blurred edge beside the bar's razor-sharp
+     `border-radius` corners.
+
+     Anti-aliasing wants roughly ONE device pixel, so the ramp is stated per
+     device-pixel-ratio rather than in fixed CSS pixels — it narrows as the
+     display gets denser, and the arc lands equally crisp on a 1x laptop and a
+     3x phone. Keep the total (2x this) near 1.5 device pixels: much tighter and
+     the curve stair-steps, much looser and it fogs again. */
+  --fillet-aa: 0.75px;
+}
+
+/* The `-webkit-` form is carried alongside because Safari only gained
+   `min-resolution` in 16, and an iPhone is exactly the device this matters on —
+   falling back to the 1x ramp there would leave the arc fogged on the screens
+   held closest to the eye. */
+@media (min-resolution: 2dppx), (-webkit-min-device-pixel-ratio: 2) {
+  .notch-fillet {
+    --fillet-aa: 0.375px;
+  }
+}
+
+@media (min-resolution: 3dppx), (-webkit-min-device-pixel-ratio: 3) {
+  .notch-fillet {
+    --fillet-aa: 0.25px;
+  }
 }
 
 /* Sits to the LEFT of the top bar — arc centred on its own bottom-left corner. */
 .notch-fillet-left {
   -webkit-mask-image: radial-gradient(
     circle at 0 100%,
-    transparent calc(var(--notch, 2rem) - 1.5px),
-    #000 calc(var(--notch, 2rem) + 0.5px)
+    transparent calc(var(--notch, 2rem) - var(--fillet-aa)),
+    #000 calc(var(--notch, 2rem) + var(--fillet-aa))
   );
   mask-image: radial-gradient(
     circle at 0 100%,
-    transparent calc(var(--notch, 2rem) - 1.5px),
-    #000 calc(var(--notch, 2rem) + 0.5px)
+    transparent calc(var(--notch, 2rem) - var(--fillet-aa)),
+    #000 calc(var(--notch, 2rem) + var(--fillet-aa))
   );
 }
 
@@ -423,13 +486,13 @@
 .notch-fillet-right {
   -webkit-mask-image: radial-gradient(
     circle at 100% 100%,
-    transparent calc(var(--notch, 2rem) - 1.5px),
-    #000 calc(var(--notch, 2rem) + 0.5px)
+    transparent calc(var(--notch, 2rem) - var(--fillet-aa)),
+    #000 calc(var(--notch, 2rem) + var(--fillet-aa))
   );
   mask-image: radial-gradient(
     circle at 100% 100%,
-    transparent calc(var(--notch, 2rem) - 1.5px),
-    #000 calc(var(--notch, 2rem) + 0.5px)
+    transparent calc(var(--notch, 2rem) - var(--fillet-aa)),
+    #000 calc(var(--notch, 2rem) + var(--fillet-aa))
   );
 }
 
@@ -437,13 +500,13 @@
 .notch-fillet-bottom-left {
   -webkit-mask-image: radial-gradient(
     circle at 0 0,
-    transparent calc(var(--notch, 2rem) - 1.5px),
-    #000 calc(var(--notch, 2rem) + 0.5px)
+    transparent calc(var(--notch, 2rem) - var(--fillet-aa)),
+    #000 calc(var(--notch, 2rem) + var(--fillet-aa))
   );
   mask-image: radial-gradient(
     circle at 0 0,
-    transparent calc(var(--notch, 2rem) - 1.5px),
-    #000 calc(var(--notch, 2rem) + 0.5px)
+    transparent calc(var(--notch, 2rem) - var(--fillet-aa)),
+    #000 calc(var(--notch, 2rem) + var(--fillet-aa))
   );
 }
 
@@ -451,13 +514,13 @@
 .notch-fillet-bottom-right {
   -webkit-mask-image: radial-gradient(
     circle at 100% 0,
-    transparent calc(var(--notch, 2rem) - 1.5px),
-    #000 calc(var(--notch, 2rem) + 0.5px)
+    transparent calc(var(--notch, 2rem) - var(--fillet-aa)),
+    #000 calc(var(--notch, 2rem) + var(--fillet-aa))
   );
   mask-image: radial-gradient(
     circle at 100% 0,
-    transparent calc(var(--notch, 2rem) - 1.5px),
-    #000 calc(var(--notch, 2rem) + 0.5px)
+    transparent calc(var(--notch, 2rem) - var(--fillet-aa)),
+    #000 calc(var(--notch, 2rem) + var(--fillet-aa))
   );
 }
 

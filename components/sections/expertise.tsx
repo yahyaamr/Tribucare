@@ -3,6 +3,7 @@ import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
+import { CardStack } from "@/components/site/card-stack";
 import { WaveField } from "@/components/brand/wave-field";
 import { TribuLogo, TribuMark } from "@/components/brand/logo";
 import { verticals, brandLogos } from "@/content/site";
@@ -91,10 +92,18 @@ export function Expertise() {
           </div>
         </div>
 
-        {/* Full-width cards that stack into layers as you scroll. `stack-card`
-            only engages on viewports wide and tall enough to hold the stack —
-            see globals.css. */}
-        <ul className="mt-16 flex flex-col gap-6 md:mt-24 lg:gap-8">
+        {/* Full-width cards that stack into layers as you scroll. Where the
+            viewport holds a whole card it pins by the card's top edge; where it
+            does not, <CardStack> measures the offset that pins it by its last
+            line instead, so the next card never arrives before this one has
+            been read. See `.stack-card` in globals.css. */}
+        {/* `gap-40` is not decorative space — below `lg` no gap is ever seen at
+            rest, because a card catches before the next one arrives. It is the
+            beat: the distance the next card must travel after this one pins,
+            so the card settles, holds with air beneath it, and only then is
+            reached. `lg:gap-8` restores the ordinary gap for the desktop
+            stack, which pins by the top edge and needs no such delay. */}
+        <CardStack className="mt-16 flex flex-col gap-40 md:mt-24 lg:gap-8">
           {verticals.map((vertical, i) => (
             <li
               key={vertical.id}
@@ -221,7 +230,7 @@ export function Expertise() {
               </Reveal>
             </li>
           ))}
-        </ul>
+        </CardStack>
       </Shell>
     </section>
   );

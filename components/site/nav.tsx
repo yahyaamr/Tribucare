@@ -60,31 +60,36 @@ const ICONS: Record<string, LucideIcon> = {
    fillet would run off the side of the viewport.
    -------------------------------------------------------------------------- */
 /**
- * `STRIP` is the shallow full-width band the bar hangs from, and `BAR` is the
- * dropped centre section. Across the middle of the header — everywhere the logo,
+ * `STRIP` is the shallow full-width band the bar hangs from, and the bar is the
+ * dropped centre section below it. Across the middle of the header — everywhere the logo,
  * links and CTA actually stand — the two are one continuous white surface, so
  * the height the content has to centre itself in is *both* of them: `SHELL`.
  *
- * Centring within `BAR` alone is what made the header look top-heavy. The strip
+ * Centring within the bar alone is what made the header look top-heavy. The strip
  * then landed entirely above the content, so the gap over the CTA was the strip
  * plus half the bar's slack while the gap under it was only half the slack —
  * 19.5px against 11.5px. Sizing the content row to `SHELL` splits that slack
  * evenly and costs no height.
  *
- * `SHELL` must stay equal to `STRIP + BAR`, or the content row and the surface
- * it stands on stop sharing a bottom edge and the progress rail drifts off it.
- * It is sized off the tallest thing standing in it (the CTA, 37px) plus ~11px of
- * air top and bottom — enough that the pill is not crowded by the fillets, while
- * still sitting well clear of the 68px this header used to occupy. To grow it,
- * step `SHELL` and `BAR` together by the same amount (one unit = 4px, so 2px of
- * it lands above the content and 2px below) — that keeps the pair adding up and
- * the extra air split evenly.
+ * `SHELL` must stay equal to `STRIP + BAR_MIN`, or the content row and the
+ * surface it stands on stop sharing a bottom edge and the progress rail drifts
+ * off it. It is sized off the tallest thing standing in it (the CTA, 37px) plus
+ * ~11px of air top and bottom — enough that the pill is not crowded by the
+ * fillets, while still sitting well clear of the 68px this header used to
+ * occupy. To grow it, step `SHELL` and `BAR_MIN` together by the same amount
+ * (one unit = 4px, so 2px of it lands above the content and 2px below) — that
+ * keeps the pair adding up and the extra air split evenly.
+ *
+ * `BAR_MIN` is a FLOOR rather than a height, because the bar stretches: with
+ * the mobile menu open the surface grows to cover the links, and the shape
+ * layer resolves its height from the content instead of being told it. The
+ * floor is what holds the closed header at exactly the size it has always been.
  *
  * `--notch` is the fillet radius; it scales with the strip, since a deep fillet
  * hanging off a shallow ledge reads as a wave rather than a fair.
  */
 const STRIP = "h-3";
-const BAR = "h-13";
+const BAR_MIN = "min-h-13";
 const SHELL = "h-16";
 const INSET = "mx-5 sm:mx-8 lg:mx-12 xl:mx-auto max-w-[78rem]";
 const BAR_PAD = "px-5 md:px-7 lg:px-9";
@@ -165,16 +170,40 @@ export function SiteNav() {
         <div
           aria-hidden="true"
           className={cn(
-            "absolute inset-0 transition-[filter] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            "absolute inset-0 flex flex-col transition-[filter] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
             scrolled
               ? "[filter:drop-shadow(0_10px_26px_rgb(7_42_42/0.16))]"
               : "[filter:drop-shadow(0_6px_18px_rgb(7_42_42/0.08))]",
           )}
         >
-          <div className={cn(STRIP, "bg-white")} />
-          <div className={cn("relative bg-white", INSET, BAR, BAR_RADIUS, NOTCH)}>
-            <span className="notch-fillet notch-fillet-left absolute top-0 right-full bg-white" />
-            <span className="notch-fillet notch-fillet-right absolute top-0 left-full bg-white" />
+          <div className={cn(STRIP, "shrink-0 bg-white")} />
+          {/* Height carrier. `flex-1`, not a fixed height: this layer is
+              `inset-0` on a wrapper the content layer sizes, so it resolves to
+              whatever the row plus the open menu comes to. That is what makes
+              the surface itself stretch — the menu is not a card below the
+              header, it is the header being taller. `BAR_MIN` is the floor that
+              holds the closed shape at its usual h-13.
+
+              The bar is a plain block INSIDE this rather than being the flex
+              item itself, and that nesting is load-bearing: `INSET` ends in
+              `xl:mx-auto`, and an auto cross-axis margin cancels a flex item's
+              stretch. As a flex item the bar therefore sized to fit-content —
+              zero, its only children being absolutely positioned fillets — and
+              the two notch arcs collapsed back-to-back in the middle of the
+              screen. Kept as a block, `INSET` means what it means everywhere
+              else on the site. */}
+          <div className={cn("flex-1", BAR_MIN)}>
+            <div
+              className={cn(
+                "relative h-full bg-white",
+                INSET,
+                BAR_RADIUS,
+                NOTCH,
+              )}
+            >
+              <span className="notch-fillet notch-fillet-left absolute top-0 right-full bg-white" />
+              <span className="notch-fillet notch-fillet-right absolute top-0 left-full bg-white" />
+            </div>
           </div>
         </div>
 
@@ -323,75 +352,87 @@ export function SiteNav() {
               <ScrollProgress />
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* ---- Mobile panel ------------------------------------------------
-          A separate inset card below the bar rather than a full-bleed sheet, so
-          it reads as part of the same island language. Height animates via the
-          0fr→1fr grid track, which also clips the card's top margin when
-          closed. `inert` keeps the collapsed panel out of the tab order without
-          `hidden`, which cannot be transitioned. */}
-      <div
-        id="mobile-nav"
-        ref={panelRef}
-        inert={!open}
-        className={cn(
-          "grid overflow-hidden transition-[grid-template-rows,opacity] duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden",
-          open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
-        )}
-      >
-        <div className="min-h-0">
+          {/* ---- Mobile panel --------------------------------------------
+              Deliberately NOT a card. It sits inside the content layer with no
+              ground, no rounding and no shadow of its own, so what the eye
+              follows is the bar behind it growing — the header becoming a
+              taller header rather than a second surface arriving under it.
+
+              The 0fr→1fr grid track is the only thing animating: it changes
+              this element's height, which sizes the wrapper, which the shape
+              layer fills. One transition drives the whole stretch, so the
+              surface and its contents can never disagree about the height.
+
+              `inert` keeps the collapsed panel out of the tab order without
+              `hidden`, which cannot be transitioned. */}
           <div
+            id="mobile-nav"
+            ref={panelRef}
+            inert={!open}
             className={cn(
-              "mt-2 rounded-[1.5rem] bg-white p-5 shadow-[0_18px_40px_-20px_rgb(7_42_42/0.35)]",
+              "grid overflow-hidden transition-[grid-template-rows] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden",
               INSET,
+              open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
             )}
           >
-            <nav aria-label="Primary — mobile">
-              <ul className="flex flex-col">
-                {nav.map((item, i) => (
-                  <li
-                    key={item.href}
-                    // Links cascade in behind the panel opening; on close they
-                    // all leave together so the panel does not feel sticky.
+            <div className="min-h-0">
+              {/* Padding matches the bar's own, so the links stand on the same
+                  gutter the logo does. */}
+              <div className={cn(BAR_PAD, "pt-1 pb-5")}>
+                <nav aria-label="Primary — mobile">
+                  <ul className="flex flex-col">
+                    {nav.map((item, i) => (
+                      <li
+                        key={item.href}
+                        // Each link follows the surface down rather than
+                        // racing it: the first waits out the opening third of
+                        // the stretch, then they cascade. On close the delays
+                        // are dropped so they clear together and the bar is
+                        // never seen shrinking through live text.
+                        className={cn(
+                          "transition-[opacity,transform] duration-[460ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                          open
+                            ? "translate-y-0 opacity-100"
+                            : "translate-y-2 opacity-0",
+                        )}
+                        style={{
+                          transitionDelay: open ? `${140 + i * 55}ms` : "0ms",
+                        }}
+                      >
+                        <a
+                          href={item.href}
+                          onClick={() => setOpen(false)}
+                          className="flex items-baseline gap-4 border-b border-brand-50 py-3.5 font-display text-xl font-medium text-ink transition-colors hover:text-brand-600"
+                        >
+                          <span className="eyebrow text-signal-500">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                          {item.label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href="/partner"
+                    onClick={() => setOpen(false)}
                     className={cn(
-                      "transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      "mt-5 flex w-full items-center justify-center rounded-lg bg-brand-700 px-6 py-3.5 font-semibold text-white transition-[opacity,transform] duration-[460ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
                       open
                         ? "translate-y-0 opacity-100"
                         : "translate-y-2 opacity-0",
                     )}
                     style={{
-                      transitionDelay: open ? `${80 + i * 45}ms` : "0ms",
+                      transitionDelay: open
+                        ? `${140 + nav.length * 55}ms`
+                        : "0ms",
                     }}
                   >
-                    <a
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="flex items-baseline gap-4 border-b border-brand-50 py-3.5 font-display text-xl font-medium text-ink transition-colors hover:text-brand-600"
-                    >
-                      <span className="eyebrow text-signal-500">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      {item.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-              <Link
-                href="/partner"
-                onClick={() => setOpen(false)}
-                className={cn(
-                  "mt-5 flex w-full items-center justify-center rounded-lg bg-brand-700 px-6 py-3.5 font-semibold text-white transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                  open ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
-                )}
-                style={{
-                  transitionDelay: open ? `${80 + nav.length * 45}ms` : "0ms",
-                }}
-              >
-                Partner With Us
-              </Link>
-            </nav>
+                    Partner With Us
+                  </Link>
+                </nav>
+              </div>
+            </div>
           </div>
         </div>
       </div>
