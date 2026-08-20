@@ -35,9 +35,18 @@ const ICONS: Record<string, LucideIcon> = {
   "book-open": BookOpen,
 };
 
+/**
+ * Carries the `#core-values` anchor the nav points at. The section leads with
+ * the scale figures, but its own eyebrow reads "Core Values & Support" and the
+ * rail below states them — it is one argument, so the anchor belongs on the
+ * section rather than on the rail inside it.
+ */
 export function Reach() {
   return (
-    <section className="relative isolate overflow-hidden bg-brand-950 py-24 md:py-32">
+    <section
+      id="core-values"
+      className="relative isolate overflow-hidden bg-brand-950 py-24 md:py-32"
+    >
       <WaveField
         tone="dark"
         lines={22}

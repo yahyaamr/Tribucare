@@ -382,36 +382,50 @@ export function SiteNav() {
               <div className={cn(BAR_PAD, "pt-1 pb-5")}>
                 <nav aria-label="Primary — mobile">
                   <ul className="flex flex-col">
-                    {nav.map((item, i) => (
-                      <li
-                        key={item.href}
-                        // Each link follows the surface down rather than
-                        // racing it: the first waits out the opening third of
-                        // the stretch, then they cascade. On close the delays
-                        // are dropped so they clear together and the bar is
-                        // never seen shrinking through live text.
-                        className={cn(
-                          "transition-[opacity,transform] duration-[460ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
-                          open
-                            ? "translate-y-0 opacity-100"
-                            : "translate-y-2 opacity-0",
-                        )}
-                        style={{
-                          transitionDelay: open ? `${140 + i * 55}ms` : "0ms",
-                        }}
-                      >
-                        <a
-                          href={item.href}
-                          onClick={() => setOpen(false)}
-                          className="flex items-baseline gap-4 border-b border-brand-50 py-3.5 font-display text-xl font-medium text-ink transition-colors hover:text-brand-600"
+                    {nav.map((item, i) => {
+                      // The same mark the desktop pill uses, so a link is the
+                      // same object in both layouts. It replaces the old 01/02
+                      // numbering, which named a link's position in the list
+                      // rather than the place it goes.
+                      const Icon = ICONS[item.icon];
+
+                      return (
+                        <li
+                          key={item.href}
+                          // Each link follows the surface down rather than
+                          // racing it: the first waits out the opening third of
+                          // the stretch, then they cascade. On close the delays
+                          // are dropped so they clear together and the bar is
+                          // never seen shrinking through live text.
+                          className={cn(
+                            "transition-[opacity,transform] duration-[460ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                            open
+                              ? "translate-y-0 opacity-100"
+                              : "translate-y-2 opacity-0",
+                          )}
+                          style={{
+                            transitionDelay: open ? `${140 + i * 55}ms` : "0ms",
+                          }}
                         >
-                          <span className="eyebrow text-signal-500">
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                          {item.label}
-                        </a>
-                      </li>
-                    ))}
+                          <a
+                            href={item.href}
+                            onClick={() => setOpen(false)}
+                            // `items-center`, not the baseline the numerals sat
+                            // on: an icon has no baseline to share with the
+                            // label, and aligning one to it hangs it low.
+                            className="flex items-center gap-4 border-b border-brand-50 py-3.5 font-display text-xl font-medium text-ink transition-colors hover:text-brand-600"
+                          >
+                            {/* Keeps the numerals' orange, so the accent stays
+                                where it was and only the glyph changes. */}
+                            <Icon
+                              aria-hidden="true"
+                              className="size-5 shrink-0 text-signal-500"
+                            />
+                            {item.label}
+                          </a>
+                        </li>
+                      );
+                    })}
                   </ul>
                   <Link
                     href="/partner"

@@ -17,15 +17,16 @@ export const company = {
 
 /**
  * `icon` keys map to lucide components in the header, same as `coreValues`.
- * The header collapses inactive links to the icon alone, so each one has to
- * carry the meaning of its label on its own: the three stacked verticals for
- * expertise, a gem for the brand portfolio, and the handshake this site already
- * uses wherever it talks about partnership.
+ * The header collapses inactive links to the icon alone, and the mobile menu
+ * sets the same mark beside each label, so every one has to carry the meaning
+ * of its label on its own: the three stacked verticals for expertise, a gem for
+ * the values the company holds to, and the handshake this site already uses
+ * wherever it talks about partnership.
  */
 export const nav = [
   { label: "Home", href: "/", icon: "home" },
   { label: "Our Expertise", href: "/#expertise", icon: "layers" },
-  { label: "Our Brands", href: "/#brands", icon: "gem" },
+  { label: "Core Values", href: "/#core-values", icon: "gem" },
   { label: "Partnerships", href: "/#partner", icon: "handshake" },
   { label: "Blog", href: "/blog", icon: "newspaper" },
 ] as const;
