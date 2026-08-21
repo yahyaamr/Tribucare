@@ -118,7 +118,7 @@ export const verticals = [
     body: "As the exclusive agent in Egypt for globally recognised German, Italian and Korean brands, we deliver top-tier therapeutic and aesthetic technologies to dermatologists, clinics and aesthetic centres.",
     audience: "Dermatologists · Clinics · Aesthetic centres",
     brands: ["Zimmer Medical", "Rejuran", "beaumed", "IDS", "AGEX Beauty", "BV Laser"],
-    cta: { label: "Professional solutions", href: "#brands" },
+    cta: { label: "Professional solutions", href: "/dermatology" },
     image: {
       src: "/brand/derma-solutions.webp",
       alt: "A clinic laser system alongside a Rejuran polynucleotide box and syringe, with a South Korean flag and a smiling model.",
@@ -633,7 +633,7 @@ export const footerNav = [
   {
     title: "Expertise",
     links: [
-      { label: "Professional Dermatology", href: "#expertise" },
+      { label: "Professional Dermatology", href: "/dermatology" },
       { label: "Home-Use Beauty Devices", href: "#expertise" },
       { label: "Medicated Skincare", href: "#expertise" },
       { label: "Medical Training", href: "#professionals" },

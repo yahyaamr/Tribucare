@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Shell, Eyebrow } from "@/components/site/shell";
@@ -25,6 +26,33 @@ function BrandLogo({
       height={logo.height}
       className={cn("w-auto object-contain", className || "h-5 max-w-[6.5rem]")}
     />
+  );
+}
+
+/** The card's call to action, and the overlay that makes the whole card it. */
+const CTA_CLASS =
+  "mt-8 inline-flex items-center gap-1.5 self-start text-[1rem] font-semibold text-brand-600 transition-colors hover:text-brand-800 lg:mt-[clamp(1.25rem,3dvh,2rem)]";
+
+function CardCta({ href, label }: { href: string; label: string }) {
+  const inner = (
+    <>
+      {label}
+      <ArrowUpRight
+        className="size-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+        aria-hidden="true"
+      />
+      <span className="absolute inset-0" aria-hidden="true" />
+    </>
+  );
+
+  return href.startsWith("/") ? (
+    <Link href={href} className={CTA_CLASS}>
+      {inner}
+    </Link>
+  ) : (
+    <a href={href} className={CTA_CLASS}>
+      {inner}
+    </a>
   );
 }
 
@@ -183,17 +211,14 @@ export function Expertise() {
                         </ul>
                       </div>
 
-                      <a
-                        href={vertical.cta.href}
-                        className="mt-8 inline-flex items-center gap-1.5 self-start text-[1rem] font-semibold text-brand-600 transition-colors hover:text-brand-800 lg:mt-[clamp(1.25rem,3dvh,2rem)]"
-                      >
-                        {vertical.cta.label}
-                        <ArrowUpRight
-                          className="size-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
-                          aria-hidden="true"
-                        />
-                        <span className="absolute inset-0" aria-hidden="true" />
-                      </a>
+                      {/* A route gets Next's <Link>, so the card navigates
+                          client-side like every other internal link here rather
+                          than reloading the whole document. An in-page anchor
+                          stays a plain <a>: Lenis's smooth-scroll handler reads
+                          the click off the document, and <Link> would
+                          preventDefault it away. The overlay span is what makes
+                          the whole card the target, either way. */}
+                      <CardCta href={vertical.cta.href} label={vertical.cta.label} />
                     </div>
 
                     {/* Light media panel: the cut-out product floats over a soft

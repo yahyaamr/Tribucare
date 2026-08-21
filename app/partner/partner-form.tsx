@@ -3,7 +3,12 @@
 import { useId, useState } from "react";
 import { Award, CheckCircle2, Send, ShieldCheck } from "lucide-react";
 import { Reveal } from "@/components/site/reveal";
-import { submitInquiry, type SubmitResult } from "@/lib/forms";
+import {
+  submitInquiry,
+  FIELD_CLASS,
+  LABEL_CLASS,
+  type SubmitResult,
+} from "@/lib/forms";
 
 const INTERESTS = [
   "Global Brand Partner (Exclusive Distribution)",
@@ -12,12 +17,6 @@ const INTERESTS = [
   "Retail & E-commerce Distribution (MLAY / Altesse)",
   "Regional MENA Distributor",
 ] as const;
-
-const FIELD_CLASS =
-  "w-full rounded-xl border border-brand-200 bg-white px-4 py-3 text-sm text-ink transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none";
-
-const LABEL_CLASS =
-  "mb-1.5 block text-xs font-semibold tracking-wider text-ink uppercase";
 
 export function PartnerForm() {
   const id = useId();
