@@ -71,8 +71,10 @@ export function CardStack({
 
     const measure = () => {
       const view = window.innerHeight;
+      let tallest = 0;
       for (const card of cards) {
         const height = card.offsetHeight;
+        tallest = Math.max(tallest, height);
         // A card short enough to stand clear of the header is pinned there and
         // read whole, exactly as the desktop stack does. A taller one is pinned
         // by its last line instead, held one TAIL above the bottom of the
@@ -81,6 +83,11 @@ export function CardStack({
           height <= view - HEADER ? HEADER : view - height - TAIL;
         card.style.setProperty("--stack-read", `${offset}px`);
       }
+      // Every card is stretched to match whichever is naturally tallest, so the
+      // stack reads as one consistent object rather than three different sizes.
+      // Set on the list rather than per-card so a card growing to meet it does
+      // not itself get measured as the new tallest on the next pass.
+      el.style.setProperty("--stack-card-height", `${tallest}px`);
     };
 
     measure();

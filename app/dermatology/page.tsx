@@ -203,13 +203,22 @@ export default function DermatologyPage() {
           <Reveal delay={340}>
             <div className="mt-16 border-t border-white/10 pt-8">
               <p className="eyebrow text-brand-300">Brands we represent</p>
-              <ul className="mt-6 flex flex-wrap items-center gap-3">
-                {dermatology.brands.map((brand) => (
-                  <li key={brand}>
-                    <BrandPlate name={brand} />
-                  </li>
-                ))}
-              </ul>
+              <div className="mt-6 space-y-3">
+                <ul className="flex flex-wrap items-center gap-3">
+                  {dermatology.brands.slice(0, 5).map((brand) => (
+                    <li key={brand}>
+                      <BrandPlate name={brand} />
+                    </li>
+                  ))}
+                </ul>
+                <ul className="flex flex-wrap items-center gap-3">
+                  {dermatology.brands.slice(5).map((brand) => (
+                    <li key={brand}>
+                      <BrandPlate name={brand} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </Reveal>
         </Shell>

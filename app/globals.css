@@ -243,9 +243,9 @@
   top: var(--stack-read, -100dvh);
 }
 
-@media (width >= 64rem) and (height >= 44rem) {
+@media (width >= 64rem) and (height >= 36rem) {
   .stack-card {
-    top: var(--stack-top, 6rem);
+    top: var(--stack-top, 5rem);
   }
 }
 

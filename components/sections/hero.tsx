@@ -97,7 +97,7 @@ export function Hero() {
                 keeps it whole at every viewport while still running large.
                 The 4.5rem nudge below centre buys back the headroom the taller
                 mark would otherwise lose at the top. */}
-            <div className="absolute top-1/2 left-3 h-[clamp(26.4rem,88.8vh,51.6rem)] translate-y-[calc(-50%+7.5rem)] [perspective:1200px]">
+            <div className="absolute top-1/2 -left-12 h-[clamp(26.4rem,88.8vh,51.6rem)] translate-y-[calc(-50%+3.4375rem)] [perspective:1200px]">
               <Floating className="h-full">
                 <Image
                   src={MARK.src}

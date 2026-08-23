@@ -134,7 +134,7 @@ export const verticals = [
     body: "In partnership with MLAY, TribuCare brings high-performance beauty tech to the Egyptian market — empowering consumers with salon-grade skincare and hair care, supported by flagship retail and nationwide e-commerce.",
     audience: "Consumers · Retail · E-commerce",
     brands: ["MLAY"],
-    cta: { label: "Discover MLAY", href: "#brands" },
+    cta: { label: "Discover MLAY", href: "/mlay" },
     image: {
       src: "/brand/laser-products.webp",
       alt: "An MLAY home-use laser hair-removal device, held in two hands.",
@@ -150,7 +150,7 @@ export const verticals = [
     body: "Represented by our flagship brand Altesse Soin, we offer clinically inspired formulations that fuse advanced dermatological science with premium active ingredients.",
     audience: "Consumers · Pharmacy · Dermatology",
     brands: ["Altesse Soin"],
-    cta: { label: "Discover Altesse Soin", href: "#brands" },
+    cta: { label: "Discover Altesse Soin", href: "/altesse-soin" },
     image: {
       src: "/brand/altesse-soin-cutout.webp",
       alt: "Altesse Soin Sérénité whitening and hair-delaying deodorant, held in two hands with the cap lifted.",
@@ -192,6 +192,8 @@ export const brandLogos: Record<
     height: 83,
   },
   "BV Laser": { src: "/brand/logos/bv-laser.webp", width: 595, height: 125 },
+  AMI: { src: "/brand/logos/ami.webp", width: 260, height: 155 },
+  Kiusera: { src: "/brand/logos/kiusera.webp", width: 450, height: 86 },
   MLAY: { src: "/brand/logos/mlay.webp", width: 705, height: 118 },
   "Altesse Soin": {
     src: "/brand/logos/altesse-soin.webp",
@@ -625,18 +627,18 @@ export const footerNav = [
   {
     title: "Our Brands",
     links: [
-      { label: "Professional Solutions", href: "#brands" },
-      { label: "MLAY", href: "#brands" },
-      { label: "Altesse Soin", href: "#brands" },
+      { label: "Professional Solutions", href: "/dermatology" },
+      { label: "MLAY", href: "/mlay" },
+      { label: "Altesse Soin", href: "/altesse-soin" },
     ],
   },
   {
     title: "Expertise",
     links: [
       { label: "Professional Dermatology", href: "/dermatology" },
-      { label: "Home-Use Beauty Devices", href: "#expertise" },
-      { label: "Medicated Skincare", href: "#expertise" },
-      { label: "Medical Training", href: "#professionals" },
+      { label: "Home-Use Beauty Devices", href: "/mlay" },
+      { label: "Medicated Skincare", href: "/altesse-soin" },
+      { label: "Medical Training", href: "/#professionals" },
     ],
   },
 ] as const;

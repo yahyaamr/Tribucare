@@ -95,12 +95,7 @@ export function MissionVision() {
       id="about"
       className="ground-light relative isolate overflow-hidden py-24 md:py-32"
     >
-      {/* Corner flourish. Hidden below lg, where the viewport is narrow enough
-          that the arc sweeps across the headline instead of hugging the corner. */}
-      <span
-        aria-hidden="true"
-        className="absolute -top-32 -right-28 hidden size-80 rounded-full border border-brand-200/45 lg:block"
-      />
+
       <WaveField
         tone="light"
         lines={18}

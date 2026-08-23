@@ -138,16 +138,14 @@ export function Expertise() {
               className="stack-card"
               style={
                 {
-                  // Clears the notched header (60px) with room to breathe, so a
-                  // pinned card never crowds the nav, then steps each card down
-                  // by a fixed increment to keep the previous card's top edge
-                  // readable behind it.
-                  "--stack-top": `clamp(5.5rem, ${8 + i * 1.25}dvh, ${7.5 + i * 1.75}rem)`,
+                  // Clears the notched header with room to breathe, so a pinned
+                  // card fits comfortably with top and bottom padding on laptop screens.
+                  "--stack-top": `clamp(4.5rem, ${5.5 + i * 1.25}dvh, ${6 + i * 1.5}rem)`,
                 } as React.CSSProperties
               }
             >
               <Reveal from="scale" travel="34px">
-                <article className="group relative isolate overflow-hidden rounded-[1.75rem] border border-black/[0.05] bg-white shadow-[0_40px_80px_-56px_rgb(7_42_42/0.55)] transition-shadow duration-700 hover:shadow-[0_54px_100px_-58px_rgb(7_42_42/0.62)] lg:rounded-[2.25rem]">
+                <article className="group relative isolate flex min-h-[var(--stack-card-height,auto)] flex-col overflow-hidden rounded-[1.75rem] border border-black/[0.05] bg-white shadow-[0_40px_80px_-56px_rgb(7_42_42/0.55)] transition-shadow duration-700 hover:shadow-[0_54px_100px_-58px_rgb(7_42_42/0.62)] lg:rounded-[2.25rem]">
                   {/* Wave field washes across the card's bottom-left corner,
                       under both columns, exactly as the deck sets it. */}
                   <WaveField
@@ -156,41 +154,65 @@ export function Expertise() {
                     className="absolute bottom-0 left-0 -z-10 h-[34%] w-[130%] opacity-60 lg:h-[24%] lg:w-[62%]"
                   />
 
-                  <div className="grid lg:grid-cols-2">
-                    <div className="order-2 flex flex-col justify-center p-7 sm:p-10 lg:order-1 lg:p-[clamp(1.75rem,4dvh,3.5rem)] xl:py-[clamp(1.75rem,4dvh,4rem)] xl:pr-10 xl:pl-16">
-                      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-                        <span className="font-display text-[clamp(2.75rem,min(10.5vw,12dvh),8.5rem)] leading-[0.78] font-semibold text-brand-200/85">
+                  {/* `flex-1` rather than a bare grid: `min-h-[...]` above is
+                      only a floor on the article, and the article is not
+                      itself a layout container for it, so a shorter card's
+                      grid — sized to its own now-shorter content — used to
+                      stop short of that floor and leave the gap empty
+                      instead of the media panel reaching the card's true
+                      bottom edge. Growing the grid to fill whatever height
+                      the article actually ends up at removes the gap
+                      regardless of which card is tallest at the time. */}
+                  <div className="grid flex-1 lg:grid-cols-2">
+                    <div className="order-2 flex flex-col justify-center p-7 sm:p-10 lg:order-1 lg:p-[clamp(1.5rem,3dvh,2.75rem)] xl:py-[clamp(1.5rem,3.2dvh,3.25rem)] xl:pr-10 xl:pl-14">
+                      {/* Nowrap from `sm` up: the badge is sized to fit beside
+                          the number at every width down to a small tablet, so
+                          it no longer drops to a second line under it. Below
+                          `sm` the longest label ("Professional Dermatology
+                          Solutions") has no width left to shrink into without
+                          going illegible, so it falls back to wrapping there
+                          rather than clipping against the card edge. */}
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 sm:flex-nowrap">
+                        <span className="font-display text-[clamp(2.5rem,min(8vw,9dvh),6.5rem)] leading-[0.78] font-semibold text-brand-200/85">
                           {vertical.number}
                         </span>
-                        <span className="eyebrow rounded-xl border border-signal-500/55 px-4 py-2 text-signal-600 max-sm:text-[0.625rem] max-sm:tracking-[0.14em] lg:px-5 lg:py-2.5 lg:text-[0.72rem]">
+                        <span className="shrink-0 rounded-xl border border-signal-500/55 px-[0.65rem] py-[0.325rem] font-mono text-[0.45rem] leading-none tracking-[0.14em] text-signal-600 uppercase lg:px-[0.8125rem] lg:py-[0.406rem] lg:text-[0.47rem]">
                           {vertical.label}
                         </span>
                       </div>
 
-                      <h3 className="mt-8 max-w-[9.5em] font-display text-[clamp(1.875rem,min(4.4vw,7dvh),3.5rem)] font-semibold leading-[1.06] tracking-[-0.03em] text-ink lg:mt-[clamp(1.25rem,3dvh,2rem)]">
+                      <h3 className="mt-6 max-w-[9.5em] font-display text-[clamp(1.75rem,min(3.8vw,5.5dvh),3rem)] font-semibold leading-[1.06] tracking-[-0.03em] text-ink lg:mt-[clamp(0.875rem,2dvh,1.5rem)]">
                         {vertical.headline}
                       </h3>
                       <span
                         aria-hidden="true"
-                        className="mt-6 block h-[3px] w-14 rounded-full bg-brand-600"
+                        className="mt-5 block h-[3px] w-14 rounded-full bg-brand-600"
                       />
 
-                      <p className="mt-7 max-w-[26rem] text-[1.0625rem] leading-[1.65] text-ink-soft lg:mt-[clamp(1rem,2.5dvh,1.75rem)]">
+                      <p className="mt-5 max-w-[26rem] text-[0.95rem] leading-[1.6] text-ink-soft sm:text-[1.0625rem] lg:mt-[clamp(0.75rem,1.75dvh,1.25rem)]">
                         {vertical.body}
                       </p>
 
-                      <div className="mt-9 border-t border-black/[0.07] pt-7 lg:mt-[clamp(1.25rem,3dvh,2.25rem)] lg:pt-[clamp(1rem,2.5dvh,1.75rem)]">
+                      <div className="mt-6 border-t border-black/[0.07] pt-5 lg:mt-[clamp(0.875rem,2.2dvh,1.75rem)] lg:pt-[clamp(0.75rem,1.75dvh,1.25rem)]">
                         <p className="eyebrow text-ink-faint">Brands</p>
-                        {/* Logo plates. Marks are set to a shared height rather
-                            than a shared box, so a row of them reads as one set
-                            despite aspect ratios from 1.4:1 to 6:1. */}
-                        <ul className="mt-4 flex flex-wrap items-center gap-2.5">
+                        {/* Logo plates. Every plate is the same fixed box
+                            regardless of the mark's aspect ratio (1.4:1 to
+                            6:1), so the row reads as a set of matched cards
+                            rather than tag-shaped chips of varying width.
+
+                            Box width is the tight constraint: Dermatology's
+                            six marks have to fit on one row even at the
+                            narrowest point of the two-column layout (~409px
+                            available right at `lg`) — 6 × plate + 5 × gap must
+                            clear that, which is what sizes the plate down from
+                            what a single mark like MLAY would otherwise get. */}
+                        <ul className="mt-3.5 flex flex-wrap items-center gap-1.5">
                           {vertical.brands.map((brand) => {
                             const logo = brandLogos[brand];
                             return (
                               <li
                                 key={brand}
-                                className="flex h-11 items-center rounded-xl bg-black/[0.045] px-3.5 transition-colors duration-300 hover:bg-brand-100/70"
+                                className="flex h-7 w-[3.625rem] items-center justify-center rounded-xl bg-black/[0.045] transition-colors duration-300 hover:bg-brand-100/70"
                               >
                                 {logo ? (
                                   <Image
@@ -198,7 +220,7 @@ export function Expertise() {
                                     alt={brand}
                                     width={logo.width}
                                     height={logo.height}
-                                    className="h-5 w-auto max-w-[6.5rem] object-contain"
+                                    className="max-h-5 max-w-[3.125rem] object-contain"
                                   />
                                 ) : (
                                   <span className="text-[0.85rem] font-semibold tracking-[0.02em] text-ink/85">
@@ -223,10 +245,16 @@ export function Expertise() {
 
                     {/* Light media panel: the cut-out product floats over a soft
                         mint disc, with the TribuCare lock-up in the corner. */}
-                    <div className="relative order-1 min-h-[22rem] sm:min-h-[26rem] lg:order-2 lg:min-h-[min(34rem,58dvh)]">
+                    <div className="relative order-1 min-h-[22rem] sm:min-h-[26rem] lg:order-2 lg:min-h-[min(28rem,48dvh)]">
+                      {/* Bottom-anchored rather than centred on the panel: the
+                          product image is itself bottom-anchored, so the disc
+                          has to sit at the same edge to stay coupled to it
+                          however tall the (now height-matched) panel gets —
+                          centring it would drift the disc upward, away from
+                          the image, on any card shorter than the tallest. */}
                       <div
                         aria-hidden="true"
-                        className="absolute top-1/2 left-[37%] aspect-square w-[68%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-b from-brand-100/90 to-brand-50/30 lg:left-[55%]"
+                        className="absolute bottom-[6%] left-[37%] aspect-square w-[68%] -translate-x-1/2 rounded-full bg-gradient-to-b from-brand-100/90 to-brand-50/30 lg:left-[55%]"
                       />
 
                       {/* Anchored to the panel's bottom-right corner. The panel

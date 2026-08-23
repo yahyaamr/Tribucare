@@ -37,7 +37,7 @@ export function ProductCard({
             alt=""
             fill
             sizes={sizes}
-            className="object-contain object-right-bottom transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
           />
         ) : (
           <ProductPlaceholder brand={product.brand} />
