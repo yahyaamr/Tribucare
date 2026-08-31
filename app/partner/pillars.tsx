@@ -10,6 +10,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Reveal } from "@/components/site/reveal";
+import { Rail } from "@/components/site/rail";
 import { cn } from "@/lib/utils";
 
 type Pillar = {
@@ -99,8 +100,12 @@ const PARTNER_PILLARS: Pillar[] = [
 export function PartnerPillars() {
   const [selected, setSelected] = useState("global");
 
+  // `py-4` on the rail, not just `pb-4`: the selected and hovered cards sit 4px
+  // high on a `-translate-y-1`, and the rail's `overflow-y: clip` would
+  // otherwise slice their top edge (and ring) off. The padding gives that lift
+  // room inside the clip box.
   return (
-    <ul className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <Rail aria-label="Partnership models" className="mt-8 gap-6 py-4">
       {PARTNER_PILLARS.map((pillar, idx) => {
         const Icon = pillar.icon;
         const isSelected = selected === pillar.id;
@@ -109,9 +114,9 @@ export function PartnerPillars() {
           <Reveal
             as="li"
             key={pillar.id}
-            delay={idx * 60}
+            delay={Math.min(idx, 4) * 70}
             from="scale"
-            className="h-full"
+            className="rail-item w-[19rem] sm:w-[21rem]"
           >
             <button
               type="button"
@@ -190,6 +195,6 @@ export function PartnerPillars() {
           </Reveal>
         );
       })}
-    </ul>
+    </Rail>
   );
 }

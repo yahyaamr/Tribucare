@@ -7,11 +7,13 @@ import { cn } from "@/lib/utils";
 /**
  * Horizontal card rail — the site's one "more cards than fit" row.
  *
- * A plain overflow-x container ignores a vertical wheel, so a mouse user has no
- * way to move it. `useEasedScroll` maps the wheel onto `scrollLeft`, eases it,
- * adds click-and-drag panning, and hands the page back at either end — see that
- * file for why each of those is needed. `rail-fade` supplies the soft edges and
- * the inset that keeps the rail level with the content above it.
+ * `useEasedScroll` gives it click-and-drag panning and eases a *horizontal*
+ * wheel gesture (trackpad swipe, shift+wheel) onto `scrollLeft`. A plain
+ * vertical wheel is deliberately left alone — no `data-lenis-prevent` here — so
+ * it scrolls the page at the same speed as anywhere else rather than being
+ * captured or re-timed by the rail. `rail-fade` supplies the soft edges and the
+ * inset that keeps the rail level with the content above it; `touch-action:
+ * pan-x` (in the `rail` utility) does the same axis split for touch.
  */
 export function Rail({
   children,
@@ -28,7 +30,6 @@ export function Rail({
   return (
     <ul
       ref={ref}
-      data-lenis-prevent
       aria-label={ariaLabel}
       className={cn(
         "rail rail-fade cursor-grab active:cursor-grabbing",

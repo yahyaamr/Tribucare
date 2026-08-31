@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { PostCard } from "@/components/blog/post-card";
+import { CardStepper } from "@/components/site/card-stepper";
 import { blogPosts } from "@/content/blogs";
 
 export function BlogSection() {
@@ -44,7 +45,17 @@ export function BlogSection() {
           </Reveal>
         </div>
 
-        <ul className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Below lg the three-up grid becomes a stepped carousel — one card at
+            a time with an arrow row, the same shape as the events section. */}
+        <Reveal className="mt-14 lg:hidden" from="scale">
+          <CardStepper aria-label="Latest insights">
+            {posts.map((post) => (
+              <PostCard key={post.slug} post={post} sizes="100vw" />
+            ))}
+          </CardStepper>
+        </Reveal>
+
+        <ul className="mt-14 hidden gap-8 lg:grid lg:grid-cols-3">
           {posts.map((post, idx) => (
             <Reveal
               as="li"

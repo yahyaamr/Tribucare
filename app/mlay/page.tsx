@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { Rail } from "@/components/site/rail";
+import { CardStepper } from "@/components/site/card-stepper";
 import { WaveField } from "@/components/brand/wave-field";
 import { EventCard } from "@/components/events/event-card";
 import { MlayProductCard } from "@/components/mlay/mlay-product-card";
@@ -266,7 +267,7 @@ export default function MlayPage() {
           </div>
 
           <div className="mt-16">
-            <Reveal>
+            <Reveal className="max-lg:hidden">
               <div className="flex justify-end border-t border-white/10 pt-8">
                 <p className="text-[0.8125rem] text-brand-100/50">
                   Drag or scroll for more →
@@ -274,7 +275,22 @@ export default function MlayPage() {
               </div>
             </Reveal>
 
-            <Rail aria-label={mlay.retail.eyebrow} className="mt-8 gap-5 pb-4">
+            {/* Below lg the rail becomes a stepped carousel — a vertical swipe
+                on a phone never drags the row sideways. */}
+            <CardStepper
+              aria-label={mlay.retail.eyebrow}
+              tone="dark"
+              className="lg:hidden"
+            >
+              {mlay.retail.items.map((item) => (
+                <EventCard key={item.title} event={item} sizes="100vw" />
+              ))}
+            </CardStepper>
+
+            <Rail
+              aria-label={mlay.retail.eyebrow}
+              className="mt-8 gap-5 pb-4 max-lg:hidden"
+            >
               {mlay.retail.items.map((item, i) => (
                 <Reveal
                   as="li"

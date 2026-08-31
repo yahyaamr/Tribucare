@@ -4,23 +4,27 @@ import { useEffect, type RefObject } from "react";
 import { useLenis } from "lenis/react";
 
 /**
- * Wheel handling for any scroll container nested inside the Lenis-driven page.
+ * Wheel handling for a scroll container nested inside the Lenis-driven page.
  *
- * Lenis owns wheel input site-wide, so a nested scroller needs
- * `data-lenis-prevent` to see the event at all — and once it has it, two things
- * have to be done by hand:
+ * A **horizontal rail** (`axis: "x"`) claims only a gesture that is itself
+ * horizontal — a sideways trackpad swipe, or shift+wheel — which it eases
+ * through its own rAF loop and keeps from reaching Lenis with `stopPropagation`.
+ * Every other wheel it ignores entirely: the rail carries no
+ * `data-lenis-prevent`, so a plain vertical wheel bubbles straight to Lenis and
+ * the page scrolls at exactly the speed it does everywhere else. Nothing here
+ * forwards or re-times a vertical wheel — doing so is what used to make
+ * scrolling over a rail feel slower than scrolling anywhere else.
  *
- * 1. **Easing.** Writing the delta straight to the scroll offset moves the
- *    container one hard step per notch, which reads as stuttering beside the
- *    eased page. Each notch moves a *target* instead and a rAF loop chases it,
- *    matching Lenis's own lerp.
- * 2. **Handing the page back.** At either end the gesture is forwarded to Lenis
- *    explicitly. Letting the event through instead does nothing visible: the
- *    native scroll it causes is overwritten on Lenis's next frame, so the page
- *    sits frozen under the cursor.
+ * A **vertical column** (`axis: "y"`, and it sets `data-lenis-prevent` itself)
+ * takes every wheel, eases it the same way, and at either end forwards the
+ * leftover to Lenis so the page scroll continues past it. Easing rather than
+ * writing the offset straight matters because a hard step per notch stutters
+ * beside the eased page; the hand-off matters because `data-lenis-prevent`
+ * otherwise leaves the gesture dead under the cursor.
  *
  * Touch is untouched — Lenis runs `syncTouch: false`, so native panning already
- * works and chains to the page at the ends.
+ * works and chains to the page at the ends. A rail also carries
+ * `touch-action: pan-x`, so a vertical finger drag is never claimed by it.
  */
 
 /** Matches the `lerp` Lenis runs on the document, so the two feel identical. */
@@ -104,13 +108,25 @@ export function useEasedScroll(
     };
 
     const onWheel = (event: WheelEvent) => {
-      // A horizontal rail takes whichever axis the user leaned on — trackpads
-      // send deltaX, a wheel only ever has deltaY. A vertical column only ever
-      // wants deltaY.
+      if (horizontal) {
+        // A horizontal rail only claims a gesture that is itself horizontal — a
+        // sideways trackpad swipe, or shift+wheel. A plain vertical wheel is
+        // left completely untouched: the rail carries no `data-lenis-prevent`,
+        // so the event bubbles to Lenis and the page scrolls at exactly the
+        // speed it does everywhere else. Nothing here forwards, eases or
+        // rewrites it — that is what kept scrolling over a rail feeling slower
+        // than scrolling anywhere else.
+        const lateral =
+          event.shiftKey || Math.abs(event.deltaX) > Math.abs(event.deltaY);
+        if (!lateral) return;
+        // Ours now — keep Lenis's page-level handler from also acting on it.
+        event.stopPropagation();
+      }
+
+      // Horizontal rails read deltaX; shift+wheel lands on deltaY in some
+      // browsers, so fall back to it. A vertical column only wants deltaY.
       const delta = horizontal
-        ? Math.abs(event.deltaX) > Math.abs(event.deltaY)
-          ? event.deltaX
-          : event.deltaY
+        ? event.deltaX || event.deltaY
         : event.deltaY;
       if (!delta) return;
 
@@ -137,8 +153,14 @@ export function useEasedScroll(
           current = target;
           moveTo(target);
         }
-        if (lenis) lenis.scrollTo(lenis.targetScroll + delta);
-        else window.scrollBy(0, delta);
+        // A vertical column hands the leftover gesture on to the page so the
+        // scroll continues past it. A horizontal rail has nothing sensible to
+        // do with a sideways swipe once it is at its end, and it already let
+        // every vertical wheel through, so it just stops here.
+        if (!horizontal) {
+          if (lenis) lenis.scrollTo(lenis.targetScroll + delta);
+          else window.scrollBy(0, delta);
+        }
         return;
       }
 

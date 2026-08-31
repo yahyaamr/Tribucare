@@ -35,6 +35,32 @@ const ICONS: Record<string, LucideIcon> = {
   "book-open": BookOpen,
 };
 
+type CoreValue = (typeof coreValues.items)[number];
+
+/** One core value — a rail item on desktop, a stepper card on mobile. */
+function ValueCard({ value }: { value: CoreValue }) {
+  const Icon = ICONS[value.icon];
+  return (
+    <div className="group h-full rounded-3xl border border-white/10 bg-white/[0.04] p-7 transition-colors duration-500 hover:border-brand-400/40 hover:bg-white/[0.07]">
+      <span className="icon-disc-dark size-12 group-hover:scale-110 group-hover:bg-brand-400/30 group-hover:text-white">
+        {Icon && (
+          <Icon className="size-6" strokeWidth={1.75} aria-hidden="true" />
+        )}
+      </span>
+      <h3 className="mt-5 font-display text-[1.0625rem] font-semibold leading-snug text-white">
+        {value.title}
+      </h3>
+      <p className="mt-3 text-[0.875rem] leading-relaxed text-brand-200/75">
+        {value.body}
+      </p>
+      <span
+        aria-hidden="true"
+        className="mt-6 block h-px w-8 origin-left bg-signal-500/60 transition-transform duration-500 group-hover:scale-x-[3]"
+      />
+    </div>
+  );
+}
+
 /**
  * Carries the `#core-values` anchor the nav points at. The section leads with
  * the scale figures, but its own eyebrow reads "Core Values & Support" and the
@@ -113,43 +139,20 @@ export function Reach() {
           </Reveal>
 
           <Rail aria-label={coreValues.eyebrow} className="mt-8 gap-5 pb-4">
-            {coreValues.items.map((value, i) => {
-              const Icon = ICONS[value.icon];
-              return (
-                <Reveal
-                  as="li"
-                  key={value.title}
-                  // Caps the stagger: past the fourth card the delay would be
-                  // longer than the reveal itself, and off-screen cards would
-                  // still be waiting their turn when they scroll into view.
-                  delay={Math.min(i, 4) * 70}
-                  from="scale"
-                  className="rail-item w-[17.5rem] sm:w-[19rem]"
-                >
-                  <div className="group h-full rounded-3xl border border-white/10 bg-white/[0.04] p-7 transition-colors duration-500 hover:border-brand-400/40 hover:bg-white/[0.07]">
-                    <span className="icon-disc-dark size-12 group-hover:scale-110 group-hover:bg-brand-400/30 group-hover:text-white">
-                      {Icon && (
-                        <Icon
-                          className="size-6"
-                          strokeWidth={1.75}
-                          aria-hidden="true"
-                        />
-                      )}
-                    </span>
-                    <h3 className="mt-5 font-display text-[1.0625rem] font-semibold leading-snug text-white">
-                      {value.title}
-                    </h3>
-                    <p className="mt-3 text-[0.875rem] leading-relaxed text-brand-200/75">
-                      {value.body}
-                    </p>
-                    <span
-                      aria-hidden="true"
-                      className="mt-6 block h-px w-8 origin-left bg-signal-500/60 transition-transform duration-500 group-hover:scale-x-[3]"
-                    />
-                  </div>
-                </Reveal>
-              );
-            })}
+            {coreValues.items.map((value, i) => (
+              <Reveal
+                as="li"
+                key={value.title}
+                // Caps the stagger: past the fourth card the delay would be
+                // longer than the reveal itself, and off-screen cards would
+                // still be waiting their turn when they scroll into view.
+                delay={Math.min(i, 4) * 70}
+                from="scale"
+                className="rail-item w-[17.5rem] sm:w-[19rem]"
+              >
+                <ValueCard value={value} />
+              </Reveal>
+            ))}
           </Rail>
         </div>
 

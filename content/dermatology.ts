@@ -643,10 +643,11 @@ export const dermatology = {
       alt: "A Rejuran Healer firming cream tube and cartons.",
       width: 1024,
       height: 1536,
-      // Cut-out product shots — 15% down on slide one, nudged up and out toward
-      // the section's bottom-right corner, which they scale from.
+      // Cut-out product shots — scaled up and pulled in from the section's
+      // bottom-right corner (which they scale from), then pushed down so the
+      // cluster only ever runs off the section's bottom edge, never the sides.
       imageClassName:
-        "lg:origin-bottom-right lg:-translate-y-1 lg:translate-x-0.5 lg:scale-[0.85]",
+        "lg:origin-bottom-right lg:-translate-x-[38px] lg:translate-y-[240px] lg:scale-[1.1]",
     },
     {
       src: "/brand/dermatology/derma-hero-agex.webp",
@@ -654,7 +655,7 @@ export const dermatology = {
       width: 1024,
       height: 1536,
       imageClassName:
-        "lg:origin-bottom-right lg:-translate-y-1 lg:translate-x-0.5 lg:scale-[0.85]",
+        "lg:origin-bottom-right lg:-translate-x-[38px] lg:translate-y-[240px] lg:scale-[1.1]",
     },
   ],
 

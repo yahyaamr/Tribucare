@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { Rail } from "@/components/site/rail";
+import { CardStepper } from "@/components/site/card-stepper";
 import { WaveField } from "@/components/brand/wave-field";
 import { EventCard } from "@/components/events/event-card";
 import { ProductCard } from "@/components/dermatology/product-card";
@@ -326,7 +327,7 @@ export default function DermatologyPage() {
           </div>
 
           <div className="mt-16">
-            <Reveal>
+            <Reveal className="max-lg:hidden">
               <div className="flex justify-end border-t border-white/10 pt-8">
                 <p className="text-[0.8125rem] text-brand-100/50">
                   Drag or scroll for more →
@@ -334,7 +335,22 @@ export default function DermatologyPage() {
               </div>
             </Reveal>
 
-            <Rail aria-label={events.eyebrow} className="mt-8 gap-5 pb-4">
+            {/* Below lg the rail becomes a stepped carousel — a vertical swipe
+                on a phone never drags the row sideways. */}
+            <CardStepper
+              aria-label={events.eyebrow}
+              tone="dark"
+              className="lg:hidden"
+            >
+              {events.items.map((event) => (
+                <EventCard key={event.title} event={event} sizes="100vw" />
+              ))}
+            </CardStepper>
+
+            <Rail
+              aria-label={events.eyebrow}
+              className="mt-8 gap-5 pb-4 max-lg:hidden"
+            >
               {events.items.map((event, i) => (
                 <Reveal
                   as="li"

@@ -277,6 +277,14 @@
   overscroll-behavior-x: contain;
   scrollbar-width: none;
 
+  /* Touch: hand the browser the axis split up front. `pan-x` lets a horizontal
+     drag scroll the rail; a vertical drag is never claimed by it and chains
+     straight to the page, so a finger scrolling down the site glides past a
+     rail instead of catching it and running its length first. `pinch-zoom`
+     keeps accessibility zoom working over the rail. Inert for mouse/trackpad,
+     which `useEasedScroll` still drives. */
+  touch-action: pan-x pinch-zoom;
+
   &::-webkit-scrollbar {
     display: none;
   }

@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
-import { Rail } from "@/components/site/rail";
+import { CardStepper } from "@/components/site/card-stepper";
 import { RoleCard } from "@/components/careers/role-card";
 import { careers } from "@/content/site";
 
@@ -51,23 +51,15 @@ export function Careers() {
           </Reveal>
         </div>
 
-        {/* A rail on phones so the roles cost one swipe instead of three
-            screens of scrolling, the grid from sm — same split, same card
-            width and gap as the Teams section's divisions. */}
+        {/* One role at a time with a prev/next pair on phones, so the roles
+            cost one screen and a vertical swipe never drags the row; the grid
+            from sm — same split as the Teams section's divisions. */}
         <div className="mt-16 min-w-0">
-          <Rail aria-label="Open roles" className="gap-6 sm:hidden">
-            {careers.roles.map((role, index) => (
-              <Reveal
-                as="li"
-                key={role.id}
-                delay={index * 70}
-                from="scale"
-                className="rail-item w-[18.5rem]"
-              >
-                <RoleCard role={role} href={href} />
-              </Reveal>
+          <CardStepper aria-label="Open roles" tone="dark" className="sm:hidden">
+            {careers.roles.map((role) => (
+              <RoleCard key={role.id} role={role} href={href} />
             ))}
-          </Rail>
+          </CardStepper>
 
           <ul className="hidden gap-6 sm:grid sm:grid-cols-2 lg:grid-cols-3">
             {careers.roles.map((role, index) => (
