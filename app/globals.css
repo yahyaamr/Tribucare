@@ -265,6 +265,15 @@
 @utility rail {
   display: flex;
   overflow-x: auto;
+  /* Horizontal only, explicitly. Setting one axis to `auto` computes the other
+     to `auto` as well, which made the rail a *vertical* scroller too — with
+     nothing to scroll. A finger starting a downward swipe on a card latched to
+     that empty scroller before the browser chained the gesture to the page, so
+     scrolling read as slower over a rail than anywhere else on the site.
+     `clip` rather than `hidden`: `hidden` is still a scroll container and still
+     latches, `clip` is not one at all. It clips exactly where `auto` already
+     did, so nothing looks different. */
+  overflow-y: clip;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
 

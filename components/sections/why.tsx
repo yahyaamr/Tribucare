@@ -1,8 +1,9 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal } from "@/components/site/reveal";
-import { ScrollColumn } from "@/components/site/scroll-column";
 import { LanyardCanvas } from "@/components/brand/lanyard-canvas";
-import { EventCard } from "@/components/events/event-card";
+import { EventCarousel } from "@/components/events/event-carousel";
 import { events } from "@/content/site";
 
 export function Why() {
@@ -33,21 +34,15 @@ export function Why() {
           />
         </svg>
       </div>
-      {/* Draggable 3D lanyard. Runs its own physics sim, so it is mounted
-          client-side only — see components/brand/lanyard-canvas.tsx.
 
-          It gets the whole section as its canvas: no box to hang in, so the
-          card swings and spins across the full width and height, passing behind
-          the heading and the event cards on the way. Below lg the section is
-          stacked and there is no room for that, so it drops back into the flow
-          of the grid. */}
+      {/* Draggable 3D lanyard in the background on desktop */}
       <div className="max-lg:hidden absolute inset-0 z-0">
         <LanyardCanvas enableQuery="(min-width: 1024px)" />
       </div>
 
       {/* Above the canvas, but transparent to the pointer so a drag reaches the
-          card wherever it has floated to. The event cards take their own
-          events back below. */}
+          card wherever it has floated to. The interactive children take their
+          own events back below. */}
       <Shell className="pointer-events-none relative z-10">
         <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <Reveal className="lg:col-span-7">
@@ -64,45 +59,41 @@ export function Why() {
           </Reveal>
         </div>
 
-        {/* From lg the lanyard hangs from the top of the section on a fixed
-            rope, so the card graphic settles around the section's middle. The
-            scroll column is pushed down to meet it — `lg:mt-24` on top of the
-            shared `mt-16` — so the two columns read as one centred pair rather
-            than a tall list beside a low card. */}
+        {/* 2-column layout on desktop: Left holds the 3D lanyard, Right holds the event carousel */}
         <div className="mt-16 grid gap-10 lg:mt-30 lg:grid-cols-2 lg:items-center">
-          {/* The stacked layout's home for the lanyard; from lg the full-bleed
-              layer behind this section takes over. Below lg it only renders in
-              landscape tablet viewports (real height, not just width, so tall
-              landscape phones don't qualify) — portrait and phone layouts drop
-              it entirely. */}
+          {/* Left column in tablet landscape */}
           <div className="pointer-events-auto hidden h-[40rem] [@media(orientation:landscape)_and_(min-height:600px)_and_(max-width:1023px)]:block">
-            {/* Query mirrors the class above: CSS decides which host is shown,
-                this decides which one loads 3MB of scene. They must agree. */}
             <LanyardCanvas enableQuery="(orientation: landscape) and (min-height: 600px) and (max-width: 1023px)" />
           </div>
 
-          {/* Holds the left column open, now that nothing is laid out in it. */}
-          <div aria-hidden="true" className="hidden lg:block" />
+          {/* Holds the left column open on desktop for the 3D lanyard */}
+          <div aria-hidden="true" className="hidden lg:block h-[34rem] lg:h-[40rem]" />
 
-          {/* Free-standing cards scrolling in an unframed column. `pr-3` leaves
-              the scrollbar a lane of its own so it never overlaps a card's
-              rounded edge. */}
-          <ScrollColumn
-            aria-label={events.eyebrow}
-            className="pointer-events-auto flex h-[34rem] flex-col gap-8 pr-3 lg:h-[40rem]"
+          {/* Right column: one event at a time, stepped with arrows */}
+          <Reveal
+            from="scale"
+            delay={80}
+            className="pointer-events-auto relative min-w-0 w-full max-w-[28.5rem] mx-auto lg:mx-0 lg:max-w-[28rem] xl:max-w-[29rem] lg:justify-self-center lg:-translate-x-6 xl:-translate-x-10"
           >
-            {events.items.map((event, i) => (
-              <Reveal
-                as="li"
-                key={event.title}
-                delay={Math.min(i, 4) * 80}
-                from="scale"
-                className="shrink-0"
+            <EventCarousel items={events.items} href={events.cta.href} />
+
+            {/* Centred on the card above it rather than on the section: the
+                column is offset left of centre to clear the lanyard, and a
+                button centred on the section would sit off its own card. */}
+            <div className="mt-8 flex justify-center">
+              <Link
+                href={events.cta.href}
+                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 text-[0.95rem] font-semibold text-brand-800 transition-[background-color,box-shadow] duration-300 hover:bg-brand-50 hover:shadow-[0_18px_40px_-18px_rgb(76_201_222/0.7)]"
               >
-                <EventCard event={event} />
-              </Reveal>
-            ))}
-          </ScrollColumn>
+                {events.cta.label}
+                <ArrowRight
+                  className="size-4 transition-transform duration-300 group-hover:translate-x-1"
+                  aria-hidden="true"
+                />
+              </Link>
+            </div>
+          </Reveal>
+
         </div>
       </Shell>
     </section>

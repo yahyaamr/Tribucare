@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
@@ -56,7 +59,18 @@ function CardCta({ href, label }: { href: string; label: string }) {
   );
 }
 
+const DERMATOLOGY_STACK_BRANDS = [
+  { name: "Rejuran", className: "h-5 max-w-[6.5rem]" },
+  { name: "beaumed", className: "h-4 max-w-[5.25rem]" },
+  { name: "Zimmer Medical", className: "h-3.5 max-w-[5rem]" },
+  { name: "IDS", className: "h-4.5 max-w-[3.5rem]" },
+  { name: "AGEX Beauty", className: "h-4 max-w-[5rem]" },
+  { name: "BV Laser", className: "h-4 max-w-[5.25rem]" },
+] as const;
+
 export function Expertise() {
+  const [stackExpanded, setStackExpanded] = useState(false);
+
   return (
     <section id="expertise" className="ground-light relative py-24 md:py-32">
       <Shell>
@@ -100,7 +114,7 @@ export function Expertise() {
                 { name: "MLAY", className: "h-[16px] max-w-[5.25rem]" },
                 { name: "Altesse Soin", className: "h-[22px] max-w-[7rem]" },
               ].map((item, i) => (
-                <div key={item.name} className="relative flex flex-col items-center">
+                <div key={item.name} className="group relative flex flex-col items-center">
                   <span
                     className={cn(
                       "absolute top-7 h-px bg-brand-400/45",
@@ -111,9 +125,68 @@ export function Expertise() {
                   />
                   <span className="absolute top-7 h-6 left-1/2 w-px -translate-x-1/2 bg-brand-400/45" />
                   <span className="absolute top-[50px] left-1/2 size-2 -translate-x-1/2 rounded-full bg-signal-500" />
-                  <div className="absolute top-16 left-1/2 flex h-9.5 -translate-x-1/2 items-center rounded-xl border border-brand-200/80 bg-white/90 px-4 shadow-sm backdrop-blur-md transition-all duration-300 hover:border-brand-400 hover:shadow-md">
-                    <BrandLogo name={item.name} className={item.className} />
-                  </div>
+                  {i === 0 ? (
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      aria-expanded={stackExpanded}
+                      onClick={() => setStackExpanded((prev) => !prev)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setStackExpanded((prev) => !prev);
+                        }
+                      }}
+                      className={cn(
+                        "absolute top-16 left-1/2 z-20 w-36 -translate-x-1/2 cursor-pointer select-none",
+                        stackExpanded && "is-expanded",
+                      )}
+                    >
+                      {DERMATOLOGY_STACK_BRANDS.map((brand, idx) => {
+                        const isTop = idx === 0;
+                        const zIndex = 60 - idx * 10;
+                        const defaultY = `${idx * 5}px`;
+                        const hoverY = `${idx * 26}px`;
+
+                        return (
+                          <div
+                            key={brand.name}
+                            style={
+                              {
+                                zIndex,
+                                "--default-y": defaultY,
+                                "--hover-y": hoverY,
+                              } as React.CSSProperties
+                            }
+                            className={cn(
+                              "flex h-9.5 w-full items-center justify-center rounded-xl border border-brand-200/80 bg-white shadow-sm backdrop-blur-md transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                              isTop
+                                ? "relative group-hover:border-brand-400 group-hover:shadow-md"
+                                : "absolute top-0 left-0 group-hover:border-brand-300 group-hover:shadow-md",
+                              stackExpanded
+                                ? "translate-y-[var(--hover-y)] border-brand-300 shadow-md"
+                                : "translate-y-[var(--default-y)] group-hover:translate-y-[var(--hover-y)]",
+                            )}
+                          >
+                            <BrandLogo
+                              name={brand.name}
+                              className={cn(
+                                brand.className,
+                                !isTop &&
+                                  (stackExpanded
+                                    ? "opacity-100"
+                                    : "opacity-80 transition-opacity duration-300 group-hover:opacity-100"),
+                              )}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="absolute top-16 left-1/2 flex h-9.5 w-36 -translate-x-1/2 items-center justify-center rounded-xl border border-brand-200/80 bg-white/90 px-4 shadow-sm backdrop-blur-md transition-all duration-300 hover:border-brand-400 hover:shadow-md">
+                      <BrandLogo name={item.name} className={item.className} />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -206,13 +279,13 @@ export function Expertise() {
                             available right at `lg`) — 6 × plate + 5 × gap must
                             clear that, which is what sizes the plate down from
                             what a single mark like MLAY would otherwise get. */}
-                        <ul className="mt-3.5 flex flex-wrap items-center gap-1.5">
+                        <ul className="mt-3.5 flex flex-wrap items-center gap-1.5 lg:gap-2">
                           {vertical.brands.map((brand) => {
                             const logo = brandLogos[brand];
                             return (
                               <li
                                 key={brand}
-                                className="flex h-7 w-[3.625rem] items-center justify-center rounded-xl bg-black/[0.045] transition-colors duration-300 hover:bg-brand-100/70"
+                                className="flex h-7 w-[3.625rem] items-center justify-center rounded-lg bg-black/[0.045] transition-colors duration-300 hover:bg-brand-100/70 lg:h-9 lg:w-[4.75rem] lg:rounded-lg"
                               >
                                 {logo ? (
                                   <Image
@@ -220,10 +293,10 @@ export function Expertise() {
                                     alt={brand}
                                     width={logo.width}
                                     height={logo.height}
-                                    className="max-h-5 max-w-[3.125rem] object-contain"
+                                    className="max-h-5 max-w-[3.125rem] object-contain lg:max-h-[1.625rem] lg:max-w-[4.125rem]"
                                   />
                                 ) : (
-                                  <span className="text-[0.85rem] font-semibold tracking-[0.02em] text-ink/85">
+                                  <span className="text-[0.85rem] font-semibold tracking-[0.02em] text-ink/85 lg:text-[0.95rem]">
                                     {brand}
                                   </span>
                                 )}

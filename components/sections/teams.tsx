@@ -1,28 +1,9 @@
 import Image from "next/image";
-import {
-  Megaphone,
-  TrendingUp,
-  Wrench,
-  Stethoscope,
-  ShoppingBag,
-  Truck,
-  Users,
-  CheckCircle2,
-  Sparkles,
-  type LucideIcon,
-} from "lucide-react";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
+import { Rail } from "@/components/site/rail";
+import { TeamCard } from "@/components/teams/team-card";
 import { teams } from "@/content/site";
-
-const ICONS: Record<string, LucideIcon> = {
-  Megaphone,
-  TrendingUp,
-  Wrench,
-  Stethoscope,
-  ShoppingBag,
-  Truck,
-};
 
 /**
  * The six divisions.
@@ -137,58 +118,36 @@ export function Teams() {
             </article>
           </Reveal>
 
-          {/* Right Column: 2x3 Division Cards Grid */}
-          <div className="lg:col-span-8">
-            <ul className="grid gap-6 sm:grid-cols-2">
-              {teams.map((dept, index) => {
-                const Icon = ICONS[dept.icon] ?? Users;
+          {/* Right column: a rail on phones so six cards cost one swipe
+              instead of six screens of scrolling; the 2x3 grid from sm. Both
+              render the same <TeamCard>. */}
+          <div className="min-w-0 lg:col-span-8">
+            <Rail aria-label="TribuCare divisions" className="gap-6 sm:hidden">
+              {teams.map((dept, index) => (
+                <Reveal
+                  as="li"
+                  key={dept.id}
+                  delay={Math.min(index, 4) * 70}
+                  from="scale"
+                  className="rail-item w-[18.5rem]"
+                >
+                  <TeamCard team={dept} />
+                </Reveal>
+              ))}
+            </Rail>
 
-                return (
-                  <Reveal
-                    as="li"
-                    key={dept.id}
-                    delay={index * 70}
-                    from="scale"
-                    className="h-full"
-                  >
-                    <article className="card-surface card-interactive group relative flex h-full flex-col justify-between overflow-hidden p-8">
-                      <div>
-                        <div className="flex items-center justify-between gap-4">
-                          <span className="icon-disc size-14 group-hover:scale-110 group-hover:bg-brand-700 group-hover:text-white">
-                            <Icon
-                              className="size-7"
-                              strokeWidth={1.8}
-                              aria-hidden="true"
-                            />
-                          </span>
-
-                          <span className="rounded-xl border border-brand-200/60 bg-brand-50 px-3 py-1 text-[0.75rem] font-semibold tracking-wide text-brand-800">
-                            {dept.badge}
-                          </span>
-                        </div>
-
-                        <h3 className="mt-6 font-display text-xl font-semibold tracking-tight text-ink transition-colors duration-300 group-hover:text-brand-700">
-                          {dept.name}
-                        </h3>
-
-                        <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-soft">
-                          {dept.role}
-                        </p>
-                      </div>
-
-                      <div className="mt-6 flex items-center gap-3 border-t border-brand-100/70 pt-5">
-                        <span className="flex items-center gap-1.5 text-xs font-medium text-brand-600">
-                          <span
-                            aria-hidden="true"
-                            className="size-1.5 shrink-0 rounded-full bg-signal-500"
-                          />
-                          {dept.highlight}
-                        </span>
-                      </div>
-                    </article>
-                  </Reveal>
-                );
-              })}
+            <ul className="hidden gap-6 sm:grid sm:grid-cols-2">
+              {teams.map((dept, index) => (
+                <Reveal
+                  as="li"
+                  key={dept.id}
+                  delay={index * 70}
+                  from="scale"
+                  className="h-full"
+                >
+                  <TeamCard team={dept} />
+                </Reveal>
+              ))}
             </ul>
           </div>
         </div>

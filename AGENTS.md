@@ -256,6 +256,12 @@ shows up under a real mouse or a real finger:
   difference forever and never closes the last pixels — the container rests
   short of the top with the first card clipped. Ends are also snapped within
   `EDGE` (2px) so "fully scrolled" always shows a whole card.
+- **Set `overflow-y: clip` alongside `overflow-x: auto`.** Giving one axis
+  `auto` computes the *other* to `auto` too, so a rail silently becomes a
+  vertical scroller with nothing in it. On a phone a downward swipe starting on
+  a card latches to that empty scroller before chaining to the page, and the
+  page visibly lags the finger over a rail and nowhere else. `clip`, not
+  `hidden` — `hidden` is still a scroll container and still latches.
 - **No `overscroll-behavior-y: contain`.** The wheel is already handled, so
   containing Y only stops *touch* chaining once the container is scrolled out —
   which on a phone, where a 34rem column fills most of the screen, is a dead end

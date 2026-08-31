@@ -9,6 +9,7 @@ import { WaveField } from "@/components/brand/wave-field";
 import { EventCard } from "@/components/events/event-card";
 import { ProductCard } from "@/components/dermatology/product-card";
 import { ProductVideo } from "@/components/dermatology/product-video";
+import { HeroSlideshow } from "@/components/dermatology/hero-slideshow";
 import {
   dermatology,
   productLines,
@@ -88,13 +89,12 @@ export default function DermatologyPage() {
           className="pointer-events-none absolute right-0 bottom-0 z-0 hidden h-[86%] w-[54%] lg:block"
           aria-hidden="true"
         >
-          <Image
-            src={dermatology.image.src}
-            alt=""
-            fill
-            priority
+          <HeroSlideshow
+            slides={dermatology.heroSlides}
             sizes={HERO_IMAGE_SIZES}
-            className="object-contain object-right-bottom"
+            priority
+            className="h-full w-full"
+            imageClassName="object-contain object-right-bottom"
           />
         </div>
 
@@ -168,13 +168,13 @@ export default function DermatologyPage() {
               the identical `sizes` list so the browser resolves the same
               srcset candidate and fetches the file once. */}
           <div className="mt-10 -mr-5 sm:-mr-8 lg:hidden">
-            <Image
-              src={dermatology.image.src}
+            <HeroSlideshow
+              slides={dermatology.heroSlides}
               alt={dermatology.image.alt}
-              width={dermatology.image.width}
-              height={dermatology.image.height}
+              shape="flow"
               priority
               sizes={HERO_IMAGE_SIZES}
+              className="ml-auto w-[88%]"
               // The bottom cut is taken out by masking the shot's own alpha
               // rather than laying a coloured panel over it. The ground here is
               // not flat — it carries two radial blooms and the wave field — so
@@ -182,7 +182,11 @@ export default function DermatologyPage() {
               // the section, and would band wherever it guessed wrong. Fading
               // the image to transparent instead lets whatever is actually
               // behind it show through, at any width and on any ground.
-              className="ml-auto h-auto w-[88%] max-w-none [-webkit-mask-image:linear-gradient(to_top,transparent_0,#000_24%)] [mask-image:linear-gradient(to_top,transparent_0,#000_24%)]"
+              // `object-contain object-bottom` so the slides that are not the
+              // one holding the layout keep their own aspect ratio inside its
+              // box rather than being stretched to fill it — they sit on its
+              // bottom edge, where the mask is.
+              imageClassName="h-auto w-full max-w-none object-contain object-bottom [-webkit-mask-image:linear-gradient(to_top,transparent_0,#000_24%)] [mask-image:linear-gradient(to_top,transparent_0,#000_24%)]"
             />
           </div>
 

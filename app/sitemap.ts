@@ -60,6 +60,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     })),
     {
+      url: `${siteUrl}/events`,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
       url: `${siteUrl}/blog`,
       ...(newestPost ? { lastModified: newestPost } : {}),
       changeFrequency: "weekly",

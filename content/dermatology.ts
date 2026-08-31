@@ -613,7 +613,6 @@ export const dermatology = {
     "AGEX Beauty",
     "BV Laser",
     "AMI",
-    "Kiusera",
   ],
 
   /**
@@ -623,6 +622,41 @@ export const dermatology = {
    * changes both.
    */
   image: verticals[0].image,
+
+  /**
+   * Hero slideshow. The shot above cross-fades through these in order. The hero
+   * reads the length, so adding or removing one needs no code change, and a
+   * single slide simply renders as a still.
+   *
+   * Slide one is framed to sit flush on the section's bottom edge; two and three
+   * are wider crops that park against the same corner with headroom above.
+   */
+  heroSlides: [
+    {
+      src: "/brand/dermatology/derma-hero-1.webp",
+      alt: "A clinic laser system beside a smiling model, with a South Korean flag.",
+      width: 1362,
+      height: 1155,
+    },
+    {
+      src: "/brand/dermatology/derma-hero-rejuran.webp",
+      alt: "A Rejuran Healer firming cream tube and cartons.",
+      width: 1024,
+      height: 1536,
+      // Cut-out product shots — 15% down on slide one, nudged up and out toward
+      // the section's bottom-right corner, which they scale from.
+      imageClassName:
+        "lg:origin-bottom-right lg:-translate-y-1 lg:translate-x-0.5 lg:scale-[0.85]",
+    },
+    {
+      src: "/brand/dermatology/derma-hero-agex.webp",
+      alt: "A line-up of AGEX Beauty professional skincare bottles and cartons.",
+      width: 1024,
+      height: 1536,
+      imageClassName:
+        "lg:origin-bottom-right lg:-translate-y-1 lg:translate-x-0.5 lg:scale-[0.85]",
+    },
+  ],
 
   /** Hero promo video. Empty until supplied; the hero renders without it. */
   video: "",

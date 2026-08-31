@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Calendar, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +16,7 @@ import { cn } from "@/lib/utils";
  */
 export function EventCard({
   event,
+  href,
   sizes = "(max-width: 1024px) 100vw, 42vw",
 }: {
   event: {
@@ -27,6 +29,8 @@ export function EventCard({
     body: string;
     image: string;
   };
+  /** Where the card goes. Unset renders it as a plain, unlinked card. */
+  href?: string;
   sizes?: string;
 }) {
   const upcoming = event.status === "upcoming";
@@ -60,11 +64,20 @@ export function EventCard({
             </span>
           </div>
 
-          <h3 className="mt-3 line-clamp-2 font-display text-lg leading-snug font-semibold text-ink transition-colors duration-300 group-hover:text-brand-700">
-            {event.title}
+          <h3 className="mt-3 line-clamp-2 h-13 font-display text-lg leading-snug font-semibold text-ink transition-colors duration-300 group-hover:text-brand-700">
+            {href ? (
+              <Link href={href}>
+                {/* Same stretched link as the post card: the whole card is
+                    clickable under one accessible name. */}
+                <span className="absolute inset-0 z-10" aria-hidden="true" />
+                {event.title}
+              </Link>
+            ) : (
+              event.title
+            )}
           </h3>
 
-          <p className="mt-2.5 line-clamp-3 text-sm leading-relaxed text-ink-soft">
+          <p className="mt-2.5 line-clamp-3 min-h-[4.25rem] text-sm leading-relaxed text-ink-soft">
             {event.body}
           </p>
         </div>

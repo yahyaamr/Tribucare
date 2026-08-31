@@ -4,6 +4,7 @@ import { Expertise } from "@/components/sections/expertise";
 import { Why } from "@/components/sections/why";
 import { Reach } from "@/components/sections/reach";
 import { Teams } from "@/components/sections/teams";
+import { Careers } from "@/components/sections/careers";
 import { BlogSection } from "@/components/sections/blog-section";
 import { Faq } from "@/components/sections/faq";
 import { Partner } from "@/components/sections/partner";
@@ -17,6 +18,7 @@ export default function Home() {
       <Why />
       <Reach />
       <Teams />
+      <Careers />
       <BlogSection />
       <Faq />
       <Partner />

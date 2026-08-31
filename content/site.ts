@@ -366,6 +366,7 @@ export const events = {
   headlineAccent: "shows up.",
   intro:
     "Congresses, hands-on training days, brand launches and regional exhibitions — the calendar behind the education and support our partners rely on.",
+  cta: { label: "See all events", href: "/events" },
   items: [
     {
       placeholder: true,
@@ -435,6 +436,16 @@ export const events = {
     },
   ],
 } as const;
+
+/**
+ * Filter chips on /events, derived from the events themselves rather than
+ * restated — a new `type` above shows up as a filter with no second edit, and
+ * a type that stops being used stops being offered.
+ */
+export const eventCategories = [
+  "All Events",
+  ...Array.from(new Set(events.items.map((event) => event.type))),
+];
 
 export const professionals = {
   eyebrow: "Professional Network",
@@ -619,7 +630,7 @@ export const footerNav = [
     links: [
       { label: "About", href: "/#about" },
       { label: "Our Expertise", href: "/#expertise" },
-      { label: "Events & News", href: "/#events" },
+      { label: "Events & News", href: "/events" },
       { label: "Insights & Blog", href: "/blog" },
       { label: "Partnerships", href: "/#partner" },
     ],
@@ -642,3 +653,57 @@ export const footerNav = [
     ],
   },
 ] as const;
+
+/**
+ * Careers.
+ *
+ * PLACEHOLDER — unlike everything above, the three roles below are NOT from the
+ * company-profile deck. They are stand-ins agreed with the client until the real
+ * openings are supplied, and `applyUrl` is empty until the external recruitment
+ * system's URL is known. Replace both before this goes live; the section renders
+ * the CTA conditionally, so an empty `applyUrl` leaves the button out rather
+ * than shipping a dead link.
+ *
+ * `icon` keys map to lucide components in the Careers section, same as `teams`.
+ */
+export const careers = {
+  eyebrow: "Careers",
+  headlineLead: "Build the next chapter",
+  headlineAccent: "with our tribe.",
+  intro:
+    "We are growing across Egypt and the MENA region, and we are looking for people who want to work at the meeting point of healthcare, technology and beauty.",
+  applyUrl: "",
+  cta: { label: "View all available jobs" },
+  roles: [
+    {
+      id: "sales-specialist",
+      icon: "TrendingUp",
+      title: "Sales Specialist",
+      department: "Sales Force",
+      type: "Full-time",
+      location: "Egypt",
+      blurb:
+        "Own a territory across clinics, pharmacies and retail partners, and carry our brands to the practitioners who use them every day.",
+    },
+    {
+      id: "technical-support-specialist",
+      icon: "Wrench",
+      title: "Technical Support Specialist",
+      department: "Technical Support",
+      type: "Full-time",
+      location: "Cairo, Egypt",
+      blurb:
+        "Install, service and troubleshoot professional dermatology devices, and keep our partners' clinics running without downtime.",
+    },
+    {
+      id: "operations-manager",
+      icon: "Truck",
+      title: "Operations Manager",
+      department: "Operations & Logistics",
+      type: "Full-time",
+      location: "Cairo, Egypt",
+      blurb:
+        "Run the supply chain behind the portfolio — planning, warehousing and distribution across the regions we serve.",
+    },
+  ],
+} as const;

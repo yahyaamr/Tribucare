@@ -52,27 +52,33 @@ function ValueCards({
       {values.map((value, i) => {
         const Icon = ICONS[value.icon];
         return (
+          // The card is the inner element, not the Reveal itself: a revealed
+          // element carries its own `transition` shorthand, which would replace
+          // `card-interactive`'s — snapping the border and shadow, and delaying
+          // the lift by the reveal's stagger. Same split as every other card.
           <Reveal
             as="li"
             key={value.title}
             delay={delay + i * 80}
             from="scale"
-            className="group card-surface card-interactive p-4"
+            className="h-full"
           >
-            <span className="icon-disc size-14 group-hover:scale-110 group-hover:bg-brand-100">
-              {Icon && (
-                <Icon className="size-6" strokeWidth={1.6} aria-hidden="true" />
-              )}
-            </span>
-            {/* 14px, not the design's 15px: the whole section renders ~12%
-                narrower than the source comp, and at 15px these two-word titles
-                wrap where the comp keeps them on one line. */}
-            <h3 className="mt-5 font-display text-[0.875rem] leading-snug font-semibold text-ink">
-              {value.title}
-            </h3>
-            <p className="mt-2.5 text-[0.8125rem] leading-[1.7] text-ink-soft">
-              {value.body}
-            </p>
+            <article className="group card-surface card-interactive h-full p-4">
+              <span className="icon-disc size-14 group-hover:scale-110 group-hover:bg-brand-100">
+                {Icon && (
+                  <Icon className="size-6" strokeWidth={1.6} aria-hidden="true" />
+                )}
+              </span>
+              {/* 14px, not the design's 15px: the whole section renders ~12%
+                  narrower than the source comp, and at 15px these two-word
+                  titles wrap where the comp keeps them on one line. */}
+              <h3 className="mt-5 font-display text-[0.875rem] leading-snug font-semibold text-ink">
+                {value.title}
+              </h3>
+              <p className="mt-2.5 text-[0.8125rem] leading-[1.7] text-ink-soft">
+                {value.body}
+              </p>
+            </article>
           </Reveal>
         );
       })}
