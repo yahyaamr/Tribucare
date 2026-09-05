@@ -60,6 +60,7 @@ export function TribuLogo({
   markClassName,
   alt = "TribuCare",
   priority = false,
+  sizes,
 }: {
   className?: string;
   tone?: "colour" | "light";
@@ -67,6 +68,13 @@ export function TribuLogo({
   /** Pass "" where an ancestor already names the link, so it isn't read twice. */
   alt?: string;
   priority?: boolean;
+  /**
+   * Rendered width, as a `sizes` expression. The artwork is 483px wide, so
+   * without this next/image offers 640px and 1080px candidates for a mark that
+   * renders at under 110px — the header downloaded a 1080px logo for a 32px
+   * row. Every call site knows its own height, so it states the width here.
+   */
+  sizes?: string;
 }) {
   const art = LOCKUP[tone];
 
@@ -77,6 +85,7 @@ export function TribuLogo({
       width={art.width}
       height={art.height}
       priority={priority}
+      sizes={sizes}
       className={cn(
         "h-9 w-auto object-contain",
         markClassName,

@@ -3,9 +3,13 @@ import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal } from "@/components/site/reveal";
 import { WaveField } from "@/components/brand/wave-field";
 import { Footer } from "@/components/sections/footer";
-import { partner } from "@/content/site";
+import { content, currentLocale } from "@/content/server";
+import { localePath } from "@/lib/i18n/config";
 
-export function Partner() {
+export async function Partner() {
+  const { partner, footerNav, contact, company, ui } = await content();
+  const locale = await currentLocale();
+
   return (
     <section
       id="partner"
@@ -14,7 +18,7 @@ export function Partner() {
       <WaveField
         tone="dark"
         lines={28}
-        className="absolute inset-x-0 bottom-0 h-full w-[200%] opacity-35 pointer-events-none"
+        className="absolute left-0 bottom-0 h-full w-[200%] opacity-35 pointer-events-none"
       />
 
       <Shell className="relative z-10">
@@ -40,17 +44,17 @@ export function Partner() {
           <Reveal delay={220}>
             <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
               <a
-                href={partner.primaryCta.href}
+                href={localePath(locale, partner.primaryCta.href)}
                 className="group inline-flex items-center justify-center gap-2 rounded-xl bg-white px-8 py-4 text-[0.95rem] font-semibold text-brand-800 transition-[background-color,box-shadow] duration-300 hover:bg-brand-50 hover:shadow-[0_18px_44px_-18px_rgb(76_201_222/0.75)]"
               >
                 {partner.primaryCta.label}
                 <ArrowRight
-                  className="size-4 transition-transform duration-300 group-hover:translate-x-1"
+                  className="size-4 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1"
                   aria-hidden="true"
                 />
               </a>
               <a
-                href={partner.secondaryCta.href}
+                href={localePath(locale, partner.secondaryCta.href)}
                 className="inline-flex items-center justify-center rounded-xl px-8 py-4 text-[0.95rem] font-semibold text-white ring-1 ring-inset ring-white/25 transition-colors duration-300 hover:bg-white/10 hover:ring-white/40"
               >
                 {partner.secondaryCta.label}
@@ -73,7 +77,14 @@ export function Partner() {
         </div>
       </Shell>
 
-      <Footer embedded />
+      <Footer
+        embedded
+        locale={locale}
+        footerNav={footerNav}
+        contact={contact}
+        company={company}
+        ui={ui.footer}
+      />
     </section>
   );
 }

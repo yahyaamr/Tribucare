@@ -18,7 +18,7 @@ import { Reveal } from "@/components/site/reveal";
 import { Rail } from "@/components/site/rail";
 import { Counter } from "@/components/site/counter";
 import { WaveField } from "@/components/brand/wave-field";
-import { reach, mlayChannels, coreValues } from "@/content/site";
+import { content } from "@/content/server";
 
 const ICONS: Record<string, LucideIcon> = {
   heart: Heart,
@@ -35,7 +35,9 @@ const ICONS: Record<string, LucideIcon> = {
   "book-open": BookOpen,
 };
 
-type CoreValue = (typeof coreValues.items)[number];
+import type { ContentData } from "@/content/en";
+
+type CoreValue = ContentData["coreValues"]["items"][number];
 
 /** One core value — a rail item on desktop, a stepper card on mobile. */
 function ValueCard({ value }: { value: CoreValue }) {
@@ -55,7 +57,7 @@ function ValueCard({ value }: { value: CoreValue }) {
       </p>
       <span
         aria-hidden="true"
-        className="mt-6 block h-px w-8 origin-left bg-signal-500/60 transition-transform duration-500 group-hover:scale-x-[3]"
+        className="mt-6 block h-px w-8 origin-left rtl:origin-right bg-signal-500/60 transition-transform duration-500 group-hover:scale-x-[3]"
       />
     </div>
   );
@@ -67,7 +69,9 @@ function ValueCard({ value }: { value: CoreValue }) {
  * rail below states them — it is one argument, so the anchor belongs on the
  * section rather than on the rail inside it.
  */
-export function Reach() {
+export async function Reach() {
+  const { reach, mlayChannels, coreValues, ui } = await content();
+
   return (
     <section
       id="core-values"
@@ -76,7 +80,7 @@ export function Reach() {
       <WaveField
         tone="dark"
         lines={22}
-        className="absolute inset-x-0 top-1/4 h-[70%] w-[200%] opacity-25"
+        className="absolute left-0 top-1/4 h-[70%] w-[200%] opacity-25"
       />
 
       <Shell className="relative">
@@ -84,16 +88,16 @@ export function Reach() {
           <Reveal className="lg:col-span-7">
             <Eyebrow tone="light">{coreValues.eyebrow}</Eyebrow>
             <h2 className="mt-6 font-display text-[clamp(2.125rem,4.6vw,3.5rem)] font-semibold leading-[1.03] tracking-[-0.025em] text-white text-balance">
-              Scale that a global brand{" "}
+              {ui.sections.reach.headlineLead}{" "}
               <br />
-              <span className="text-brand-300">can build a region on.</span>
+              <span className="text-brand-300">
+                {ui.sections.reach.headlineAccent}
+              </span>
             </h2>
           </Reveal>
           <Reveal className="lg:col-span-5" delay={100}>
             <p className="text-[1.0625rem] leading-relaxed text-brand-100/75">
-              Four flagship branches in Egypt&apos;s leading malls, national
-              e-commerce coverage and a team deep enough to support all three
-              verticals at once.
+{ui.sections.reach.intro}
             </p>
           </Reveal>
         </div>
@@ -133,7 +137,7 @@ export function Reach() {
           <Reveal>
             <div className="flex justify-end border-t border-white/10 pt-8">
               <p className="text-[0.8125rem] text-brand-100/50">
-                Drag or scroll for more →
+                {ui.sections.railHint}
               </p>
             </div>
           </Reveal>
@@ -161,7 +165,9 @@ export function Reach() {
             — the concrete end of the same argument. */}
         <Reveal delay={120}>
           <div className="mt-14 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-white/10 pt-8">
-            <span className="eyebrow text-brand-300">Flagship branches</span>
+            <span className="eyebrow text-brand-300">
+              {ui.sections.flagshipBranches}
+            </span>
             {mlayChannels.flagship.map((mall) => (
               <span
                 key={mall}

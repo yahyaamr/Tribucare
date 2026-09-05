@@ -4,10 +4,14 @@ import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { PostCard } from "@/components/blog/post-card";
 import { CardStepper } from "@/components/site/card-stepper";
-import { blogPosts } from "@/content/blogs";
+import { getPublishedPosts } from "@/lib/cms/posts";
+import { content, currentLocale } from "@/content/server";
+import { localePath } from "@/lib/i18n/config";
 
-export function BlogSection() {
-  const posts = blogPosts.slice(0, 3);
+export async function BlogSection() {
+  const posts = (await getPublishedPosts()).slice(0, 3);
+  const { ui } = await content();
+  const locale = await currentLocale();
 
   return (
     <section
@@ -18,19 +22,19 @@ export function BlogSection() {
         <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
             <Reveal>
-              <Eyebrow>Insights &amp; News</Eyebrow>
+              <Eyebrow>{ui.sections.blog.eyebrow}</Eyebrow>
             </Reveal>
             <LineReveal
               as="h2"
               delay={90}
               className="mt-6 font-display text-[clamp(2.125rem,4.6vw,3.5rem)] leading-[1.05] font-semibold tracking-[-0.025em] text-ink"
               lines={[
-                "Latest Clinical &",
+                ui.sections.blog.headlineLead,
                 <span
                   key="accent"
-                  className="bg-gradient-to-r from-brand-700 via-brand-600 to-circuit-500 bg-clip-text text-transparent"
+                  className="bg-gradient-to-r rtl:bg-gradient-to-l from-brand-700 via-brand-600 to-circuit-500 bg-clip-text text-transparent"
                 >
-                  Beauty Tech Insights
+                  {ui.sections.blog.headlineAccent}
                 </span>,
               ]}
             />
@@ -38,9 +42,7 @@ export function BlogSection() {
 
           <Reveal className="lg:col-span-5" delay={100} from="right">
             <p className="text-[1.0625rem] leading-relaxed text-ink-soft">
-              Stay informed with dermatological whitepapers, formulation
-              science breakdowns, and market intelligence from
-              TribuCare&apos;s specialists.
+{ui.sections.blog.intro}
             </p>
           </Reveal>
         </div>
@@ -48,9 +50,15 @@ export function BlogSection() {
         {/* Below lg the three-up grid becomes a stepped carousel — one card at
             a time with an arrow row, the same shape as the events section. */}
         <Reveal className="mt-14 lg:hidden" from="scale">
-          <CardStepper aria-label="Latest insights">
+          <CardStepper aria-label={ui.sections.blog.stepperLabel}>
             {posts.map((post) => (
-              <PostCard key={post.slug} post={post} sizes="100vw" />
+              <PostCard
+                key={post.slug}
+                post={post}
+                locale={locale}
+                minReadLabel={ui.blog.minRead}
+                sizes="100vw"
+              />
             ))}
           </CardStepper>
         </Reveal>
@@ -64,19 +72,19 @@ export function BlogSection() {
               from="scale"
               className="h-full"
             >
-              <PostCard post={post} />
+              <PostCard post={post} locale={locale} minReadLabel={ui.blog.minRead} />
             </Reveal>
           ))}
         </ul>
 
         <Reveal delay={200} className="mt-14 text-center">
           <Link
-            href="/blog"
+            href={localePath(locale, "/blog")}
             className="group inline-flex items-center gap-2.5 rounded-xl bg-brand-800 px-7 py-3.5 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:bg-brand-900 hover:shadow-lg"
           >
-            Explore TribuCare Blog &amp; Insights
+            {ui.sections.blog.cta}
             <ArrowRight
-              className="size-4 transition-transform duration-300 group-hover:translate-x-1"
+              className="size-4 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1"
               aria-hidden="true"
             />
           </Link>

@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TribuCare
 
-## Getting Started
+The TribuCare marketing site — bilingual (English at the bare URLs, Arabic
+under `/ar`), with a password-protected blog and news panel at `/admin`.
+Next.js 16, React 19, Tailwind 4.
 
-First, run the development server:
+## Getting started
 
 ```bash
+cp .env.example .env.local   # then set ADMIN_PASSWORD at minimum
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). The design system, content
+rules and component vocabulary are in [AGENTS.md](AGENTS.md) — read it before
+changing anything visual.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Configuration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Every variable is listed and explained in [.env.example](.env.example). The
+two that matter before launch are `NEXT_PUBLIC_SITE_URL` (the canonical
+domain) and `GOOGLE_SITE_VERIFICATION`.
 
-## Learn More
+## SEO & Search Console
 
-To learn more about Next.js, take a look at the following resources:
+Metadata, structured data, sitemap and the go-live checklist:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**→ [docs/seo.md](docs/seo.md)**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Blog admin
 
-## Deploy on Vercel
+The SEO team writes and publishes articles at **`/admin`** — no code, no
+redeploy. Two things need setting up once in Vercel (`ADMIN_PASSWORD` and a
+Blob store).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**→ [docs/blog-admin.md](docs/blog-admin.md)**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploying
+
+The site deploys to Vercel from `main`. Set the environment variables above in
+the project settings and redeploy — see [docs/blog-admin.md](docs/blog-admin.md)
+for the Blob store the panel needs.

@@ -3,7 +3,7 @@ import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { Rail } from "@/components/site/rail";
 import { TeamCard } from "@/components/teams/team-card";
-import { teams } from "@/content/site";
+import { content } from "@/content/server";
 
 /**
  * The six divisions.
@@ -13,7 +13,9 @@ import { teams } from "@/content/site";
  * a client component and re-rendered all six cards on every pointer enter and
  * leave — for a visual result CSS gives for free.
  */
-export function Teams() {
+export async function Teams() {
+  const { teams, ui } = await content();
+
   return (
     <section
       id="organisation"
@@ -25,8 +27,8 @@ export function Teams() {
         className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
       >
         {/* Glowing gradient mesh */}
-        <div className="absolute -top-40 right-0 size-[600px] rounded-full bg-gradient-to-br from-brand-200/30 via-brand-100/20 to-transparent blur-3xl" />
-        <div className="absolute -bottom-40 -left-20 size-[500px] rounded-full bg-gradient-to-tr from-signal-500/10 via-brand-300/15 to-transparent blur-3xl" />
+        <div className="absolute -top-40 end-0 size-[600px] rounded-full bg-gradient-to-br from-brand-200/30 via-brand-100/20 to-transparent blur-3xl" />
+        <div className="absolute -bottom-40 -start-20 size-[500px] rounded-full bg-gradient-to-tr from-signal-500/10 via-brand-300/15 to-transparent blur-3xl" />
 
         {/* Decorative background wave vectors */}
         <svg
@@ -58,7 +60,7 @@ export function Teams() {
         <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
             <Reveal>
-              <Eyebrow>Our Team</Eyebrow>
+              <Eyebrow>{ui.sections.teams.eyebrow}</Eyebrow>
             </Reveal>
             <LineReveal
               as="h2"
@@ -67,12 +69,12 @@ export function Teams() {
               // Split before the article, not after: "…powered by a" leaves
               // the "a" orphaned on its own line once the column narrows.
               lines={[
-                "Our success is powered by",
+                ui.sections.teams.headlineLead,
                 <span
                   key="accent"
-                  className="bg-gradient-to-r from-brand-700 via-brand-600 to-circuit-500 bg-clip-text text-transparent"
+                  className="bg-gradient-to-r rtl:bg-gradient-to-l from-brand-700 via-brand-600 to-circuit-500 bg-clip-text text-transparent"
                 >
-                  a dynamic team of over 100 professionals
+                  {ui.sections.teams.headlineAccent}
                 </span>,
               ]}
             />
@@ -81,10 +83,7 @@ export function Teams() {
           <Reveal className="lg:col-span-5" delay={100} from="right">
             <div className="space-y-4">
               <p className="text-[1.0625rem] leading-relaxed text-ink-soft">
-                Across multiple specialised departments, each team forms an
-                essential connection point between globally renowned healthcare
-                brands and the practitioners, clinics, and consumers we serve
-                nationwide.
+{ui.sections.teams.intro}
               </p>
             </div>
           </Reveal>
@@ -97,7 +96,7 @@ export function Teams() {
             <article className="group relative flex h-full min-h-[28rem] flex-col overflow-hidden rounded-2xl border border-brand-200/80 bg-brand-950 text-white shadow-sm transition-all duration-500 hover:shadow-xl">
               <Image
                 src="/brand/team-photo.webp"
-                alt="TribuCare Team"
+                alt={ui.sections.teams.featuredAlt}
                 fill
                 sizes="(max-width: 1024px) 100vw, 33vw"
                 className="object-cover object-center transition-transform duration-700 group-hover:scale-105 opacity-85"
@@ -106,13 +105,13 @@ export function Teams() {
 
               <div className="relative z-10 mt-auto flex flex-col gap-3 p-8">
                 <span className="self-start rounded-xl border border-white/20 bg-white/10 px-3 py-1 text-[0.75rem] font-semibold tracking-wider text-brand-200 uppercase backdrop-blur-md">
-                  100+ Professionals
+                  {ui.sections.teams.featuredBadge}
                 </span>
                 <h3 className="font-display text-2xl font-semibold text-white">
-                  TribuCare Healthcare &amp; Beauty Team
+                  {ui.sections.teams.featuredTitle}
                 </h3>
                 <p className="text-sm leading-relaxed text-brand-100/80">
-                  Dedicated experts in medical dermatology, device logistics, clinical education, and retail distribution across Egypt &amp; MENA.
+                  {ui.sections.teamsNote}
                 </p>
               </div>
             </article>
@@ -122,7 +121,7 @@ export function Teams() {
               instead of six screens of scrolling; the 2x3 grid from sm. Both
               render the same <TeamCard>. */}
           <div className="min-w-0 lg:col-span-8">
-            <Rail aria-label="TribuCare divisions" className="gap-6 sm:hidden">
+            <Rail aria-label={ui.sections.teams.railLabel} className="gap-6 sm:hidden">
               {teams.map((dept, index) => (
                 <Reveal
                   as="li"

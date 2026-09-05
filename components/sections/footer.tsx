@@ -3,15 +3,38 @@
 import { usePathname } from "next/navigation";
 import { TribuLogo } from "@/components/brand/logo";
 import { WaveField } from "@/components/brand/wave-field";
-import { footerNav, contact, company } from "@/content/site";
+import { localePath, splitLocale, type Locale } from "@/lib/i18n/config";
+import type { ContentData } from "@/content/en";
 import { cn } from "@/lib/utils";
 
 const STRIP = "h-3.5";
 const INSET = "mx-5 sm:mx-8 lg:mx-12 xl:mx-auto max-w-[78rem]";
 const NOTCH = "[--notch:1.75rem] lg:[--notch:2.5rem]";
 
-export function Footer({ embedded = false }: { embedded?: boolean }) {
-  const pathname = usePathname();
+/**
+ * Content arrives as props for the same reason the header's does: this is a
+ * client component, and the locale is a root parameter only server components
+ * can read.
+ */
+export function Footer({
+  embedded = false,
+  locale,
+  footerNav,
+  contact,
+  company,
+  ui,
+}: {
+  embedded?: boolean;
+  locale: Locale;
+  footerNav: ContentData["footerNav"];
+  contact: ContentData["contact"];
+  company: ContentData["company"];
+  ui: ContentData["ui"]["footer"];
+}) {
+  const rawPathname = usePathname();
+  // The proxy rewrites English to `/en/…`, so the home test has to run against
+  // the locale-stripped path or the footer would double up on the Arabic home.
+  const pathname = splitLocale(rawPathname ?? "/").path;
   const isHome = pathname === "/";
   const hasContact = Boolean(contact.email || contact.phone || contact.address);
 
@@ -48,10 +71,9 @@ export function Footer({ embedded = false }: { embedded?: boolean }) {
         <div className="px-6 pt-12 pb-14 sm:px-10 md:pt-16 md:pb-16 lg:px-14">
           <div className="grid gap-12 lg:grid-cols-12 lg:gap-8">
             <div className="lg:col-span-4">
-              <TribuLogo tone="colour" markClassName="h-10" />
+              <TribuLogo tone="colour" markClassName="h-10" sizes="7rem" />
               <p className="mt-6 max-w-xs text-[0.9375rem] leading-relaxed text-ink-soft">
-                A healthcare and beauty company operating under{" "}
-                {company.legalParent}.
+                {ui.operatingUnder.replace("{parent}", company.legalParent)}
               </p>
 
               {hasContact && (
@@ -85,7 +107,7 @@ export function Footer({ embedded = false }: { embedded?: boolean }) {
                   {contact.social.map((link) => (
                     <li key={link.href}>
                       <a
-                        href={link.href}
+                        href={localePath(locale, link.href)}
                         className="text-sm text-ink-soft transition-colors hover:text-brand-700"
                       >
                         {link.label}
@@ -107,7 +129,7 @@ export function Footer({ embedded = false }: { embedded?: boolean }) {
                     {column.links.map((link) => (
                       <li key={`${column.title}-${link.label}`}>
                         <a
-                          href={link.href}
+                          href={localePath(locale, link.href)}
                           className="text-[0.9375rem] text-ink-soft transition-colors hover:text-brand-700"
                         >
                           {link.label}
@@ -122,11 +144,12 @@ export function Footer({ embedded = false }: { embedded?: boolean }) {
 
           <div className="mt-16 flex flex-col gap-4 border-t border-brand-100 pt-8 text-[0.8125rem] text-ink-faint md:flex-row md:items-center md:justify-between">
             <p>
-              &copy; {new Date().getFullYear()} {company.name}. All rights reserved.
+              {ui.copyright
+                .replace("{year}", String(new Date().getFullYear()))
+                .replace("{name}", company.name)}
             </p>
-            <p className="max-w-xl md:text-right">
-              All partner brand names and marks are the property of their
-              respective owners.
+            <p className="max-w-xl md:text-end">
+{ui.trademarks}
             </p>
           </div>
         </div>
@@ -143,7 +166,7 @@ export function Footer({ embedded = false }: { embedded?: boolean }) {
       <WaveField
         tone="dark"
         lines={26}
-        className="absolute inset-x-0 bottom-0 h-[120%] w-[200%] opacity-40 pointer-events-none"
+        className="absolute left-0 bottom-0 h-[120%] w-[200%] opacity-40 pointer-events-none"
       />
       {cardContent}
     </footer>

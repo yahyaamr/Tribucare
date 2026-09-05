@@ -4,217 +4,88 @@
  * Uses 100% authentic photography from official store CDNs.
  */
 
-export type MlayProduct = {
-  slug: string;
-  name: string;
-  brand: "MLAY";
-  line: "handsets" | "accessories";
-  lineLabel: string;
-  category: string;
-  summary: string;
-  image: string;
-  url: string;
-};
+import type { BrandCollection } from "./collections";
 
-export const mlayProductLines = [
-  {
-    id: "handsets",
-    number: "01",
-    label: "IPL Hair Removal & Skin Rejuvenation Handsets",
-    blurb:
-      "Clinical-grade optical hair reduction systems equipped with sapphire ice-cooling contact plates, multi-wavelength filtration, and intelligent skin tone calibration for painless home sessions.",
-  },
-  {
-    id: "accessories",
-    number: "02",
-    label: "Specialized Replacement Lamps & Precision Lenses",
-    blurb:
-      "Interchangeable precision optical filters engineered for targeted anatomical areas — facial contours, bikini line, acne clearance, and dermal collagen renewal.",
-  },
-] as const;
+export type { BrandCollection };
 
-export const mlayProducts: MlayProduct[] = [
-  // Line 01: Handsets
+/**
+ * The MLAY catalogue, as the collections the store actually sells it in.
+ *
+ * One card per device series plus one for accessories, mirroring the
+ * `tribucare.com` menu exactly — the handles here are the ones its own
+ * navigation links to. Each series collection holds the handset in every
+ * colourway together with the precision lamps that fit it, so a reader who
+ * lands there sees the device and its consumables in one place; the page no
+ * longer has to carry a card per lamp to say so.
+ */
+export const mlayCollections: BrandCollection[] = [
   {
-    slug: "mlay-t14-pro",
+    slug: "t14-pro-series",
+    brand: "MLAY",
+    badge: "T14 Pro Series",
     name: "MLAY T14 Pro AI Smart IPL & Rejuvenation",
-    brand: "MLAY",
-    line: "handsets",
-    lineLabel: "Flagship Laser",
-    category: "Hair Removal Handsets",
     summary:
-      "Next-generation flagship system featuring 1,000,000 flashes, AI smart skin tone sensor, continuous 5°C contact cooling, and 0.5s auto-glide continuous flash mode.",
+      "Flagship system with 1,000,000 flashes, an AI smart skin tone sensor and continuous 5°C contact cooling. Four colourways, with the matching precision lamps.",
+    store: "tribucare.com",
     image: "/brand/mlay/mlay-t14-pro-real.webp",
-    url: "https://www.tribucare.com/products/mlay-t14-pro-hair-removal-elegant-black",
+    url: "https://www.tribucare.com/collections/t14-pro-series",
   },
   {
-    slug: "mlay-t14a-black",
+    slug: "t14-series",
+    brand: "MLAY",
+    badge: "T14 Series",
     name: "MLAY T14A Ice-Cooling IPL Handset",
-    brand: "MLAY",
-    line: "handsets",
-    lineLabel: "Laser Handset",
-    category: "Hair Removal Handsets",
     summary:
-      "High-speed 500,000 flash IPL device with instant contact ice-cooling conduction, 5 energy levels, and ergonomic grip in premium finish.",
+      "High-speed 500,000-flash IPL with instant contact ice-cooling conduction and 5 energy levels. Five colourways, with the matching precision lamps.",
+    store: "tribucare.com",
     image: "/brand/mlay/mlay-t14-black.webp",
-    url: "https://www.tribucare.com/products/mlay-t14a-hair-removal-elegant-black",
+    url: "https://www.tribucare.com/collections/mlay-t14-series",
   },
   {
-    slug: "mlay-t4-ice-touch",
-    name: "MLAY T4 Hair Removal with Ice-Cooling Touch",
+    slug: "t10-series",
     brand: "MLAY",
-    line: "handsets",
-    lineLabel: "Laser Handset",
-    category: "Hair Removal Handsets",
-    summary:
-      "Painless hair removal system featuring an instant cooling ceramic window, high-capacity quartz lamp, and 5 adjustable power settings.",
-    image: "/brand/mlay/mlay-t4-real.webp",
-    url: "https://www.tribucare.com/products/mlay-t4-hair-removal-with-ice-cooling-touch",
-  },
-  {
-    slug: "mlay-t10a-precision",
+    badge: "T10 Series",
     name: "MLAY T10A Precision Cooling Laser",
-    brand: "MLAY",
-    line: "handsets",
-    lineLabel: "Compact Laser",
-    category: "Hair Removal Handsets",
     summary:
-      "Compact ergonomic IPL handset with integrated cold sapphire plate designed for precise handling around facial contours and sensitive body zones.",
+      "Compact ergonomic handset with an integrated cold sapphire plate, made for precise handling around facial contours and sensitive body zones. In rose gold and black.",
+    store: "tribucare.com",
     image: "/brand/mlay/mlay-t10-real.webp",
-    url: "https://www.tribucare.com/products/mlay-t10a-hair-removal-black-copy",
+    url: "https://www.tribucare.com/collections/t10-series",
   },
   {
-    slug: "mlay-t3-multi-function",
+    slug: "t4-series",
+    brand: "MLAY",
+    badge: "T4 Series",
+    name: "MLAY T4 Hair Removal with Ice-Cooling Touch",
+    summary:
+      "Painless hair removal with an instant-cooling ceramic window, a high-capacity quartz lamp and 5 adjustable power settings.",
+    store: "tribucare.com",
+    image: "/brand/mlay/mlay-t4-real.webp",
+    url: "https://www.tribucare.com/collections/mlay-t4-series",
+  },
+  {
+    slug: "t3-series",
+    brand: "MLAY",
+    badge: "T3 Series",
     name: "MLAY T3 3-in-1 Hair Removal & Acne Treatment",
-    brand: "MLAY",
-    line: "handsets",
-    lineLabel: "3-in-1 Workstation",
-    category: "Hair Removal Handsets",
     summary:
-      "Versatile home workstation with interchangeable specialty lamp heads for long-term hair removal (HR), skin rejuvenation (SR), and acne clearance (AC).",
+      "Home workstation with interchangeable lamp heads for hair removal, skin rejuvenation and acne clearance — the handset and all five cartridges together.",
+    store: "tribucare.com",
     image: "/brand/mlay/mlay-t3-real.webp",
-    url: "https://www.tribucare.com/products/mlay-t3-hair-removal-skin-rejuvenation-acne-treatment",
-  },
-
-  // Line 02: Replacement Lamps & Lenses
-  {
-    slug: "mlay-t14-bikini-lamp",
-    name: "MLAY Bikini Precision Lamp (T14 / T14 Pro)",
-    brand: "MLAY",
-    line: "accessories",
-    lineLabel: "Precision Lamp",
-    category: "Replacement Lamps & Lenses",
-    summary:
-      "Narrow-window optical replacement head designed specifically for sensitive bikini contours with focused optical energy delivery.",
-    image: "/brand/mlay/mlay-t14-bikini-lamp.webp",
-    url: "https://www.tribucare.com/products/mlay-bikini-lamp-for-t14-pro",
+    url: "https://www.tribucare.com/collections/mlay-t3-series",
   },
   {
-    slug: "mlay-t14-face-lamp",
-    name: "MLAY Facial Precision Lamp (T14 / T14 Pro)",
+    slug: "accessories",
     brand: "MLAY",
-    line: "accessories",
-    lineLabel: "Facial Lamp",
-    category: "Replacement Lamps & Lenses",
+    badge: "Accessories",
+    name: "Replacement Lamps & Precision Lenses",
     summary:
-      "Small-aperture optical window for delicate facial areas, upper lip, chin, and cheekbones with specialized photofiltration.",
-    image: "/brand/mlay/mlay-t14-face-lamp.webp",
-    url: "https://www.tribucare.com/products/mlay-face-lamp-for-t14-pro",
-  },
-  {
-    slug: "mlay-t14-underarm-lamp",
-    name: "MLAY Underarm Precision Lamp (T14 / T14 Pro)",
-    brand: "MLAY",
-    line: "accessories",
-    lineLabel: "Precision Lens",
-    category: "Replacement Lamps & Lenses",
-    summary:
-      "Specialized concave treatment lens optimized for underarm curvature and uneven skin contact, ensuring full optical contact.",
-    image: "/brand/mlay/mlay-t14-underarm-lamp.webp",
-    url: "https://www.tribucare.com/products/mlay-underarm-lamp-for-t14-pro",
-  },
-  {
-    slug: "mlay-t14-body-lamp",
-    name: "MLAY Wide Body Lamp (T14 / T14 Pro)",
-    brand: "MLAY",
-    line: "accessories",
-    lineLabel: "Body Lamp",
-    category: "Replacement Lamps & Lenses",
-    summary:
-      "Wide-aperture replacement lamp providing broad optical coverage for fast, efficient leg and arm hair removal sessions.",
+      "Every replacement lamp and precision lens in one place — facial, bikini, underarm, beard, body, skin rejuvenation and acne clearance heads for T14 Pro, T14A and T3 handsets.",
+    store: "tribucare.com",
     image: "/brand/mlay/mlay-t14-body-lamp.webp",
-    url: "https://www.tribucare.com/products/mlay-body-lamp-for-t14-pro",
-  },
-  {
-    slug: "mlay-t14-sr-lamp",
-    name: "MLAY Skin Rejuvenation (SR) Lamp (T14 / T14 Pro)",
-    brand: "MLAY",
-    line: "accessories",
-    lineLabel: "Therapeutic Lamp",
-    category: "Replacement Lamps & Lenses",
-    summary:
-      "530nm wavelength filter stimulating dermal collagen and elastin synthesis to improve skin elasticity, pore tone, and smoothness.",
-    image: "/brand/mlay/mlay-t14-sr-lamp.webp",
-    url: "https://www.tribucare.com/products/mlay-ac-lamp-for-t14-pro-copy",
-  },
-  {
-    slug: "mlay-t14-ac-lamp",
-    name: "MLAY Acne Clearance (AC) Lamp (T14 / T14A)",
-    brand: "MLAY",
-    line: "accessories",
-    lineLabel: "Therapeutic Lamp",
-    category: "Replacement Lamps & Lenses",
-    summary:
-      "Targeted optical spectrum destroying acne-causing bacteria and calming inflammation on facial skin and upper back.",
-    image: "/brand/mlay/mlay-lamp-face.webp",
-    url: "https://www.tribucare.com/products/mlay-ac-lamp-for-t14a",
-  },
-  {
-    slug: "mlay-t3-body-lens",
-    name: "MLAY Body Hair Removal Lens (T3)",
-    brand: "MLAY",
-    line: "accessories",
-    lineLabel: "T3 Lamp Cartridge",
-    category: "Replacement Lamps & Lenses",
-    summary:
-      "High-output quartz flash cartridge providing 500,000 pulses for comprehensive full-body hair reduction on T3 workstations.",
-    image: "/brand/mlay/mlay-t3-body-lamp.webp",
-    url: "https://www.tribucare.com/products/mlay-egypt-body-lens-for-t3-ipl-device",
-  },
-  {
-    slug: "mlay-t3-sr-lens",
-    name: "MLAY Skin Rejuvenation Lens (T3)",
-    brand: "MLAY",
-    line: "accessories",
-    lineLabel: "T3 Lamp Cartridge",
-    category: "Replacement Lamps & Lenses",
-    summary:
-      "Dedicated photo-rejuvenation cartridge for fine line smoothing and dermal tone revival on T3 devices.",
-    image: "/brand/mlay/mlay-t3-sr-lamp.webp",
-    url: "https://www.tribucare.com/products/mlay-egypt-skin-rejuvination-lens-for-t3-ipl-device",
-  },
-  {
-    slug: "mlay-t3-ac-lens",
-    name: "MLAY Acne Clearance Lens (T3)",
-    brand: "MLAY",
-    line: "accessories",
-    lineLabel: "T3 Lamp Cartridge",
-    category: "Replacement Lamps & Lenses",
-    summary:
-      "Anti-inflammatory phototherapy replacement cartridge designed to clarify active breakouts on T3 systems.",
-    image: "/brand/mlay/mlay-t3-ac-lamp.webp",
-    url: "https://www.tribucare.com/products/mlay-egypt-acne-clearance-lens-for-t3-ipl-device",
+    url: "https://www.tribucare.com/collections/accessories",
   },
 ];
-
-export function mlayCategoriesFor(lineId: string) {
-  const lineProducts = mlayProducts.filter((p) => p.line === lineId);
-  const categories = Array.from(new Set(lineProducts.map((p) => p.category)));
-  return categories.map((cat) => ({
-    category: cat,
-    items: lineProducts.filter((p) => p.category === cat),
-  }));
-}
 
 export const mlay = {
   eyebrow: "Home-Use Beauty Devices",
@@ -229,6 +100,20 @@ export const mlay = {
     alt: "MLAY home-use laser device held in two hands.",
     width: 1006,
     height: 1467,
+  },
+
+  /**
+   * Hero seal. Says only what the page already says elsewhere — the exclusive
+   * agency — with no appointment date, certificate number or issuing body,
+   * none of which the deck carries.
+   */
+  seal: {
+    arcTop: "OFFICIAL DISTRIBUTOR",
+    arcBottom: "ARAB REPUBLIC OF EGYPT",
+    mark: "MLAY",
+    subline: "Exclusive Agent",
+    /** Read out to assistive tech in place of the drawn rings. */
+    ring: "Official distributor, Arab Republic of Egypt",
   },
 
   catalogue: {
@@ -287,6 +172,48 @@ export const mlay = {
         body: "Providing full device collections, replacement lamp cartridges, and expert guidance for seaside skin protection and treatment.",
       },
     ],
+  },
+
+  /**
+   * Distribution. Names only the channels the deck already states — the four
+   * flagship malls and the marketplaces and pharmacy chains listed in
+   * `mlayChannels` in content/site.ts, which the section reads directly rather
+   * than restating here. No partner counts, no store numbers, no named chains.
+   */
+  distribution: {
+    eyebrow: "Our Distribution Partners",
+    headlineLead: "One agent behind",
+    headlineAccent: "every channel in Egypt.",
+    intro:
+      "As MLAY’s exclusive agent, TribuCare runs the brand end to end — flagship mall counters, the national marketplaces, pharmacy chains and our own store — with one warranty and one support team behind every unit sold.",
+    channels: [
+      {
+        icon: "store",
+        title: "Flagship mall counters",
+        body: "Dedicated MLAY displays in Egypt’s leading malls, staffed by trained beauty advisors who run live demonstrations.",
+      },
+      {
+        icon: "shopping-cart",
+        title: "National marketplaces",
+        body: "Official listings on the country’s major e-commerce platforms, so a device ordered anywhere in Egypt arrives genuine.",
+      },
+      {
+        icon: "pill",
+        title: "Pharmacy chains",
+        body: "Major pharmacy groups carry the line, putting MLAY on the shelf where customers already buy their skincare.",
+      },
+      {
+        icon: "globe",
+        title: "The TribuCare store",
+        body: "Our own storefront carries the full catalogue direct, on the same warranty and the same local technical service.",
+      },
+    ],
+    channelsLabel: "Where you will find MLAY",
+    partner: {
+      label: "Partner with us",
+      body: "Retailers, pharmacy groups and e-commerce operators who want to carry MLAY deal with a single Egyptian agent: official stock, one price list, marketing and merchandising support, and a local service centre standing behind every unit you sell.",
+      cta: { label: "Become a distribution partner", href: "/partner" },
+    },
   },
 
   support: {

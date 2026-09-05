@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +40,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Blog CMS local storage — the Vercel Blob fallback for `next dev`.
+# Post records and uploaded images are content, not source.
+.cms-data/
+/public/uploads/

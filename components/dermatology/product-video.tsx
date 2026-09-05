@@ -76,7 +76,7 @@ export function ProductVideo({
 
           <span
             aria-hidden="true"
-            className="absolute top-1/2 left-1/2 grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-brand-800 shadow-md backdrop-blur-md transition-all duration-300 group-hover:scale-110 group-hover:bg-white"
+            className="absolute top-1/2 start-1/2 grid size-16 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-brand-800 shadow-md backdrop-blur-md transition-all duration-300 group-hover:scale-110 group-hover:bg-white"
           >
             {/* Nudged right so the triangle reads as centred in the disc. */}
             <Play className="size-6 translate-x-0.5 fill-current" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLenis } from "lenis/react";
@@ -17,7 +17,9 @@ import {
 import { cn } from "@/lib/utils";
 import { TribuLogo } from "@/components/brand/logo";
 import { ScrollProgress } from "@/components/site/scroll-progress";
-import { nav } from "@/content/site";
+import { LanguageSwitch } from "@/components/site/language-switch";
+import { localePath, splitLocale, type Locale } from "@/lib/i18n/config";
+import type { ContentData } from "@/content/en";
 
 /**
  * Section id a nav link points at, or null for a plain route.
@@ -31,13 +33,17 @@ function sectionIdOf(href: string) {
   return id || null;
 }
 
-/** Section ids the nav links point at, for active-state tracking (including hero #top). */
-const SECTION_IDS = [
-  "top",
-  ...nav
-    .map((item) => sectionIdOf(item.href))
-    .filter((id): id is string => id !== null),
-];
+/** Section ids the nav links point at, for active-state tracking (including
+ *  hero #top). Derived from the links rather than hardcoded, so adding a nav
+ *  item cannot silently lose its active state. */
+function sectionIdsOf(items: ContentData["nav"]) {
+  return [
+    "top",
+    ...items
+      .map((item) => sectionIdOf(item.href))
+      .filter((id): id is string => id !== null),
+  ];
+}
 
 /** `icon` keys in `nav`, resolved to components. */
 const ICONS: Record<string, LucideIcon> = {
@@ -96,14 +102,37 @@ const BAR_PAD = "px-5 md:px-7 lg:px-9";
 const BAR_RADIUS = "rounded-b-[1rem] lg:rounded-b-[1.25rem]";
 const NOTCH = "[--notch:1.5rem] lg:[--notch:2rem]";
 
-export function SiteNav() {
+/**
+ * The header.
+ *
+ * Content arrives as props rather than being imported: this is a client
+ * component, and `next/root-params` — how every server component here reads the
+ * locale — cannot be called from one. The site layout, which is a server
+ * component, reads the bundle and hands down the parts the header needs.
+ */
+export function SiteNav({
+  locale,
+  nav,
+  ui,
+}: {
+  locale: Locale;
+  nav: ContentData["nav"];
+  ui: ContentData["ui"];
+}) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const pathname = usePathname();
+  const rawPathname = usePathname();
   const lenis = useLenis();
+
+  // Under the proxy, `usePathname` reports the rewritten path — English pages
+  // read as `/en/…` here while the address bar shows `/…`. Every comparison
+  // below is against the locale-stripped form so both languages behave alike.
+  const pathname = splitLocale(rawPathname ?? "/").path;
+  const sectionIds = useMemo(() => sectionIdsOf(nav), [nav]);
+  const href = (path: string) => localePath(locale, path);
 
   // Reads scroll from the Lenis instance the page is actually eased by, so the
   // header's state change lands on the same frame as the content it sits over.
@@ -115,9 +144,9 @@ export function SiteNav() {
   });
 
   useEffect(() => {
-    if (SECTION_IDS.length === 0) return;
+    if (sectionIds.length === 0) return;
 
-    const sections = SECTION_IDS.map((id) =>
+    const sections = sectionIds.map((id) =>
       document.getElementById(id),
     ).filter((el): el is HTMLElement => el !== null);
     if (sections.length === 0) return;
@@ -135,7 +164,7 @@ export function SiteNav() {
 
     for (const section of sections) observer.observe(section);
     return () => observer.disconnect();
-  }, [pathname]);
+  }, [pathname, sectionIds]);
 
   useEffect(() => {
     if (!open) return;
@@ -221,8 +250,12 @@ export function SiteNav() {
             )}
           >
             <Link
-              href="/"
-              aria-label="TribuCare — home"
+              href={href("/")}
+              // The home link is in view on every page, so a prefetch here
+              // pulled the homepage's ~110KB payload on every load — on the
+              // homepage itself included, since the internal path is `/en`.
+              prefetch={false}
+              aria-label={ui.homeAria}
               className="shrink-0 rounded-md transition-transform duration-300 hover:scale-[1.03] active:scale-[0.99]"
             >
               <TribuLogo
@@ -230,10 +263,11 @@ export function SiteNav() {
                 markClassName="h-7 md:h-8"
                 alt=""
                 priority
+                sizes="(min-width: 768px) 6rem, 5rem"
               />
             </Link>
 
-            <nav aria-label="Primary" className="hidden lg:block">
+            <nav aria-label={ui.primaryNav} className="hidden lg:block">
               <ul className="flex items-center gap-1">
                 {nav.map((item) => {
                   const sectionId = sectionIdOf(item.href);
@@ -252,7 +286,7 @@ export function SiteNav() {
                   return (
                     <li key={item.href}>
                       <a
-                        href={item.href}
+                        href={href(item.href)}
                         // Named explicitly because the label is clipped to zero
                         // width while collapsed, and Chrome drops clipped text
                         // from the accessibility tree — leaving the link
@@ -294,7 +328,7 @@ export function SiteNav() {
                           )}
                         >
                           <span className="overflow-hidden">
-                            <span className="block pl-2 whitespace-nowrap">
+                            <span className="block ps-2 whitespace-nowrap">
                               {item.label}
                             </span>
                           </span>
@@ -308,11 +342,16 @@ export function SiteNav() {
 
             <div className="flex items-center gap-2">
               <Link
-                href="/partner"
+                href={href("/partner")}
                 className="hidden rounded-lg bg-brand-700 px-5 py-2.5 text-[0.875rem] font-semibold text-white transition-colors duration-300 hover:bg-brand-800 sm:inline-flex"
               >
-                Partner With Us
+                {ui.partnerCta}
               </Link>
+
+              {/* Sits between the CTA and the menu trigger so it is reachable
+                  at every width — the CTA hides below `sm`, the switch does
+                  not. */}
+              <LanguageSwitch locale={locale} label={ui.languageSwitch} />
 
               <button
                 ref={triggerRef}
@@ -320,10 +359,10 @@ export function SiteNav() {
                 onClick={() => setOpen((v) => !v)}
                 aria-expanded={open}
                 aria-controls="mobile-nav"
-                aria-label={open ? "Close menu" : "Open menu"}
+                aria-label={open ? ui.closeMenu : ui.openMenu}
                 // Matched to the CTA's 37px so the two sit in the shorter bar
                 // with the same air around them; still a 36px touch target.
-                className="-mr-1 grid size-9 place-items-center rounded-lg text-brand-800 transition-colors hover:bg-brand-50 lg:hidden"
+                className="-me-1 grid size-9 place-items-center rounded-lg text-brand-800 transition-colors hover:bg-brand-50 lg:hidden"
               >
                 {/* Both icons are mounted and cross-faded, so the swap animates
                     instead of popping. */}
@@ -380,7 +419,7 @@ export function SiteNav() {
               {/* Padding matches the bar's own, so the links stand on the same
                   gutter the logo does. */}
               <div className={cn(BAR_PAD, "pt-1 pb-5")}>
-                <nav aria-label="Primary — mobile">
+                <nav aria-label={ui.primaryNavMobile}>
                   <ul className="flex flex-col">
                     {nav.map((item, i) => {
                       // The same mark the desktop pill uses, so a link is the
@@ -408,7 +447,7 @@ export function SiteNav() {
                           }}
                         >
                           <a
-                            href={item.href}
+                            href={href(item.href)}
                             onClick={() => setOpen(false)}
                             // `items-center`, not the baseline the numerals sat
                             // on: an icon has no baseline to share with the
@@ -428,7 +467,7 @@ export function SiteNav() {
                     })}
                   </ul>
                   <Link
-                    href="/partner"
+                    href={href("/partner")}
                     onClick={() => setOpen(false)}
                     className={cn(
                       "mt-5 flex w-full items-center justify-center rounded-lg bg-brand-700 px-6 py-3.5 font-semibold text-white transition-[opacity,transform] duration-[460ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
@@ -442,7 +481,7 @@ export function SiteNav() {
                         : "0ms",
                     }}
                   >
-                    Partner With Us
+                    {ui.partnerCta}
                   </Link>
                 </nav>
               </div>

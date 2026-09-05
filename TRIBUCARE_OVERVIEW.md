@@ -134,6 +134,10 @@ than improvising.
 | `/partner` | Partnership pitch, stats, pillars, and a partner enquiry form |
 | `/blog` | Insights & Blog listing |
 | `/blog/[slug]` | Individual blog post |
+| `/news`, `/news/[slug]` | Newsroom — announcements written in the admin panel |
+| `/events` | Events calendar |
+| `/ar/…` | Every route above, in Arabic |
+| `/admin` | Password-protected panel for blog posts, news, media, authors, categories |
 
 ## Blog
 

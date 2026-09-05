@@ -42,7 +42,7 @@ export function ScrollProgress({ className }: { className?: string }) {
     >
       <div
         ref={ref}
-        className="scroll-progress h-full bg-gradient-to-r from-signal-500 to-circuit-400"
+        className="scroll-progress h-full bg-gradient-to-r rtl:bg-gradient-to-l from-signal-500 to-circuit-400"
       />
     </div>
   );

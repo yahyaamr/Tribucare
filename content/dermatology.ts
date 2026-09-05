@@ -664,6 +664,47 @@ export const dermatology = {
   videoPoster: "",
   videoTitle: "TribuCare dermatology solutions",
 
+  /**
+   * Trust block, sitting between the catalogue and the events rail. Deliberately
+   * qualitative — the deck carries no clinic counts, hospital names or customer
+   * numbers, so none are stated here. Every claim below is one the deck already
+   * makes: exclusive agency for registered European and Korean manufacturers,
+   * clinical training with delivery, and local field engineering.
+   */
+  trusted: {
+    eyebrow: "Trusted in Practice",
+    headlineLead: "Specified by the clinics",
+    headlineAccent: "and hospitals that run them daily.",
+    intro:
+      "Our systems and injectables work in dermatology clinics, aesthetic centres and hospital departments across Egypt \u2014 chosen by practitioners who stake their results on them, and kept running by the same team that installed them.",
+    points: [
+      {
+        icon: "shield-check",
+        title: "Clinically specified",
+        body: "Every system we carry is a registered medical device from a German, Italian or Korean manufacturer, selected against the protocols practitioners here actually run.",
+      },
+      {
+        icon: "graduation-cap",
+        title: "Trained before it is used",
+        body: "No device leaves without clinical training. Our trainers run the first sessions in the clinic so the team is confident from day one.",
+      },
+      {
+        icon: "life-buoy",
+        title: "Supported for its lifetime",
+        body: "Field engineers, consumables and spare parts are held locally, so a system stays in service instead of waiting on a shipment.",
+      },
+    ],
+    settingsLabel: "In daily use across",
+    settings: [
+      "Dermatology clinics",
+      "Hospital dermatology departments",
+      "Aesthetic centres",
+      "Plastic surgery practices",
+      "Laser centres",
+      "Medical spas",
+    ],
+  },
+
   catalogue: {
     eyebrow: "Product Catalogue",
     headlineLead: "Two lines,",

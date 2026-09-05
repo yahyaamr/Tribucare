@@ -16,8 +16,8 @@ import {
   LABEL_CLASS,
   type SubmitResult,
 } from "@/lib/forms";
-import { requestKinds, type RequestKind } from "@/content/dermatology";
-import { contact } from "@/content/site";
+import type { RequestKind } from "@/content/dermatology";
+import type { ContentData } from "@/content/en";
 
 const ICONS: Record<string, LucideIcon> = {
   "monitor-play": MonitorPlay,
@@ -26,23 +26,7 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 /** What each request actually asks for, so the form is not one form in three hats. */
-const PROMPTS: Record<RequestKind, { placeholder: string; submit: string }> = {
-  demo: {
-    placeholder:
-      "Which treatments you plan to offer, your clinic's location, and when you'd like the demo.",
-    submit: "Request demo",
-  },
-  quotation: {
-    placeholder:
-      "Configuration or accessories you need, quantity, and any timeline you are working to.",
-    submit: "Request quotation",
-  },
-  support: {
-    placeholder:
-      "The fault or service needed, the system's serial number if you have it, and your site address.",
-    submit: "Request support visit",
-  },
-};
+
 
 /**
  * The three product requests, and the form behind whichever is selected.
@@ -56,7 +40,17 @@ const PROMPTS: Record<RequestKind, { placeholder: string; submit: string }> = {
  * The product's name travels with the submission, so an enquiry never arrives
  * without saying what it is about.
  */
-export function ProductRequest({ productName }: { productName: string }) {
+export function ProductRequest({
+  productName,
+  requestKinds,
+  contact,
+  ui,
+}: {
+  productName: string;
+  requestKinds: ContentData["requestKinds"];
+  contact: ContentData["contact"];
+  ui: ContentData["ui"]["productRequest"];
+}) {
   const id = useId();
   const [kind, setKind] = useState<RequestKind>("demo");
   const [state, setState] = useState<"idle" | "sending" | SubmitResult>("idle");
@@ -119,7 +113,7 @@ export function ProductRequest({ productName }: { productName: string }) {
               aria-pressed={isActive}
               onClick={() => setKind(request.id)}
               className={cn(
-                "group rounded-2xl border p-4 text-left transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
+                "group rounded-2xl border p-4 text-start transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                 isActive
                   ? "border-brand-600 bg-brand-900 text-white shadow-md"
                   : "border-brand-100 bg-white text-ink hover:border-brand-300 hover:shadow-sm",
@@ -174,7 +168,7 @@ export function ProductRequest({ productName }: { productName: string }) {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor={`${id}-name`} className={LABEL_CLASS}>
-              Full name *
+              {ui.nameLabel}
             </label>
             <input
               id={`${id}-name`}
@@ -183,14 +177,14 @@ export function ProductRequest({ productName }: { productName: string }) {
               autoComplete="name"
               value={form.name}
               onChange={(e) => set("name")(e.target.value)}
-              placeholder="Dr. Jane Doe"
+              placeholder={ui.namePlaceholder}
               className={FIELD_CLASS}
             />
           </div>
 
           <div>
             <label htmlFor={`${id}-org`} className={LABEL_CLASS}>
-              Clinic / organisation *
+              {ui.orgLabel}
             </label>
             <input
               id={`${id}-org`}
@@ -199,7 +193,7 @@ export function ProductRequest({ productName }: { productName: string }) {
               autoComplete="organization"
               value={form.organization}
               onChange={(e) => set("organization")(e.target.value)}
-              placeholder="Clinic name"
+              placeholder={ui.orgPlaceholder}
               className={FIELD_CLASS}
             />
           </div>
@@ -208,7 +202,7 @@ export function ProductRequest({ productName }: { productName: string }) {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor={`${id}-email`} className={LABEL_CLASS}>
-              Work email *
+              {ui.emailLabel}
             </label>
             <input
               id={`${id}-email`}
@@ -217,14 +211,14 @@ export function ProductRequest({ productName }: { productName: string }) {
               autoComplete="email"
               value={form.email}
               onChange={(e) => set("email")(e.target.value)}
-              placeholder="doctor@clinic.com"
+              placeholder={ui.emailPlaceholder}
               className={FIELD_CLASS}
             />
           </div>
 
           <div>
             <label htmlFor={`${id}-phone`} className={LABEL_CLASS}>
-              Phone / WhatsApp *
+              {ui.phoneLabel}
             </label>
             <input
               id={`${id}-phone`}
@@ -233,7 +227,7 @@ export function ProductRequest({ productName }: { productName: string }) {
               autoComplete="tel"
               value={form.phone}
               onChange={(e) => set("phone")(e.target.value)}
-              placeholder="+20 100 000 0000"
+              placeholder={ui.phonePlaceholder}
               className={FIELD_CLASS}
             />
           </div>
@@ -248,7 +242,7 @@ export function ProductRequest({ productName }: { productName: string }) {
             rows={4}
             value={form.message}
             onChange={(e) => set("message")(e.target.value)}
-            placeholder={PROMPTS[kind].placeholder}
+            placeholder={ui.prompts[kind].placeholder}
             className={FIELD_CLASS}
           />
         </div>
@@ -258,7 +252,7 @@ export function ProductRequest({ productName }: { productName: string }) {
           disabled={state === "sending"}
           className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-800 px-6 py-4 font-semibold text-white shadow-md transition-all duration-300 hover:bg-brand-900 hover:shadow-lg disabled:pointer-events-none disabled:opacity-70"
         >
-          {state === "sending" ? "Sending…" : PROMPTS[kind].submit}
+          {state === "sending" ? ui.sending : ui.prompts[kind].submit}
           <Send className="size-4" aria-hidden="true" />
         </button>
 

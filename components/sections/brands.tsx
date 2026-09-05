@@ -2,12 +2,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
-import {
-  brandGroups,
-  brandLogos,
-  altesseLines,
-  mlayChannels,
-} from "@/content/site";
+import { content } from "@/content/server";
 
 /**
  * Official brand mark, set to a fixed height with the width left to follow.
@@ -17,7 +12,7 @@ import {
  *
  * Falls back to the brand name if a logo is ever missing from `brandLogos`.
  */
-function BrandLogo({
+async function BrandLogo({
   name,
   className,
   onDark = false,
@@ -26,6 +21,7 @@ function BrandLogo({
   className?: string;
   onDark?: boolean;
 }) {
+  const { brandLogos } = await content();
   const logo = brandLogos[name];
 
   if (!logo) {
@@ -70,13 +66,15 @@ function BrandPlate({
       <p className="text-[0.9rem] leading-relaxed text-ink-soft">{role}</p>
       <span
         aria-hidden="true"
-        className="absolute inset-x-6 bottom-0 h-px origin-left scale-x-0 bg-gradient-to-r from-signal-500 to-circuit-400 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
+        className="absolute inset-x-6 bottom-0 h-px origin-left rtl:origin-right scale-x-0 bg-gradient-to-r rtl:bg-gradient-to-l from-signal-500 to-circuit-400 transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
       />
     </article>
   );
 }
 
-export function Brands() {
+export async function Brands() {
+  const { brandGroups, altesseLines, mlayChannels, ui } = await content();
+
   const [professional, devices, skincare] = brandGroups;
 
   return (
@@ -85,25 +83,23 @@ export function Brands() {
         <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
             <Reveal>
-              <Eyebrow>Brand Ecosystem</Eyebrow>
+              <Eyebrow>{ui.sections.brands.eyebrow}</Eyebrow>
             </Reveal>
             <LineReveal
               as="h2"
               delay={90}
               className="mt-6 font-display text-[clamp(2.125rem,4.6vw,3.5rem)] font-semibold leading-[1.03] tracking-[-0.025em] text-ink"
               lines={[
-                "Global expertise.",
+                ui.sections.brands.headlineLead,
                 <span key="accent" className="text-brand-600">
-                  Local reach.
+                  {ui.sections.brands.headlineAccent}
                 </span>,
               ]}
             />
           </div>
           <Reveal className="lg:col-span-5" delay={100} from="right">
             <p className="text-[1.0625rem] leading-relaxed text-ink-soft">
-              TribuCare is not a single-brand company. It is the platform that
-              brings specialised brands — represented and owned — to
-              professionals and consumers across the region.
+{ui.sections.brands.intro}
             </p>
           </Reveal>
         </div>
@@ -164,15 +160,17 @@ export function Brands() {
                 </p>
                 <p className="mt-2 font-display text-2xl font-semibold text-brand-600">
                   EGP 100M+
-                  <span className="ml-2 align-middle text-sm font-medium text-ink-faint">
-                    annual revenue from this line
+                  <span className="ms-2 align-middle text-sm font-medium text-ink-faint">
+                    {ui.sections.brands.annualRevenue}
                   </span>
                 </p>
               </div>
 
               <div className="grid gap-8 p-8 sm:grid-cols-2 lg:col-span-3 lg:p-10">
                 <div>
-                  <p className="eyebrow text-ink-faint">Flagship branches</p>
+                  <p className="eyebrow text-ink-faint">
+                    {ui.sections.flagshipBranches}
+                  </p>
                   <ul className="mt-4 space-y-2.5">
                     {mlayChannels.flagship.map((mall) => (
                       <li
@@ -189,7 +187,9 @@ export function Brands() {
                   </ul>
                 </div>
                 <div>
-                  <p className="eyebrow text-ink-faint">Retail & e-commerce</p>
+                  <p className="eyebrow text-ink-faint">
+                    {ui.sections.retailEcommerce}
+                  </p>
                   <ul className="mt-4 space-y-2.5">
                     {mlayChannels.retail.map((channel) => (
                       <li
@@ -240,7 +240,7 @@ export function Brands() {
                     {skincare.items[0].role}
                   </p>
                   <p className="eyebrow mt-6 inline-flex rounded-xl border border-signal-500/50 px-3 py-1.5 text-signal-400">
-                    TribuCare flagship brand
+                    {ui.sections.brands.flagshipBrand}
                   </p>
                 </div>
 

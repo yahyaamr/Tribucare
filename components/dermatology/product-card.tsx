@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Building2, Layers } from "lucide-react";
-import { brandLogos } from "@/content/site";
+import { content, currentLocale } from "@/content/server";
+import { localePath } from "@/lib/i18n/config";
 import type { Product } from "@/content/dermatology";
 import { ProductPlaceholder } from "@/components/dermatology/product-placeholder";
 
@@ -19,13 +20,15 @@ import { ProductPlaceholder } from "@/components/dermatology/product-placeholder
  * yet, so a product without imagery is a card with a quiet mint band rather
  * than a broken or collapsed one.
  */
-export function ProductCard({
+export async function ProductCard({
   product,
   sizes = "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw",
 }: {
   product: Product;
   sizes?: string;
 }) {
+  const { brandLogos, ui } = await content();
+  const locale = await currentLocale();
   const logo = brandLogos[product.brand];
 
   return (
@@ -42,7 +45,7 @@ export function ProductCard({
         ) : (
           <ProductPlaceholder brand={product.brand} />
         )}
-        <span className="absolute top-3.5 left-3.5 rounded-xl bg-white/90 px-3 py-1 text-xs font-semibold text-brand-900 shadow-md backdrop-blur-md">
+        <span className="absolute top-3.5 start-3.5 rounded-xl bg-white/90 px-3 py-1 text-xs font-semibold text-brand-900 shadow-md backdrop-blur-md">
           {product.category}
         </span>
       </div>
@@ -57,12 +60,14 @@ export function ProductCard({
             <span aria-hidden="true">•</span>
             <span className="flex items-center gap-1">
               <Layers className="size-3.5" aria-hidden="true" />
-              {product.line === "devices" ? "Device" : "Injectable"}
+              {product.line === "devices"
+                ? ui.pages.lineDevice
+                : ui.pages.lineInjectable}
             </span>
           </div>
 
           <h3 className="mt-3 line-clamp-2 font-display text-lg leading-snug font-semibold text-ink transition-colors duration-300 group-hover:text-brand-700">
-            <Link href={`/dermatology/${product.slug}`}>
+            <Link href={localePath(locale, `/dermatology/${product.slug}`)}>
               {/* Stretches the link across the whole card, so the name stays the
                   single accessible name rather than adding a second link to the
                   tab order for the same destination. */}

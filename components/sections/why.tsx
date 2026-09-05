@@ -4,9 +4,13 @@ import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal } from "@/components/site/reveal";
 import { LanyardCanvas } from "@/components/brand/lanyard-canvas";
 import { EventCarousel } from "@/components/events/event-carousel";
-import { events } from "@/content/site";
+import { content, currentLocale } from "@/content/server";
+import { localePath } from "@/lib/i18n/config";
 
-export function Why() {
+export async function Why() {
+  const { events, ui } = await content();
+  const locale = await currentLocale();
+
   return (
     <section
       id="events"
@@ -15,7 +19,7 @@ export function Why() {
       {/* Decorative background T vector shape */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-24 -top-24 -z-10 w-[700px] sm:w-[950px] lg:w-[1200px] select-none text-brand-200/10 opacity-70"
+        className="pointer-events-none absolute -end-24 -top-24 -z-10 w-[700px] sm:w-[950px] lg:w-[1200px] select-none text-brand-200/10 opacity-70"
       >
         <svg
           width="970"
@@ -73,21 +77,25 @@ export function Why() {
           <Reveal
             from="scale"
             delay={80}
-            className="pointer-events-auto relative min-w-0 w-full max-w-[28.5rem] mx-auto lg:mx-0 lg:max-w-[28rem] xl:max-w-[29rem] lg:justify-self-center lg:-translate-x-6 xl:-translate-x-10"
+            className="pointer-events-auto relative min-w-0 w-full max-w-[28.5rem] mx-auto lg:mx-0 lg:max-w-[28rem] xl:max-w-[29rem] lg:justify-self-center lg:-translate-x-6 xl:-translate-x-10 rtl:lg:translate-x-6 rtl:xl:translate-x-10"
           >
-            <EventCarousel items={events.items} href={events.cta.href} />
+            <EventCarousel
+              items={events.items}
+              labels={ui.events}
+              href={localePath(locale, events.cta.href)}
+            />
 
             {/* Centred on the card above it rather than on the section: the
                 column is offset left of centre to clear the lanyard, and a
                 button centred on the section would sit off its own card. */}
             <div className="mt-8 flex justify-center">
               <Link
-                href={events.cta.href}
+                href={localePath(locale, events.cta.href)}
                 className="group inline-flex items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 text-[0.95rem] font-semibold text-brand-800 transition-[background-color,box-shadow] duration-300 hover:bg-brand-50 hover:shadow-[0_18px_40px_-18px_rgb(76_201_222/0.7)]"
               >
                 {events.cta.label}
                 <ArrowRight
-                  className="size-4 transition-transform duration-300 group-hover:translate-x-1"
+                  className="size-4 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1"
                   aria-hidden="true"
                 />
               </Link>

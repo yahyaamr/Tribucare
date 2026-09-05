@@ -4,7 +4,8 @@ import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { Floating } from "@/components/site/floating";
 import { WaveField } from "@/components/brand/wave-field";
-import { hero, verticals } from "@/content/site";
+import { content, currentLocale } from "@/content/server";
+import { localePath } from "@/lib/i18n/config";
 
 const VERTICAL_ICONS = [Stethoscope, Zap, Droplet] as const;
 
@@ -14,19 +15,29 @@ const MARK = {
   height: 1254,
 } as const;
 
+/* The mark is mirrored under RTL so the tile faces into the Arabic copy the way
+   it faces into the English. The flip rides the standalone `scale` property
+   rather than a `transform`, because both marks already have a transform in
+   play — `float-idle`'s keyframes on one, `<Floating>`'s rAF-driven pointer
+   drift on the other — and `scale` composes with those instead of replacing
+   them. */
+
 /** The mark is rendered twice (in-flow below lg, beside the copy above it) but
  *  only one is ever visible. Both carry this identical `sizes` list so the
  *  browser resolves the same srcset candidate and fetches the file once. */
 const MARK_SIZES =
   "(max-width: 1023px) 112vw, (max-width: 1439px) 68vw, (max-width: 1919px) 60vw, 45vw";
 
-export function Hero() {
+export async function Hero() {
+  const { hero, verticals } = await content();
+  const locale = await currentLocale();
+
   return (
     <section id="top" className="ground-deep relative isolate overflow-hidden">
       <WaveField
         tone="dark"
         lines={26}
-        className="absolute inset-x-0 -bottom-16 h-[58%] w-[200%] opacity-45"
+        className="absolute left-0 -bottom-16 h-[58%] w-[200%] opacity-45"
       />
 
       <Shell className="relative z-10 pt-30 pb-0 md:pt-36 lg:pt-[13.6rem]">
@@ -48,7 +59,7 @@ export function Hero() {
                 hero.headlineLead,
                 <span
                   key="accent"
-                  className="bg-gradient-to-r from-brand-200 via-circuit-300 to-brand-300 bg-clip-text text-transparent"
+                  className="bg-gradient-to-r rtl:bg-gradient-to-l from-brand-200 via-circuit-300 to-brand-300 bg-clip-text text-transparent"
                 >
                   {hero.headlineAccent}
                 </span>,
@@ -64,17 +75,17 @@ export function Hero() {
             <Reveal delay={280}>
               <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <a
-                  href={hero.primaryCta.href}
+                  href={localePath(locale, hero.primaryCta.href)}
                   className="group inline-flex items-center justify-center gap-2 rounded-xl bg-white px-7 py-4 text-[0.95rem] font-semibold text-brand-800 transition-[background-color,box-shadow] duration-300 hover:bg-brand-50 hover:shadow-[0_18px_40px_-18px_rgb(76_201_222/0.7)]"
                 >
                   {hero.primaryCta.label}
                   <ArrowRight
-                    className="size-4 transition-transform duration-300 group-hover:translate-x-1"
+                    className="size-4 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1"
                     aria-hidden="true"
                   />
                 </a>
                 <a
-                  href={hero.secondaryCta.href}
+                  href={localePath(locale, hero.secondaryCta.href)}
                   className="inline-flex items-center justify-center rounded-xl px-7 py-4 text-[0.95rem] font-semibold text-white ring-1 ring-inset ring-white/25 transition-colors duration-300 hover:bg-white/10 hover:ring-white/40"
                 >
                   {hero.secondaryCta.label}
@@ -89,7 +100,7 @@ export function Hero() {
               far wider than this column and bleed off the right edge without
               driving the hero's height — which is what keeps the three vertical
               cards inside the first screen. The distance from the copy is the
-              flex gap plus `left-3`, so it is identical at every width. */}
+              flex gap plus `start-3`, so it is identical at every width. */}
           <div className="relative hidden self-stretch lg:block lg:flex-1">
             {/* Sized by HEIGHT, not width. Centred on a copy block whose centre
                 sits ~377px down, a width-driven mark grows past the top of the
@@ -97,7 +108,7 @@ export function Hero() {
                 keeps it whole at every viewport while still running large.
                 The 4.5rem nudge below centre buys back the headroom the taller
                 mark would otherwise lose at the top. */}
-            <div className="absolute top-1/2 -left-12 h-[clamp(26.4rem,88.8vh,51.6rem)] translate-y-[calc(-50%+3.4375rem)] [perspective:1200px]">
+            <div className="absolute top-1/2 -start-12 h-[clamp(26.4rem,88.8vh,51.6rem)] translate-y-[calc(-50%+3.4375rem)] [perspective:1200px]">
               <Floating className="h-full">
                 <Image
                   src={MARK.src}
@@ -106,8 +117,9 @@ export function Hero() {
                   width={MARK.width}
                   height={MARK.height}
                   priority
+                  fetchPriority="high"
                   sizes={MARK_SIZES}
-                  className="float-idle h-full w-auto max-w-none select-none drop-shadow-[0_50px_90px_rgb(2_20_20/0.55)]"
+                  className="float-idle h-full w-auto max-w-none select-none drop-shadow-[0_50px_90px_rgb(2_20_20/0.55)] rtl:-scale-x-100"
                 />
               </Floating>
             </div>
@@ -116,7 +128,7 @@ export function Hero() {
 
         {/* Below lg the mark can't sit beside the copy, so it runs in flow at
             full width and the cards are pulled up to overlap it there too. */}
-        <div className="relative mt-10 -mr-5 -ml-5 sm:-mr-8 sm:-ml-8 lg:hidden">
+        <div className="relative mt-10 -me-5 -ms-5 sm:-me-8 sm:-ms-8 lg:hidden">
           <Image
             src={MARK.src}
             alt=""
@@ -124,10 +136,14 @@ export function Hero() {
             width={MARK.width}
             height={MARK.height}
             priority
+            // The largest element on a phone's first screen. `priority` alone
+            // preloads it; the hint also lets the browser rank it above the
+            // other early requests once discovered.
+            fetchPriority="high"
             sizes={MARK_SIZES}
             // Shallower blur radius than the desktop mark carries: this one
             // runs at 112vw, and drop-shadow cost scales with radius × area.
-            className="ml-[-6%] w-[112%] max-w-none select-none drop-shadow-[0_16px_28px_rgb(2_20_20/0.45)]"
+            className="ms-[-6%] w-[112%] max-w-none select-none drop-shadow-[0_16px_28px_rgb(2_20_20/0.45)] rtl:-scale-x-100"
           />
         </div>
 
@@ -172,7 +188,7 @@ export function Hero() {
                       circuit language, reused as the card's affordance. */}
                   <span
                     aria-hidden="true"
-                    className="mt-1 block h-px w-full origin-left scale-x-0 bg-gradient-to-r from-signal-500 to-transparent transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
+                    className="mt-1 block h-px w-full origin-left rtl:origin-right scale-x-0 bg-gradient-to-r rtl:bg-gradient-to-l from-signal-500 to-transparent transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-x-100"
                   />
                 </a>
               </Reveal>

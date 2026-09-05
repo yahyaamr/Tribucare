@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Calendar, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { ContentData } from "@/content/en";
 
 /**
  * The event card.
@@ -16,9 +17,14 @@ import { cn } from "@/lib/utils";
  */
 export function EventCard({
   event,
+  labels,
   href,
   sizes = "(max-width: 1024px) 100vw, 42vw",
 }: {
+  /** The two status words. A prop rather than a lookup because this card is
+   *  also rendered from inside the client carousel, which cannot read the
+   *  locale for itself. */
+  labels: ContentData["ui"]["events"];
   event: {
     icon: string;
     status: string;
@@ -45,7 +51,7 @@ export function EventCard({
           sizes={sizes}
           className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
         />
-        <span className="absolute top-3.5 left-3.5 rounded-xl bg-white/90 px-3 py-1 text-xs font-semibold text-brand-900 shadow-md backdrop-blur-md">
+        <span className="absolute top-3.5 start-3.5 rounded-xl bg-white/90 px-3 py-1 text-xs font-semibold text-brand-900 shadow-md backdrop-blur-md">
           {event.type}
         </span>
       </div>
@@ -94,7 +100,7 @@ export function EventCard({
                 upcoming ? "bg-signal-500" : "bg-brand-200",
               )}
             />
-            {upcoming ? "Upcoming" : "Past event"}
+            {upcoming ? labels.upcoming : labels.past}
           </span>
         </div>
       </div>

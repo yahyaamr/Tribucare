@@ -5,7 +5,7 @@ import { Reveal } from "@/components/site/reveal";
 import { Parallax } from "@/components/site/parallax";
 import { Rise } from "@/components/site/rise";
 import { WaveField } from "@/components/brand/wave-field";
-import { missionVision } from "@/content/site";
+import { content } from "@/content/server";
 
 const ICONS: Record<string, LucideIcon> = {
   target: Target,
@@ -91,7 +91,9 @@ function ValueCards({
  * its headline and closes on its value cards, the vision does the reverse, so
  * the two card rows sit diagonally opposite each other.
  */
-export function MissionVision() {
+export async function MissionVision() {
+  const { missionVision } = await content();
+
   const { mission, vision, media } = missionVision;
 
   return (
@@ -175,7 +177,6 @@ export function MissionVision() {
                 src={media.figure.src}
                 alt={media.figure.alt}
                 fill
-                priority
                 sizes={MEDIA_SIZES}
                 className="object-contain"
               />

@@ -3,7 +3,7 @@ import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { CardStepper } from "@/components/site/card-stepper";
 import { RoleCard } from "@/components/careers/role-card";
-import { careers } from "@/content/site";
+import { content } from "@/content/server";
 
 /**
  * Open roles.
@@ -17,7 +17,9 @@ import { careers } from "@/content/site";
  * cards rather than dead links — but the CTA always shows, falling back to this
  * section's own anchor so it never 404s. Set `applyUrl` and both point out.
  */
-export function Careers() {
+export async function Careers() {
+  const { careers } = await content();
+
   const href = careers.applyUrl || undefined;
 
   return (
@@ -86,7 +88,7 @@ export function Careers() {
             >
               {careers.cta.label}
               <ArrowRight
-                className="size-4 transition-transform duration-300 group-hover:translate-x-1"
+                className="size-4 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1"
                 aria-hidden="true"
               />
             </a>

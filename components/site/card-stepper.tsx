@@ -64,7 +64,7 @@ export function CardStepper({
             type="button"
             onClick={() => step(-1)}
             aria-label="Previous card"
-            className={cn(arrow, "hover:-translate-x-0.5")}
+            className={cn(arrow, "hover:-translate-x-0.5 rtl:hover:translate-x-0.5")}
           >
             <ArrowLeft className="size-4.5" aria-hidden="true" />
           </button>
@@ -72,7 +72,7 @@ export function CardStepper({
             type="button"
             onClick={() => step(1)}
             aria-label="Next card"
-            className={cn(arrow, "hover:translate-x-0.5")}
+            className={cn(arrow, "hover:translate-x-0.5 rtl:hover:-translate-x-0.5")}
           >
             <ArrowRight className="size-4.5" aria-hidden="true" />
           </button>

@@ -1,7 +1,9 @@
 import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { company, hero } from "@/content/site";
+// This default OG card sits outside `[lang]`, so it uses the English bundle.
+// Arabic pages get their own title and description from `generateMetadata`.
+import { getContent } from "@/content";
 
 /**
  * The site-wide social card.
@@ -19,6 +21,8 @@ import { company, hero } from "@/content/site";
  * parse, and pulling a static .ttf into the repo just for this card is a poor
  * trade. The shield and the brand palette carry the identity instead.
  */
+
+const { company, hero } = getContent();
 
 export const alt = `${company.name} — ${company.tagline}`;
 export const size = { width: 1200, height: 630 };

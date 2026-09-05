@@ -38,7 +38,10 @@
   /* Ink — teal-black, never pure black */
   --color-ink: #072a2a;
   --color-ink-soft: #3c5b5b;
-  --color-ink-faint: #6b8687;
+  /* Darkened from #6b8687, which sat at 3.9:1 on white — under the 4.5:1 WCAG
+     AA floor for the 12–13px meta text it is used on. 4.9:1 on white, 4.6:1 on
+     brand-50. Same hue; only the tier's depth moved. */
+  --color-ink-faint: #5b7576;
 
   --font-display: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-figtree), ui-sans-serif, system-ui, sans-serif;
@@ -775,4 +778,72 @@ html.lenis body {
     opacity: 1;
     transform: none;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Right-to-left
+   ---------------------------------------------------------------------------
+   Everything that can be expressed logically already is — the spacing, inset
+   and border utilities across the codebase are `ms/me`, `ps/pe`, `start/end`,
+   so `dir="rtl"` mirrors the layout on its own. What is left is the handful of
+   things CSS logical properties do not cover.
+   ------------------------------------------------------------------------- */
+
+/* Outfit and Figtree carry no Arabic glyphs. Rebinding the two font tokens
+   under RTL means every `font-display` and `font-sans` in the codebase renders
+   Arabic in Cairo without a single component knowing which language it is in —
+   and without the fallback-to-system-font look that gives bilingual sites away.
+   The Latin faces stay in the stack for brand names and numerals, which appear
+   inside Arabic copy unchanged. */
+[dir="rtl"] {
+  --font-display: var(--font-cairo), var(--font-outfit), ui-sans-serif,
+    system-ui, sans-serif;
+  --font-sans: var(--font-cairo), var(--font-figtree), ui-sans-serif, system-ui,
+    sans-serif;
+}
+
+/* The `eyebrow` utility is mono and uppercase — both meaningless in Arabic,
+   where there is no letter case and a monospaced Latin face has no Arabic
+   equivalent worth using. It falls back to the body face at a slightly heavier
+   weight, keeping the annotation's role without the Latin typographic device. */
+[dir="rtl"] .eyebrow {
+  font-family: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 600;
+}
+
+/* The seal's curved lettering is the `eyebrow` problem on a path: a monospaced
+   Latin face has no Arabic to render, and letter-spacing is actively harmful in
+   Arabic — it prises apart letters that are meant to join, so a spaced word
+   stops being a word. Same remedy as `.eyebrow`, applied to the SVG text.
+   A rule beats the SVG presentation attributes the component sets. */
+[dir="rtl"] .seal-arc {
+  font-family: var(--font-cairo), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0;
+}
+
+/* Sized up a little from the Latin values. The Latin arcs are set in caps,
+   which are all one height and legible small; Arabic carries its meaning in
+   ascenders, descenders and dots that the same point size loses — the lower
+   arc at 8px in particular. */
+[dir="rtl"] .seal-arc-top {
+  font-size: 12.5px;
+}
+[dir="rtl"] .seal-arc-bottom {
+  font-size: 9.5px;
+}
+
+/* Arrows and chevrons point the way the language reads. Lucide stamps a class
+   per icon, so the directional ones can be mirrored globally rather than each
+   of the ~25 call sites being given a variant by hand. `scaleX` rather than a
+   rotation so the stroke weight and any vertical asymmetry are preserved. */
+[dir="rtl"] .lucide-arrow-right,
+[dir="rtl"] .lucide-arrow-left,
+[dir="rtl"] .lucide-arrow-up-right,
+[dir="rtl"] .lucide-chevron-right,
+[dir="rtl"] .lucide-chevron-left,
+[dir="rtl"] .lucide-move-right,
+[dir="rtl"] .lucide-move-left {
+  transform: scaleX(-1);
 }

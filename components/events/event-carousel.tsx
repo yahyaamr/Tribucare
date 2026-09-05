@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { EventCard } from "@/components/events/event-card";
 import { cn } from "@/lib/utils";
+import type { ContentData } from "@/content/en";
 
 type Event = React.ComponentProps<typeof EventCard>["event"];
 
@@ -18,7 +19,9 @@ type Event = React.ComponentProps<typeof EventCard>["event"];
 export function EventCarousel({
   items,
   href,
+  labels,
 }: {
+  labels: ContentData["ui"]["events"];
   items: readonly Event[];
   /** Passed straight to the card, so the whole card is a link. */
   href?: string;
@@ -46,7 +49,7 @@ export function EventCarousel({
             type="button"
             onClick={() => step(-1)}
             aria-label="Previous event"
-            className="icon-disc-dark size-11 hover:-translate-x-0.5 hover:bg-brand-600/40 hover:text-white"
+            className="icon-disc-dark size-11 hover:-translate-x-0.5 rtl:hover:translate-x-0.5 hover:bg-brand-600/40 hover:text-white"
           >
             <ArrowLeft className="size-4.5" aria-hidden="true" />
           </button>
@@ -54,7 +57,7 @@ export function EventCarousel({
             type="button"
             onClick={() => step(1)}
             aria-label="Next event"
-            className="icon-disc-dark size-11 hover:translate-x-0.5 hover:bg-brand-600/40 hover:text-white"
+            className="icon-disc-dark size-11 hover:translate-x-0.5 rtl:hover:-translate-x-0.5 hover:bg-brand-600/40 hover:text-white"
           >
             <ArrowRight className="size-4.5" aria-hidden="true" />
           </button>
@@ -69,6 +72,7 @@ export function EventCarousel({
         )}
       >
         <EventCard
+          labels={labels}
           event={items[index]}
           href={href}
           sizes="(max-width: 1024px) 100vw, 30rem"

@@ -366,7 +366,7 @@ export const events = {
   headlineAccent: "shows up.",
   intro:
     "Congresses, hands-on training days, brand launches and regional exhibitions — the calendar behind the education and support our partners rely on.",
-  cta: { label: "See all events", href: "/events" },
+  cta: { label: "See all events", href: "/news" },
   items: [
     {
       placeholder: true,
@@ -611,6 +611,116 @@ export const partner = {
  * The company profile provided did not include a contact slide, so nothing is
  * invented here. Each field renders only when filled in.
  */
+/**
+ * The four figures across the top of /partner. Moved out of the route file for
+ * the same reason as the pillars below: copy in a component cannot be
+ * translated.
+ */
+export const partnerStats = [
+  {
+    kicker: "MIC Heritage",
+    kickerTone: "text-signal-600",
+    value: "40+ Years",
+    detail: "Group legacy in healthcare & industrial investments.",
+  },
+  {
+    kicker: "Workforce",
+    kickerTone: "text-brand-600",
+    value: "100+ Pros",
+    detail: "Across 6 specialised divisions nationwide.",
+  },
+  {
+    kicker: "Field Presence",
+    kickerTone: "text-signal-600",
+    value: "35+ Sales Reps",
+    detail: "Full coverage across all governorates of Egypt.",
+  },
+  {
+    kicker: "Exclusive Agency",
+    kickerTone: "text-brand-600",
+    value: "8 Global Brands",
+    detail: "German, Italian, Korean & Chinese leaders.",
+  },
+] as const;
+
+/**
+ * Partnership pillars, one per audience on /partner.
+ *
+ * Moved here out of `app/(site)/[lang]/partner/pillars.tsx`, where they were
+ * written directly into the component. Copy in a component cannot be
+ * translated and breaks this file's role as the single source of truth — see
+ * the sourcing rule at the top.
+ *
+ * `icon` keys resolve to lucide components in the section, as everywhere else.
+ */
+export const partnerPillars = [
+  {
+    id: "global",
+    icon: "globe",
+    title: "Global Brand Partners",
+    subtitle: "Exclusive Agency & Regional Market Entry",
+    description:
+      "We serve as the exclusive agent in Egypt for world-leading German, Italian, and Korean medical aesthetics and skincare brands, navigating registration, market positioning, and commercial launch.",
+    highlights: [
+      "Regulatory Clearance",
+      "Strategic Brand Positioning",
+      "Nationwide Distribution",
+    ],
+  },
+  {
+    id: "physicians",
+    icon: "stethoscope",
+    title: "Dermatologists & Physicians",
+    subtitle: "Clinical Masterclasses & Certified Education",
+    description:
+      "Our relationship with physicians extends far beyond product supply. We provide hands-on clinical workshops, anatomical mapping, and injection protocols led by certified trainers.",
+    highlights: [
+      "Continuous Medical Education",
+      "Device Masterclasses",
+      "Protocol Support",
+    ],
+  },
+  {
+    id: "clinics",
+    icon: "building",
+    title: "Clinics & Aesthetic Centres",
+    subtitle: "Advanced Technology & 24/7 Technical Service",
+    description:
+      "Equipping aesthetic clinics with cutting-edge energy-based systems (Zimmer, Rejuran, BV Laser), supported by rapid-response field engineers maintaining zero downtime.",
+    highlights: [
+      "24/7 Technical Uptime",
+      "Preventive Maintenance",
+      "Clinical Integration",
+    ],
+  },
+  {
+    id: "retail",
+    icon: "shopping-bag",
+    title: "Retail & E-commerce Partners",
+    subtitle: "Flagship Retail & Multi-Channel Scale",
+    description:
+      "Distributing consumer beauty tech (MLAY) and skincare across flagship shopping malls (City Stars, Mall of Arabia) and leading online channels (Amazon, Noon, Jumia).",
+    highlights: [
+      "Flagship Mall Outlets",
+      "Top Marketplace Growth",
+      "D2C Fulfillment",
+    ],
+  },
+  {
+    id: "distributors",
+    icon: "truck",
+    title: "Regional Distributors",
+    subtitle: "MENA Supply Chain & Inventory Fulfillment",
+    description:
+      "Building strategic distribution networks across North Africa and the Middle East backed by Mondial Investissement Corporation's 40+ year operational heritage.",
+    highlights: [
+      "MENA Logistics Network",
+      "Warehousing Scale",
+      "Strategic Growth",
+    ],
+  },
+] as const;
+
 export const contact: {
   email: string;
   phone: string;

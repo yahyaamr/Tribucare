@@ -1,12 +1,15 @@
 import { Plus } from "lucide-react";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
-import { faq } from "@/content/site";
+import { content } from "@/content/server";
+import { JsonLd } from "@/components/site/json-ld";
 
 /** Native <details> rather than state: the accordion works before hydration and
  *  without JavaScript, which the rest of the page's progressive-enhancement
  *  approach also assumes. */
-export function Faq() {
+export async function Faq() {
+  const { faq } = await content();
+
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -22,10 +25,7 @@ export function Faq() {
       id="faq"
       className="relative isolate overflow-hidden bg-brand-50/60 py-24 md:py-32"
     >
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
+      <JsonLd data={faqSchema} />
 
       <Shell>
         <div className="grid gap-10 lg:grid-cols-12 lg:gap-14">
@@ -43,7 +43,7 @@ export function Faq() {
                   faq.headlineLead,
                   <span
                     key="accent"
-                    className="bg-gradient-to-r from-brand-700 via-brand-600 to-circuit-500 bg-clip-text text-transparent"
+                    className="bg-gradient-to-r rtl:bg-gradient-to-l from-brand-700 via-brand-600 to-circuit-500 bg-clip-text text-transparent"
                   >
                     {faq.headlineAccent}
                   </span>,
@@ -73,7 +73,7 @@ export function Faq() {
                       <Plus className="size-4" strokeWidth={2} />
                     </span>
                   </summary>
-                  <p className="max-w-xl pr-13 pb-7 text-[0.9375rem] leading-relaxed text-ink-soft">
+                  <p className="max-w-xl pe-13 pb-7 text-[0.9375rem] leading-relaxed text-ink-soft">
                     {item.a}
                   </p>
                 </details>

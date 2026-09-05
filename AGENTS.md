@@ -76,31 +76,55 @@ worth more damage than one question.
 ## Architecture
 
 ```
-app/                    routes only — thin, compose sections
-  page.tsx              homepage = ordered list of <Section /> components
-  partner/, blog/       secondary routes, same section vocabulary
+app/
+  (site)/[lang]/        the public site — ONE route tree serves both languages
+    layout.tsx          fonts, metadata, nav, footer, smooth scroll, site JSON-LD
+    page.tsx            homepage = ordered list of <Section /> components
+    dermatology/ mlay/ altesse-soin/ partner/ blog/ news/ events/
+    not-found.tsx       branded 404; [...rest]/page.tsx routes unknown paths to it
+  (admin)/admin/        blog + news CMS panel. Own root layout, cookie language.
+  api/admin/            the panel's JSON API — every handler calls requireSession
   globals.css           ALL design tokens, utilities, keyframes. Single source.
-  layout.tsx            fonts, metadata, nav, footer, smooth scroll
-  sitemap.ts robots.ts opengraph-image.tsx    SEO surface
+  sitemap.ts robots.ts manifest.ts opengraph-image.tsx    SEO surface
+proxy.ts                locale routing (/x → /en/x rewrite, /ar/x passes,
+                        /en/x → /x 308) and the admin redirect
 components/
   sections/             one file per page section, named export, no props
   site/                 layout + motion primitives (Shell, Eyebrow, Reveal, …)
-  brand/                logo, wave-field, lanyard (3D)
+                        json-ld.tsx — the only way to emit structured data
+  brand/                logo, brand-plate, wave-field, lanyard (3D)
   ui/                   shadcn primitives — button only. Retuned via CSS vars.
-  blog/                 post-card, newsletter
+  blog/ news/ events/   post-card (canonical), news-card, event-card, views
+  admin/                the panel's UI
 content/
-  site.ts               ALL marketing copy. Typed `as const`.
-  blogs.ts              blog posts + categories
+  site.ts dermatology.ts mlay.ts altesse.ts   ALL marketing copy. `as const`.
+  blogs.ts              seed for the CMS store — not read by the site
+  en/index.ts           the English bundle, plus `ui` and `meta` strings
+  ar/                   Arabic — a deep OVERRIDE of English, never a copy
+  index.ts server.ts    getContent(locale); content() / currentLocale()
 lib/
+  seo.ts                pageMetadata() + every schema.org builder
   site.ts               canonical siteUrl resolution
-  utils.ts              cn()
-  forms.ts              form helpers
+  i18n/                 locales, URL shapes, admin language cookie
+  cms/                  store, posts, news, authors, categories, auth
+  forms.ts utils.ts
 ```
 
 **Rules that follow from this:**
 
 - Copy never gets hardcoded in a component. It goes in `content/site.ts` and
-  is imported. New section → new export in `content/site.ts`.
+  is imported. New section → new export in `content/site.ts`, and an Arabic
+  override for its strings in `content/ar/`. Arrays merge by index, so keep
+  the order identical to the English file.
+- Server components read content with `await content()` from
+  `content/server.ts`; client components receive what they need as props.
+  Internal links go through `localePath(locale, path)` so both languages stay
+  on the same page.
+- Every route's `generateMetadata` returns `pageMetadata({...})` from
+  `lib/seo.ts`. Never hand-write `openGraph`, `twitter` or `alternates` — Next
+  replaces those keys wholesale, and a page that sets one loses the rest.
+- Structured data goes through `<JsonLd data={...} />` with a builder from
+  `lib/seo.ts`. Never an inline `<script type="application/ld+json">`.
 - Design values never get hardcoded either. Use the tokens.
 - Sections take no props. They read their own content and render.
 - A new page is a route file that composes existing section components, or new

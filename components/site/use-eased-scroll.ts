@@ -25,6 +25,14 @@ import { useLenis } from "lenis/react";
  * Touch is untouched — Lenis runs `syncTouch: false`, so native panning already
  * works and chains to the page at the ends. A rail also carries
  * `touch-action: pan-x`, so a vertical finger drag is never claimed by it.
+ *
+ * **Everything below works in a logical 0 → max space, not in `scrollLeft`.**
+ * Under `direction: rtl` a horizontal scroller starts at 0 on its *right* edge
+ * and runs *negative* to `-(scrollWidth - clientWidth)`. Written against
+ * `scrollLeft` directly, `clamp()` pinned every position to 0 and the rail
+ * could not be moved at all — by wheel, by drag or by either end check. One
+ * `AXIS_SIGN` conversion on read and write keeps the rest of this file in the
+ * coordinate space it was written for, in both directions.
  */
 
 /** Matches the `lerp` Lenis runs on the document, so the two feel identical. */
@@ -60,9 +68,21 @@ export function useEasedScroll(
       "(prefers-reduced-motion: reduce)",
     ).matches;
 
-    const position = () => (horizontal ? el.scrollLeft : el.scrollTop);
+    /**
+     * +1 where the scroll offset counts up from the start, -1 where it counts
+     * down. Only a horizontal scroller in an RTL container is the latter: it
+     * reports 0 at the right-hand start and negative offsets from there, which
+     * is the CSSOM behaviour every current browser implements. Vertical scroll
+     * has no such flip.
+     */
+    const sign =
+      horizontal && getComputedStyle(el).direction === "rtl" ? -1 : 1;
+
+    /** Distance from the start, always positive — whichever way the DOM counts. */
+    const position = () =>
+      horizontal ? sign * el.scrollLeft : el.scrollTop;
     const moveTo = (value: number) => {
-      if (horizontal) el.scrollLeft = value;
+      if (horizontal) el.scrollLeft = sign * value;
       else el.scrollTop = value;
     };
     const maxScroll = () =>
@@ -125,9 +145,14 @@ export function useEasedScroll(
 
       // Horizontal rails read deltaX; shift+wheel lands on deltaY in some
       // browsers, so fall back to it. A vertical column only wants deltaY.
-      const delta = horizontal
-        ? event.deltaX || event.deltaY
-        : event.deltaY;
+      //
+      // A wheel delta is physical — positive moves the view right — so it needs
+      // the same conversion as the offset to become "distance further from the
+      // start". In RTL that flips: revealing the next card means moving the
+      // view *left*, which is exactly what a native RTL scroller does with the
+      // same gesture.
+      const delta =
+        sign * (horizontal ? event.deltaX || event.deltaY : event.deltaY);
       if (!delta) return;
 
       event.preventDefault();
@@ -158,6 +183,7 @@ export function useEasedScroll(
         // do with a sideways swipe once it is at its end, and it already let
         // every vertical wheel through, so it just stops here.
         if (!horizontal) {
+          // Vertical only, where `sign` is 1 and `delta` is already physical.
           if (lenis) lenis.scrollTo(lenis.targetScroll + delta);
           else window.scrollBy(0, delta);
         }
@@ -209,7 +235,10 @@ export function useEasedScroll(
       if (!dragging) return;
       const travel = (horizontal ? event.clientX : event.clientY) - startPointer;
       if (Math.abs(travel) > 3) moved = true;
-      current = clamp(startOffset - travel);
+      // Same conversion: the cursor moves in physical pixels, `current` counts
+      // from the start. Dragging right in an RTL rail pulls the next card in,
+      // just as dragging left does in an LTR one.
+      current = clamp(startOffset - sign * travel);
       moveTo(current);
       // Keep the wheel's target in step, or the next notch would jump back to
       // wherever the container was before the drag.

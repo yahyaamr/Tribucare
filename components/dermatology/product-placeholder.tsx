@@ -1,6 +1,6 @@
 import Image from "next/image";
-import { brandLogos } from "@/content/site";
 import { cn } from "@/lib/utils";
+import { content } from "@/content/server";
 
 /**
  * Stands in for a product shot until TribuCare supplies one.
@@ -16,13 +16,15 @@ import { cn } from "@/lib/utils";
  * product the card is for, and nobody can mistake it for the product. Supply a
  * real `image` and it disappears on its own — see content/dermatology.ts.
  */
-export function ProductPlaceholder({
+export async function ProductPlaceholder({
   brand,
   className,
 }: {
   brand: string;
   className?: string;
 }) {
+  const { brandLogos } = await content();
+
   const logo = brandLogos[brand];
 
   return (
@@ -37,7 +39,7 @@ export function ProductPlaceholder({
           tall, and a width-derived disc overflowed it and came out clipped flat
           at the top and bottom. Height-derived, it stays a whole circle in the
           card band and in the taller slot on the product page alike. */}
-      <div className="absolute top-1/2 left-1/2 aspect-square h-[72%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-b from-brand-100/90 to-brand-50/30" />
+      <div className="absolute top-1/2 start-1/2 aspect-square h-[72%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-b from-brand-100/90 to-brand-50/30" />
 
       {logo ? (
         <Image
@@ -55,7 +57,7 @@ export function ProductPlaceholder({
         </span>
       )}
 
-      <span className="eyebrow absolute right-3.5 bottom-3 text-[0.5625rem] text-ink-faint/60">
+      <span className="eyebrow absolute end-3.5 bottom-3 text-[0.5625rem] text-ink-faint/60">
         Image to follow
       </span>
     </div>
