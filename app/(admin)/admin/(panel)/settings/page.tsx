@@ -1,11 +1,9 @@
 import { getCategories } from "@/lib/cms/categories";
 import { getNewsTags } from "@/lib/cms/news-tags";
 import { getAuthors } from "@/lib/cms/authors";
-import { isBlobConfigured } from "@/lib/cms/store";
 import { CategoryManager } from "@/components/admin/settings/category-manager";
 import { NewsTagManager } from "@/components/admin/settings/news-tag-manager";
 import { AuthorManager } from "@/components/admin/settings/author-manager";
-import { StorageNotice } from "@/components/admin/storage-notice";
 import { AdminLanguageSwitch } from "@/components/admin/admin-language-switch";
 import { adminLocale } from "@/lib/i18n/admin";
 import { adminStrings } from "@/lib/i18n/admin-strings";
@@ -31,7 +29,6 @@ export default async function AdminSettingsPage() {
         editing one never touches the other.
       </p>
 
-      <StorageNotice configured={isBlobConfigured()} />
 
       <div className="mt-6 space-y-6">
         <section className="card-surface overflow-hidden">

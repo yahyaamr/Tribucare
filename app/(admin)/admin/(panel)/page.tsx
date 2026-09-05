@@ -3,9 +3,7 @@ import { ArrowRight, FileText, Images, Newspaper, Send } from "lucide-react";
 import { getPostSummaries } from "@/lib/cms/posts";
 import { getNewsSummaries } from "@/lib/cms/news";
 import { listMedia } from "@/lib/cms/media";
-import { isBlobConfigured } from "@/lib/cms/store";
 import { formatPostDate } from "@/lib/cms/posts";
-import { StorageNotice } from "@/components/admin/storage-notice";
 import { StatusPill } from "@/components/admin/status-pill";
 
 export const metadata = { title: "Dashboard" };
@@ -40,8 +38,6 @@ export default async function AdminDashboard() {
       <p className="mt-1 text-sm text-ink-soft">
         Blogs appear on the TribuCare blog; news appears on the news page.
       </p>
-
-      <StorageNotice configured={isBlobConfigured()} />
 
       <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (

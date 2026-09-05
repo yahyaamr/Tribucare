@@ -366,7 +366,7 @@ export const events = {
   headlineAccent: "shows up.",
   intro:
     "Congresses, hands-on training days, brand launches and regional exhibitions — the calendar behind the education and support our partners rely on.",
-  cta: { label: "See all events", href: "/news" },
+  cta: { label: "See all events", href: "/events" },
   items: [
     {
       placeholder: true,

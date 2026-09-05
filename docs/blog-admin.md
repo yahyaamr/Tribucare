@@ -60,6 +60,39 @@ source.
 
 ---
 
+## If the panel is empty but the site shows articles
+
+That one symptom has one cause: **the deployment has no Blob store.**
+
+Without `BLOB_READ_WRITE_TOKEN` the CMS falls back to the filesystem. During a
+build that filesystem is writable, so the starter articles are seeded and baked
+into the static `/blog` pages. At request time the panel runs in a serverless
+function whose filesystem has no `.cms-data/`, so it lists nothing. The result
+is a live blog the panel cannot see, and a newsroom that stays empty.
+
+Connect the Blob store (above) and redeploy. The panel warns on every page
+until you do.
+
+### Moving local content up
+
+Anything written before the store was connected is on the machine that wrote
+it. To copy it up rather than retype it:
+
+```bash
+vercel env pull .env.local
+npm run cms:push
+```
+
+That lists what it would send. Add `--write` to actually send it:
+
+```bash
+node scripts/cms-push.mjs --write
+```
+
+It skips anything already in Blob, so it is safe to re-run; `--force` replaces
+those too. It copies posts, news, authors, categories, tags and uploaded
+images.
+
 ## How it works
 
 - **Posts** live in the store as one JSON file each, not in the codebase. The
