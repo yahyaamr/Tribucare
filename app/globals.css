@@ -280,13 +280,19 @@
   overscroll-behavior-x: contain;
   scrollbar-width: none;
 
-  /* Touch: hand the browser the axis split up front. `pan-x` lets a horizontal
-     drag scroll the rail; a vertical drag is never claimed by it and chains
-     straight to the page, so a finger scrolling down the site glides past a
-     rail instead of catching it and running its length first. `pinch-zoom`
-     keeps accessibility zoom working over the rail. Inert for mouse/trackpad,
-     which `useEasedScroll` still drives. */
-  touch-action: pan-x pinch-zoom;
+  /* Touch: let the browser pick the axis per gesture. It direction-locks a
+     touch on its first few pixels, so a sideways drag scrolls the rail and a
+     downward drag scrolls the page — and neither ever leaks into the other.
+
+     This was `pan-x pinch-zoom`, on the assumption that naming one axis would
+     leave the other to chain to the page. It does the opposite: the effective
+     touch behaviour is the *intersection* of `touch-action` down the hit-test
+     chain, so `pan-x` removed vertical panning from the whole gesture rather
+     than deferring it. A finger landing on any card in a rail could then only
+     move that rail — the page underneath was frozen until the finger found a
+     gap between cards. `overflow-y: clip` above is what actually keeps the rail
+     from claiming a vertical drag, and it needs no help here. */
+  touch-action: auto;
 
   &::-webkit-scrollbar {
     display: none;
@@ -297,6 +303,18 @@
    which is the whole point of scrolling them. */
 @utility rail-item {
   flex: none;
+}
+
+/* The card window of a stepped carousel — the rail's shape below the width
+   where a rail fits, where arrows replace the drag. `useSwipe` reads the
+   horizontal gesture itself, so the browser must not also act on it; `pan-y`
+   hands it only the vertical, which is the page scroll. Unlike the rail this
+   cannot be `auto`: there is no horizontal scroller here for the browser to
+   direction-lock against, so a sideways drag would fall through to the page
+   and read as a dead gesture. `pinch-zoom` keeps accessibility zoom working.
+   Inert for mouse and trackpad — the arrows serve those. */
+@utility swipe-x {
+  touch-action: pan-y pinch-zoom;
 }
 
 /* Soft edges on a rail, so cards dissolve at both ends instead of being sliced

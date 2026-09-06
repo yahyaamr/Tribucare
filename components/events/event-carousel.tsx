@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { EventCard } from "@/components/events/event-card";
+import { useSwipe } from "@/components/site/use-swipe";
 import { cn } from "@/lib/utils";
 import type { ContentData } from "@/content/en";
 
@@ -15,6 +16,10 @@ type Event = React.ComponentProps<typeof EventCard>["event"];
  * beside the lanyard there is only ever room for one, so the row of arrows does
  * the job the drag gesture used to. Card, badges and rhythm are untouched —
  * this is `<EventCard>` in a different frame, not a second kind of event card.
+ *
+ * `useSwipe` restores the drag itself on touch, stepping the same cards the
+ * arrows do while every vertical gesture goes to the page. Same counter, arrow
+ * row and swipe behaviour as <CardStepper> — change one and change the other.
  */
 export function EventCarousel({
   items,
@@ -28,11 +33,14 @@ export function EventCarousel({
 }) {
   const [index, setIndex] = useState(0);
   const [direction, setDirection] = useState(1);
+  const viewport = useRef<HTMLDivElement>(null);
 
   const step = (delta: number) => {
     setDirection(delta);
     setIndex((i) => (i + delta + items.length) % items.length);
   };
+
+  useSwipe(viewport, step);
 
   return (
     <div className="w-full">
@@ -64,19 +72,24 @@ export function EventCarousel({
         </div>
       </div>
 
-      <div
-        key={index}
-        className={cn(
-          "animate-in fade-in duration-[var(--duration-slow)] ease-[var(--ease-out)] motion-reduce:animate-none",
-          direction > 0 ? "slide-in-from-right-6" : "slide-in-from-left-6",
-        )}
-      >
-        <EventCard
-          labels={labels}
-          event={items[index]}
-          href={href}
-          sizes="(max-width: 1024px) 100vw, 30rem"
-        />
+      {/* The swipe surface is this wrapper, not the card below it: `key` swaps
+          that one out on every step, and listeners bound there would be left on
+          a detached node after the first swipe. */}
+      <div ref={viewport} className="swipe-x">
+        <div
+          key={index}
+          className={cn(
+            "animate-in fade-in duration-[var(--duration-slow)] ease-[var(--ease-out)] motion-reduce:animate-none",
+            direction > 0 ? "slide-in-from-right-6" : "slide-in-from-left-6",
+          )}
+        >
+          <EventCard
+            labels={labels}
+            event={items[index]}
+            href={href}
+            sizes="(max-width: 1024px) 100vw, 30rem"
+          />
+        </div>
       </div>
     </div>
   );
