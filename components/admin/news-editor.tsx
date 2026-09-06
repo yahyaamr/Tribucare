@@ -297,36 +297,62 @@ export function NewsEditor({
         <div className="mx-auto grid max-w-[100rem] gap-6 px-5 py-6 sm:px-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
           {/* ---- Main column ---------------------------------------- */}
           <div className="min-w-0">
-            <label htmlFor="news-title" className="sr-only">
-              News title
-            </label>
-            <input
-              id="news-title"
-              value={post.title}
-              onChange={(e) => {
-                const title = e.target.value;
-                update(
-                  slugTouched.current
-                    ? { title }
-                    : { title, slug: slugify(title) },
-                );
-              }}
-              placeholder="Add title"
-              className="w-full border-0 bg-transparent font-display text-3xl leading-tight font-semibold tracking-[-0.02em] text-ink placeholder:text-brand-300 focus:outline-none"
-            />
-
-            <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-ink-faint">
-              <span>Permalink:</span>
-              <span className="font-mono">/news/</span>
+            <div>
+              <label htmlFor="news-title" className={LABEL}>
+                Title
+              </label>
+              <p className="mt-1 mb-2 text-xs text-ink-faint">
+                The announcement headline — shown on the card, the /news index
+                and the browser tab.
+              </p>
+              {/* `dir="auto"` so an Arabic headline reads right-to-left in the
+                  box while an English one stays left-to-right. The panel's own
+                  direction is a cookie and cannot answer for the text typed
+                  into it, which may be either language in either panel. */}
               <input
-                value={post.slug}
+                id="news-title"
+                dir="auto"
+                value={post.title}
                 onChange={(e) => {
-                  slugTouched.current = true;
-                  update({ slug: slugify(e.target.value) });
+                  const title = e.target.value;
+                  update(
+                    slugTouched.current
+                      ? { title }
+                      : { title, slug: slugify(title) },
+                  );
                 }}
-                placeholder="url-slug"
-                className="min-w-32 flex-1 rounded-lg border border-transparent bg-brand-50/70 px-2 py-1 font-mono text-xs text-brand-800 transition-colors focus:border-brand-300 focus:bg-white focus:outline-none"
+                placeholder="Add title"
+                className={FIELD}
               />
+            </div>
+
+            <div className="mt-6">
+              <label htmlFor="news-slug" className={LABEL}>
+                Permalink
+              </label>
+              <p className="mt-1 mb-2 text-xs text-ink-faint">
+                The item&rsquo;s web address. Follows the title until you edit
+                it here.
+              </p>
+              <div className="flex items-center gap-2">
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 font-mono text-xs text-ink-faint"
+                >
+                  /news/
+                </span>
+                <input
+                  id="news-slug"
+                  dir="ltr"
+                  value={post.slug}
+                  onChange={(e) => {
+                    slugTouched.current = true;
+                    update({ slug: slugify(e.target.value) });
+                  }}
+                  placeholder="url-slug"
+                  className={cn(FIELD, "font-mono")}
+                />
+              </div>
             </div>
 
             <div className="mt-6">
