@@ -3,7 +3,8 @@ import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { CardStepper } from "@/components/site/card-stepper";
 import { RoleCard } from "@/components/careers/role-card";
-import { content } from "@/content/server";
+import { content, currentLocale } from "@/content/server";
+import { getRoles, localiseRole } from "@/lib/cms/roles";
 
 /**
  * Open roles.
@@ -16,9 +17,22 @@ import { content } from "@/content/server";
  * up. The role cards are conditional on it — an unset URL renders them as plain
  * cards rather than dead links — but the CTA always shows, falling back to this
  * section's own anchor so it never 404s. Set `applyUrl` and both point out.
+ *
+ * The roles themselves come from the CMS, where the panel edits them in both
+ * languages; everything around them — eyebrow, headline, intro, CTA — is still
+ * `content/`, because it is page copy rather than a list anyone maintains. If
+ * the store is unreachable the static roles render instead, so the section
+ * degrades to what it was rather than to a heading with a gap under it.
  */
 export async function Careers() {
   const { careers } = await content();
+  const locale = await currentLocale();
+
+  const stored = await getRoles();
+  const roles =
+    stored.length > 0
+      ? stored.map((role) => localiseRole(role, locale))
+      : careers.roles;
 
   const href = careers.applyUrl || undefined;
 
@@ -58,13 +72,13 @@ export async function Careers() {
             from sm — same split as the Teams section's divisions. */}
         <div className="mt-16 min-w-0">
           <CardStepper aria-label="Open roles" tone="dark" className="sm:hidden">
-            {careers.roles.map((role) => (
+            {roles.map((role) => (
               <RoleCard key={role.id} role={role} href={href} />
             ))}
           </CardStepper>
 
           <ul className="hidden gap-6 sm:grid sm:grid-cols-2 lg:grid-cols-3">
-            {careers.roles.map((role, index) => (
+            {roles.map((role, index) => (
               <Reveal
                 as="li"
                 key={role.id}

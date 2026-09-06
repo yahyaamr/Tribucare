@@ -32,6 +32,7 @@ interface AdminStringsShape {
     dashboard: string;
     posts: string;
     news: string;
+    careers: string;
     media: string;
     settings: string;
   };
@@ -60,6 +61,7 @@ const en: AdminStringsShape = {
     dashboard: "Dashboard",
     posts: "Blogs",
     news: "News",
+    careers: "Careers",
     media: "Media",
     settings: "Settings",
   },
@@ -89,6 +91,7 @@ const ar: AdminStringsShape = {
     dashboard: "لوحة المعلومات",
     posts: "المقالات",
     news: "الأخبار",
+    careers: "الوظائف",
     media: "الوسائط",
     settings: "الإعدادات",
   },

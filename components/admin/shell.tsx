@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
+  BriefcaseBusiness,
   ExternalLink,
   FileText,
   Image as ImageIcon,
@@ -41,6 +42,7 @@ const NAV = [
   { href: "/admin", key: "dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/posts", key: "posts", icon: FileText, exact: false },
   { href: "/admin/news", key: "news", icon: Newspaper, exact: false },
+  { href: "/admin/careers", key: "careers", icon: BriefcaseBusiness, exact: false },
   { href: "/admin/media", key: "media", icon: ImageIcon, exact: false },
   { href: "/admin/settings", key: "settings", icon: Settings, exact: false },
 ] as const;

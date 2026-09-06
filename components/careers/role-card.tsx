@@ -1,18 +1,5 @@
-import {
-  ArrowRight,
-  Briefcase,
-  MapPin,
-  TrendingUp,
-  Truck,
-  Wrench,
-  type LucideIcon,
-} from "lucide-react";
-
-const ICONS: Record<string, LucideIcon> = {
-  TrendingUp,
-  Truck,
-  Wrench,
-};
+import { ArrowRight, Briefcase, MapPin } from "lucide-react";
+import { roleIcon } from "@/components/careers/role-icons";
 
 /**
  * One open role.
@@ -37,7 +24,7 @@ export function RoleCard({
   };
   href?: string;
 }) {
-  const Icon = ICONS[role.icon] ?? Briefcase;
+  const Icon = roleIcon(role.icon);
 
   return (
     <article className="card-surface card-interactive group relative flex h-full flex-col justify-between overflow-hidden p-8">

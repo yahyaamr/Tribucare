@@ -42,3 +42,18 @@ export function revalidateNews(...slugs: (string | undefined)[]) {
     if (slug) revalidatePath(`/news/${slug}`);
   }
 }
+
+/**
+ * Refreshes the homepage after a role edit.
+ *
+ * The careers cards live in one section of one page, so this list is short —
+ * but it names both languages explicitly. The homepage is `app/(site)/[lang]`,
+ * a dynamic segment, so the pattern form is what actually clears it; the two
+ * literals are passed as well for the same reason the blog passes its slug,
+ * because the pattern form quietly does nothing if the segment does not match.
+ */
+export function revalidateCareers() {
+  revalidatePath("/[lang]", "page");
+  revalidatePath("/");
+  revalidatePath("/ar");
+}

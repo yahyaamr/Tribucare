@@ -160,3 +160,47 @@ export interface NewsItem {
 
 /** What the admin list needs — everything but the body. */
 export type NewsSummary = Omit<NewsItem, "blocks">;
+
+/**
+ * A string the site carries in both of its languages.
+ *
+ * The rest of the CMS is English-only: a post is written once and `/ar/blog`
+ * shows that same English article with translated chrome around it. Roles are
+ * the exception because they were never CMS content — they lived in
+ * `content/site.ts` with a full Arabic override beside them, and moving them
+ * into the panel had to keep that. So the pair travels inside the record rather
+ * than the record existing twice, which is what keeps one role one row in the
+ * list, with one id, one icon and one edit screen.
+ *
+ * `ar` may be empty. `localiseRole` falls back to `en` rather than rendering a
+ * blank card, so a half-translated role is a degraded card and never a broken
+ * one.
+ */
+export interface Bilingual {
+  en: string;
+  ar: string;
+}
+
+/**
+ * One open role — the careers cards on the homepage.
+ *
+ * Every field here is one the card actually shows, and there are no others on
+ * purpose: this replaced a static list, so an editable field that the card
+ * cannot display would be a promise the site does not keep.
+ *
+ * `icon` is a key into `ROLE_ICONS`, not a class or a path — same convention as
+ * `teams`. An unknown key falls back to `Briefcase`, so a hand-edited or
+ * retired key degrades instead of throwing.
+ */
+export interface Role {
+  id: string;
+  /** Position on the homepage. Each role is its own document, so the order the
+   *  cards appear in has to be carried rather than inferred from a list. */
+  order: number;
+  icon: string;
+  title: Bilingual;
+  department: Bilingual;
+  type: Bilingual;
+  location: Bilingual;
+  blurb: Bilingual;
+}
