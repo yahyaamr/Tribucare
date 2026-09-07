@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, CalendarDays, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ContentData } from "@/content/en";
 
@@ -44,16 +44,30 @@ export function EventCard({
   return (
     <article className="card-surface card-interactive group relative flex h-full flex-col overflow-hidden">
       <div className="relative h-52 w-full overflow-hidden bg-brand-50">
-        <Image
-          src={event.image}
-          alt=""
-          fill
-          sizes={sizes}
-          className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
-        />
-        <span className="absolute top-3.5 start-3.5 rounded-xl bg-white/90 px-3 py-1 text-xs font-semibold text-brand-900 shadow-md backdrop-blur-md">
-          {event.type}
-        </span>
+        {/* An item can be saved without a cover, so the media band falls back
+            to the mint plate rather than rendering an <Image> with no src —
+            the same fallback `components/news/news-card.tsx` uses. */}
+        {event.image ? (
+          <Image
+            src={event.image}
+            alt=""
+            fill
+            sizes={sizes}
+            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+          />
+        ) : (
+          <span
+            aria-hidden="true"
+            className="flex size-full items-center justify-center"
+          >
+            <CalendarDays className="size-8 text-brand-300" />
+          </span>
+        )}
+        {event.type && (
+          <span className="absolute top-3.5 start-3.5 rounded-xl bg-white/90 px-3 py-1 text-xs font-semibold text-brand-900 shadow-md backdrop-blur-md">
+            {event.type}
+          </span>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col justify-between p-6">
@@ -63,11 +77,17 @@ export function EventCard({
               <Calendar className="size-3.5" aria-hidden="true" />
               {event.date}
             </span>
-            <span aria-hidden="true">•</span>
-            <span className="flex items-center gap-1">
-              <MapPin className="size-3.5" aria-hidden="true" />
-              {event.location}
-            </span>
+            {/* An announcement has no venue, so the separator and the pin go
+                with it rather than leaving a stray bullet. */}
+            {event.location && (
+              <>
+                <span aria-hidden="true">•</span>
+                <span className="flex items-center gap-1">
+                  <MapPin className="size-3.5" aria-hidden="true" />
+                  {event.location}
+                </span>
+              </>
+            )}
           </div>
 
           <h3 className="mt-3 line-clamp-2 h-13 font-display text-lg leading-snug font-semibold text-ink transition-colors duration-300 group-hover:text-brand-700">

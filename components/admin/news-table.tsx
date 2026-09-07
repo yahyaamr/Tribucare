@@ -98,10 +98,13 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
     <>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-ink">News</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink">
+            Events &amp; News
+          </h1>
           <p className="mt-1 text-sm text-ink-soft">
-            Announcements, launches and company updates. Separate from the blog —
-            these appear on the news page only.
+            Congresses, training days, launches and company updates — one list.
+            An event and a news item are the same thing here; they all appear on
+            the Events &amp; News page.
           </p>
         </div>
         <Link
@@ -109,7 +112,7 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
           className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-colors duration-300 hover:bg-brand-800"
         >
           <PlusCircle className="size-4" aria-hidden="true" />
-          Add news
+          Add event or news
         </Link>
       </div>
 
@@ -154,7 +157,7 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search news…"
+            placeholder="Search events & news…"
             className="w-full rounded-xl border border-brand-200/80 bg-white py-2.5 pe-4 ps-10 text-sm text-ink shadow-sm transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none"
           />
         </div>
@@ -174,11 +177,11 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
               aria-hidden="true"
             />
             <p className="mt-4 font-display text-base font-semibold text-ink">
-              {news.length === 0 ? "No news yet" : "No news matches this filter"}
+              {news.length === 0 ? "Nothing here yet" : "Nothing matches this filter"}
             </p>
             <p className="mt-1 text-sm text-ink-faint">
               {news.length === 0
-                ? "Add your first announcement to get started."
+                ? "Add your first event or announcement to get started."
                 : "Try a different status or search term."}
             </p>
             {news.length === 0 && (
@@ -187,7 +190,7 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
                 className="mt-5 inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
               >
                 <PlusCircle className="size-4" aria-hidden="true" />
-                Add news
+                Add event or news
               </Link>
             )}
           </div>
@@ -235,7 +238,7 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
                   <p className="mt-0.5 truncate text-xs text-ink-faint">
                     {item.tags.join(", ") || "Untagged"} ·{" "}
                     {formatPostDate(item.date)} ·{" "}
-                    <span className="font-mono">/news/{item.slug}</span>
+                    <span className="font-mono">/events/{item.slug}</span>
                   </p>
                 </div>
 
@@ -256,7 +259,7 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
                   <Link
                     href={
                       item.status === "published"
-                        ? `/news/${item.slug}`
+                        ? `/events/${item.slug}`
                         : `/admin/news/${item.id}#preview`
                     }
                     target={item.status === "published" ? "_blank" : undefined}

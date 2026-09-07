@@ -143,13 +143,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         locales: post.locales,
       }),
     ),
-    ...entry("/news", {
-      changeFrequency: "weekly",
-      priority: 0.8,
-      lastModified: newestNews,
-    }),
+    // No `/news` entry: it redirects to `/events`, and a sitemap should list
+    // the destination rather than the hop.
     ...newsItems.flatMap((item) =>
-      entry(`/news/${item.slug}`, {
+      entry(`/events/${item.slug}`, {
         locales: item.locales,
         changeFrequency: "yearly",
         priority: 0.6,

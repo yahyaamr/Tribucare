@@ -2,7 +2,7 @@ import { emptyNews } from "@/lib/cms/news";
 import { getNewsTags } from "@/lib/cms/news-tags";
 import { NewsEditor } from "@/components/admin/news-editor";
 
-export const metadata = { title: "Add news" };
+export const metadata = { title: "Add event or news" };
 export const dynamic = "force-dynamic";
 
 export default async function NewNewsPage() {

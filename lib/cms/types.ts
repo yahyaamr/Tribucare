@@ -168,6 +168,12 @@ export interface NewsItem {
    *  sorts on and the item header shows. */
   date: string;
   image: string;
+  /**
+   * Where it happens. Events and news are one record — an announcement simply
+   * leaves this blank — so the card can show a place without there being two
+   * kinds of item to choose between when writing one.
+   */
+  location: string;
   /** Exactly one item leads the index, the same way one post leads /blog. */
   featured: boolean;
   blocks: Block[];

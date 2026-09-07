@@ -48,9 +48,9 @@ const en: AdminStringsShape = {
   openMenu: "Open menu",
   closeMenu: "Close menu",
   newPost: "New blog",
-  newNews: "Add news",
+  newNews: "Add event or news",
   sidebarNote:
-    "Blogs go live on tribucare.com/blog, news on tribucare.com/news.",
+    "Blogs go live on tribucare.com/blog, events & news on tribucare.com/events.",
   language: "Language",
   languageHint:
     "Changes the admin panel only. The website's own language is chosen by each visitor.",
@@ -60,7 +60,7 @@ const en: AdminStringsShape = {
   nav: {
     dashboard: "Dashboard",
     posts: "Blogs",
-    news: "News",
+    news: "Events & News",
     careers: "Careers",
     media: "Media",
     settings: "Settings",
@@ -78,9 +78,9 @@ const ar: AdminStringsShape = {
   openMenu: "فتح القائمة",
   closeMenu: "إغلاق القائمة",
   newPost: "مقال جديد",
-  newNews: "إضافة خبر",
+  newNews: "إضافة فعالية أو خبر",
   sidebarNote:
-    "المقالات تظهر على tribucare.com/blog، والأخبار على tribucare.com/news.",
+    "المقالات تظهر على tribucare.com/blog، والفعاليات والأخبار على tribucare.com/events.",
   language: "اللغة",
   languageHint:
     "يغيّر لوحة التحكم فقط. لغة الموقع نفسه يختارها كل زائر على حدة.",
@@ -90,7 +90,7 @@ const ar: AdminStringsShape = {
   nav: {
     dashboard: "لوحة المعلومات",
     posts: "المقالات",
-    news: "الأخبار",
+    news: "الفعاليات والأخبار",
     careers: "الوظائف",
     media: "الوسائط",
     settings: "الإعدادات",

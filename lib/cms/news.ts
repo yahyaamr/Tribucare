@@ -1,5 +1,5 @@
 import { getStore } from "./store";
-import { newBlockId, newId, slugify, todayIso } from "./format";
+import { formatPostDate, newBlockId, newId, slugify, todayIso } from "./format";
 import type { Block, NewsItem, NewsSummary, PostStatus } from "./types";
 import { LOCALES, isLocale, type Locale } from "@/lib/i18n/config";
 
@@ -55,6 +55,7 @@ function parseNews(raw: string): NewsItem | null {
     return {
       ...rest,
       locales,
+      location: typeof value.location === "string" ? value.location : "",
       tags: tags.filter((t) => typeof t === "string" && t.trim()),
       blocks: Array.isArray(value.blocks) ? value.blocks : [],
       seo: value.seo ?? { metaTitle: "", metaDescription: "" },
@@ -180,6 +181,7 @@ export function emptyNews(): NewsItem {
     title: "",
     excerpt: "",
     tags: [],
+    location: "",
     // A new item appears in both languages until the editor narrows it.
     locales: [...LOCALES],
     status: "draft",
@@ -267,6 +269,28 @@ export function validateNews(item: NewsItem, status: PostStatus): NewsErrors {
   }
 
   return errors;
+}
+
+/**
+ * A stored item in the shape `<EventCard>` takes.
+ *
+ * Events and news are one record; this is the only place that knows the card
+ * calls the excerpt `body` and wants the date already formatted. `status` is
+ * derived rather than stored — "upcoming" is a fact about today, not something
+ * an editor should have to remember to change the morning after.
+ */
+export function toEventCard(item: NewsItem) {
+  return {
+    icon: "",
+    status: item.date >= todayIso() ? "upcoming" : "past",
+    type: item.tags[0] ?? "",
+    title: item.title,
+    date: formatPostDate(item.date),
+    location: item.location,
+    body: item.excerpt,
+    image: item.image,
+    slug: item.slug,
+  };
 }
 
 /** Re-exported so a server caller has one import for everything news-related. */

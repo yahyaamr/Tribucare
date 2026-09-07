@@ -3,6 +3,11 @@ import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { EventsIndex } from "./events-index";
 import { content, currentLocale } from "@/content/server";
+import {
+  getPublicNewsTags,
+  getPublishedNewsFor,
+  toEventCard,
+} from "@/lib/cms/news";
 import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -26,9 +31,24 @@ export async function generateMetadata(): Promise<Metadata> {
  * same filter-and-search bar, same featured panel over a three-up grid — for
  * the same reason `EventCard` is `PostCard`: an event and an article are the
  * same kind of object to a reader, so the two listings are the same page.
+ *
+ * Events and news are one store, one editor and one record; this is the page
+ * both of them land on. The heading copy is still `content/`, because that is
+ * page furniture rather than a list anyone maintains — everything below it is
+ * whatever the panel holds.
  */
+export const revalidate = 3600;
+
 export default async function EventsListingPage() {
   const { events, eventCategories, ui } = await content();
+  const locale = await currentLocale();
+  const [items, categories] = await Promise.all([
+    getPublishedNewsFor(locale),
+    getPublicNewsTags(locale),
+  ]);
+  // The translated "All Events" chip. Still from `content/` — it is a UI word,
+  // not a category anyone stores.
+  const all = eventCategories[0];
 
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-brand-50/60 via-white to-brand-50/40 pt-28 pb-24">
@@ -69,8 +89,10 @@ export default async function EventsListingPage() {
         </div>
 
         <EventsIndex
-          events={events}
-          eventCategories={eventCategories}
+          items={items.map(toEventCard)}
+          categories={[all, ...categories]}
+          allLabel={all}
+          locale={locale}
           ui={ui.events}
         />
       </Shell>

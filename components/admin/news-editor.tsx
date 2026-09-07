@@ -172,7 +172,7 @@ export function NewsEditor({
   async function remove() {
     if (
       !window.confirm(
-        "Delete this news item? It disappears from the website immediately and cannot be undone.",
+        "Delete this item? It disappears from the website immediately and cannot be undone.",
       )
     ) {
       return;
@@ -203,7 +203,7 @@ export function NewsEditor({
             className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft transition-colors hover:text-brand-700"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
-            News
+            Events &amp; News
           </Link>
 
           <StatusPill status={post.status} />
@@ -426,6 +426,25 @@ export function NewsEditor({
                 </p>
               </div>
 
+              <div>
+                <label htmlFor="news-location" className={LABEL}>
+                  Location
+                </label>
+                <input
+                  id="news-location"
+                  type="text"
+                  dir="auto"
+                  value={post.location}
+                  onChange={(e) => update({ location: e.target.value })}
+                  placeholder="Cairo, Egypt"
+                  className={cn(FIELD, "mt-1.5")}
+                />
+                <p className="mt-1 text-xs text-ink-faint">
+                  Shown on the card beside the date. Leave empty for an
+                  announcement that has no venue.
+                </p>
+              </div>
+
               <label className="flex cursor-pointer items-start gap-2.5">
                 <input
                   type="checkbox"
@@ -460,7 +479,7 @@ export function NewsEditor({
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-800"
                     >
                       <Eye className="size-4" aria-hidden="true" />
-                      View live news item
+                      View live item
                     </Link>
                   )}
 

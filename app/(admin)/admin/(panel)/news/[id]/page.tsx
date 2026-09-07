@@ -10,7 +10,7 @@ type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const item = await getNewsById((await params).id);
-  return { title: item?.title || "Edit news" };
+  return { title: item?.title || "Edit item" };
 }
 
 export default async function EditNewsPage({ params }: Props) {

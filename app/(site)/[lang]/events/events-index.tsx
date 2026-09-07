@@ -2,13 +2,18 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { CalendarDays, Calendar, MapPin, Search, Sparkles } from "lucide-react";
 import { Reveal } from "@/components/site/reveal";
 import { EventCard } from "@/components/events/event-card";
 import type { ContentData } from "@/content/en";
+import { localePath, type Locale } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
 
-const ALL = "All Events";
+/** What `toEventCard` produces — one stored item, card-shaped. */
+type EventItem = ReturnType<
+  typeof import("@/lib/cms/news").toEventCard
+>;
 
 /**
  * The filtering half of the events index.
@@ -19,25 +24,32 @@ const ALL = "All Events";
  * change one of the two, look at the other.
  */
 export function EventsIndex({
-  events,
-  eventCategories,
+  items,
+  categories,
   ui,
+  locale,
+  allLabel,
 }: {
-  events: ContentData["events"];
-  eventCategories: ContentData["eventCategories"];
+  items: EventItem[];
+  /** Every category with a published item behind it, "All" already at the
+   *  front — the page never offers a filter that leads nowhere. */
+  categories: string[];
   ui: ContentData["ui"]["events"];
+  locale: Locale;
+  allLabel: string;
 }) {
+  const ALL = allLabel;
   const [category, setCategory] = useState<string>(ALL);
   const [query, setQuery] = useState("");
 
-  /** The next thing on the calendar leads the page; failing that, the newest. */
+  /** The next thing on the calendar leads the page; failing that, the newest.
+   *  Both are absent when the store is empty, which the render guards. */
   const featuredEvent =
-    events.items.find((event) => event.status === "upcoming") ??
-    events.items[0];
+    items.find((event) => event.status === "upcoming") ?? items[0];
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return events.items.filter((event) => {
+    return items.filter((event) => {
       const matchesCategory = category === ALL || event.type === category;
       if (!matchesCategory) return false;
       if (!q) return true;
@@ -48,7 +60,7 @@ export function EventsIndex({
         event.location.toLowerCase().includes(q)
       );
     });
-  }, [events.items, category, query]);
+  }, [items, category, ALL, query]);
 
   return (
     <>
@@ -58,7 +70,7 @@ export function EventsIndex({
           aria-label="Filter events by type"
           className="flex flex-wrap items-center gap-2"
         >
-          {eventCategories.map((cat) => {
+          {categories.map((cat) => {
             const isActive = category === cat;
             return (
               <button
@@ -100,18 +112,27 @@ export function EventsIndex({
 
       {/* Featured event — hidden once a filter or search narrows the list, so
           the page never promotes an event the current filter excludes. */}
-      {category === ALL && !query.trim() && (
+      {category === ALL && !query.trim() && featuredEvent && (
         <Reveal className="mt-12" from="scale">
           <article className="card-surface group relative overflow-hidden shadow-lg transition-shadow duration-500 hover:shadow-2xl lg:grid lg:grid-cols-12 lg:items-center">
             <div className="relative h-64 min-h-[360px] overflow-hidden sm:h-80 lg:col-span-6 lg:h-full">
-              <Image
-                src={featuredEvent.image}
-                alt=""
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
-              />
+              {featuredEvent.image ? (
+                <Image
+                  src={featuredEvent.image}
+                  alt=""
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+                />
+              ) : (
+                <span
+                  aria-hidden="true"
+                  className="flex size-full items-center justify-center bg-brand-50"
+                >
+                  <CalendarDays className="size-12 text-brand-300" />
+                </span>
+              )}
               <div
                 aria-hidden="true"
                 className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent lg:hidden"
@@ -137,8 +158,12 @@ export function EventsIndex({
                 </span>
               </div>
 
-              <h2 className="mt-4 font-display text-2xl font-semibold text-ink sm:text-3xl">
-                {featuredEvent.title}
+              <h2 className="mt-4 font-display text-2xl font-semibold text-ink sm:text-3xl transition-colors duration-300 group-hover:text-brand-700">
+                <Link href={localePath(locale, `/events/${featuredEvent.slug}`)}>
+                  {/* Stretched link, same as the cards below. */}
+                  <span className="absolute inset-0 z-10" aria-hidden="true" />
+                  {featuredEvent.title}
+                </Link>
               </h2>
 
               <p className="mt-3 text-base leading-relaxed text-ink-soft">
@@ -220,6 +245,7 @@ export function EventsIndex({
                 <EventCard
                   labels={ui}
                   event={event}
+                  href={localePath(locale, `/events/${event.slug}`)}
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 />
               </Reveal>

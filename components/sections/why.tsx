@@ -5,11 +5,17 @@ import { Reveal } from "@/components/site/reveal";
 import { LanyardCanvas } from "@/components/brand/lanyard-canvas";
 import { EventCarousel } from "@/components/events/event-carousel";
 import { content, currentLocale } from "@/content/server";
+import { getPublishedNewsFor, toEventCard } from "@/lib/cms/news";
 import { localePath } from "@/lib/i18n/config";
 
 export async function Why() {
   const { events, ui } = await content();
   const locale = await currentLocale();
+  // The same records the /events page lists, so adding one in the panel shows
+  // up here too. Falls back to the static six only if the store is unreachable,
+  // which keeps the section from collapsing to an empty carousel.
+  const stored = await getPublishedNewsFor(locale);
+  const items = stored.length > 0 ? stored.map(toEventCard) : events.items;
 
   return (
     <section
@@ -80,7 +86,7 @@ export async function Why() {
             className="pointer-events-auto relative min-w-0 w-full max-w-[28.5rem] mx-auto lg:mx-0 lg:max-w-[28rem] xl:max-w-[29rem] lg:justify-self-center lg:-translate-x-6 xl:-translate-x-10 rtl:lg:translate-x-6 rtl:xl:translate-x-10"
           >
             <EventCarousel
-              items={events.items}
+              items={items}
               labels={ui.events}
               href={localePath(locale, events.cta.href)}
             />
