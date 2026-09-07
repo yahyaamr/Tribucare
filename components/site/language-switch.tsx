@@ -9,6 +9,7 @@ import {
   LOCALE_SHORT,
   type Locale,
   localePath,
+  localeSwitchTarget,
   splitLocale,
 } from "@/lib/i18n/config";
 
@@ -22,8 +23,11 @@ import {
  *
  * It stays on the current page rather than returning to the homepage — the
  * pathname is stripped of its locale prefix and re-prefixed with the other one.
- * Slugs are shared across locales (the Arabic bundle overrides copy, not URLs),
- * so the target always exists.
+ *
+ * Except on a record's own page. Slugs are shared across locales, but since an
+ * article or event is ticked for the languages it appears in, the other one's
+ * URL may 404. `localeSwitchTarget` sends those to the section index, which
+ * always exists and lists what that language actually has.
  */
 export function LanguageSwitch({
   locale,
@@ -45,7 +49,7 @@ export function LanguageSwitch({
 
   return (
     <Link
-      href={localePath(other, path)}
+      href={localePath(other, localeSwitchTarget(path))}
       // Always in view, rarely clicked: prefetching the other language's
       // payload cost every visitor ~110KB for a page most never open.
       prefetch={false}

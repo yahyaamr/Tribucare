@@ -56,6 +56,26 @@ export function localePath(locale: Locale, path: string) {
  * language switch needs to send the reader to the same page in the other
  * language rather than back to the homepage.
  */
+/**
+ * Where the language switch should land, given the page it was clicked on.
+ *
+ * Usually the same page in the other language. The exception is a CMS record's
+ * own page: an article or an event is ticked for the languages it appears in,
+ * so the matching URL may not exist — switching used to hand the reader a 404
+ * for a translation that was never claimed to exist. These land on the
+ * section's index instead, which is always there and lists what that language
+ * actually has.
+ *
+ * Only the record sections. A product page is the same product in both
+ * languages, so it keeps switching in place.
+ */
+export function localeSwitchTarget(path: string): string {
+  const match = /^\/(blog|events|news)\/[^/]+\/?$/.exec(path);
+  if (!match) return path;
+  // `/news` is retired — its items live under `/events`, so its index does too.
+  return match[1] === "news" ? "/events" : `/${match[1]}`;
+}
+
 export function splitLocale(pathname: string): {
   locale: Locale;
   path: string;
