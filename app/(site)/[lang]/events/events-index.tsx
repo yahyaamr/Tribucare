@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { ImageFallback } from "@/components/site/image-fallback";
 import Link from "next/link";
 import { CalendarDays, Calendar, MapPin, Search, Sparkles } from "lucide-react";
 import { Reveal } from "@/components/site/reveal";
@@ -126,12 +127,7 @@ export function EventsIndex({
                   className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
                 />
               ) : (
-                <span
-                  aria-hidden="true"
-                  className="flex size-full items-center justify-center bg-brand-50"
-                >
-                  <CalendarDays className="size-12 text-brand-300" />
-                </span>
+                <ImageFallback iconClassName="size-12" />
               )}
               <div
                 aria-hidden="true"

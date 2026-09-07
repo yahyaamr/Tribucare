@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ImageFallback } from "@/components/site/image-fallback";
 import { CheckCircle2 } from "lucide-react";
 import { Reveal } from "@/components/site/reveal";
 import type { Block } from "@/lib/cms/types";
@@ -125,14 +126,21 @@ function BlockView({ block, ui }: { block: Block; ui: BlogUi }) {
     case "image":
       return (
         <figure>
-          <div className="relative h-[260px] w-full overflow-hidden rounded-3xl border border-brand-100 shadow-xl sm:h-[380px]">
-            <Image
-              src={block.src}
-              alt={block.alt}
-              fill
-              sizes="(max-width: 768px) 100vw, 768px"
-              className="object-cover"
-            />
+          <div className="relative h-[260px] w-full overflow-hidden rounded-3xl border border-brand-100 bg-brand-50 shadow-xl sm:h-[380px]">
+            {/* An image block can be added and left unset — it then shows the
+                placeholder rather than an <Image> with an empty src, which is
+                a runtime error rather than a missing picture. */}
+            {block.src ? (
+              <Image
+                src={block.src}
+                alt={block.alt}
+                fill
+                sizes="(max-width: 768px) 100vw, 768px"
+                className="object-cover"
+              />
+            ) : (
+              <ImageFallback iconClassName="size-10" />
+            )}
           </div>
           {block.caption?.trim() && (
             <figcaption className="mt-3 text-xs text-ink-faint">

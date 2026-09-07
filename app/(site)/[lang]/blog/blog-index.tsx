@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { ImageFallback } from "@/components/site/image-fallback";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -120,7 +121,7 @@ export function BlogIndex({
         <Reveal className="mt-12" from="scale">
           <article className="card-surface group relative overflow-hidden shadow-lg transition-shadow duration-500 hover:shadow-2xl lg:grid lg:grid-cols-12 lg:items-center">
             <div className="relative h-64 min-h-[360px] overflow-hidden bg-brand-50 sm:h-80 lg:col-span-6 lg:h-full">
-              {featuredPost.image && (
+              {featuredPost.image ? (
                 <Image
                   src={featuredPost.image}
                   alt=""
@@ -129,6 +130,8 @@ export function BlogIndex({
                   sizes="(max-width: 1024px) 100vw, 50vw"
                   className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
                 />
+              ) : (
+                <ImageFallback iconClassName="size-12" />
               )}
               <div
                 aria-hidden="true"

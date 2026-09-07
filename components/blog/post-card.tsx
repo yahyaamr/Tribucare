@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ImageFallback } from "@/components/site/image-fallback";
 import Link from "next/link";
 import { ArrowRight, Calendar, Clock } from "lucide-react";
 import { formatPostDate, readTimeFor } from "@/lib/cms/format";
@@ -28,9 +29,9 @@ export function PostCard({
   return (
     <article className="card-surface card-interactive group relative flex h-full flex-col overflow-hidden">
       <div className="relative h-52 w-full overflow-hidden bg-brand-50">
-        {/* A post can be saved without a cover, so the media band falls back to
-            the mint plate rather than rendering an <Image> with no src. */}
-        {post.image && (
+        {/* A post can be saved without a cover. The band then says so rather
+            than sitting blank — see `<ImageFallback>`. */}
+        {post.image ? (
           <Image
             src={post.image}
             alt=""
@@ -38,6 +39,8 @@ export function PostCard({
             sizes={sizes}
             className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
           />
+        ) : (
+          <ImageFallback />
         )}
         {/* The floating pill holds one category. A post can carry several, so
             it shows the primary one — the card's proportions are fixed and a

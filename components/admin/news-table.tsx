@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import { ImageFallback } from "@/components/site/image-fallback";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -211,12 +212,7 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
                       className="object-cover"
                     />
                   ) : (
-                    <span className="flex size-full items-center justify-center">
-                      <Newspaper
-                        className="size-5 text-brand-300"
-                        aria-hidden="true"
-                      />
-                    </span>
+                    <ImageFallback iconClassName="size-5" />
                   )}
                 </div>
 

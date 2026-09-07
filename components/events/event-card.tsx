@@ -1,6 +1,7 @@
 import Image from "next/image";
+import { ImageFallback } from "@/components/site/image-fallback";
 import Link from "next/link";
-import { Calendar, CalendarDays, MapPin } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ContentData } from "@/content/en";
 
@@ -56,12 +57,7 @@ export function EventCard({
             className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
           />
         ) : (
-          <span
-            aria-hidden="true"
-            className="flex size-full items-center justify-center"
-          >
-            <CalendarDays className="size-8 text-brand-300" />
-          </span>
+          <ImageFallback />
         )}
         {event.type && (
           <span className="absolute top-3.5 start-3.5 rounded-xl bg-white/90 px-3 py-1 text-xs font-semibold text-brand-900 shadow-md backdrop-blur-md">
