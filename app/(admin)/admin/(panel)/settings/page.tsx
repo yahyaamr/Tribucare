@@ -38,7 +38,8 @@ export default async function AdminSettingsPage() {
       <p className="mt-1 text-sm text-ink-soft">
         The lists each section draws from, grouped by the section they belong
         to. The two category lists are entirely separate — adding one to Events
-        &amp; News never adds it to the blog, and the reverse.
+        &amp; News never adds it to the blog, and the reverse. Authors belong to
+        the blog: an Events &amp; News item carries no byline.
       </p>
 
 
@@ -68,21 +69,16 @@ export default async function AdminSettingsPage() {
           hint="Lists behind tribucare.org/blog."
         />
         <CategoryManager initial={categories} />
+        {/* Authors sit under Blog because the blog is the only thing that has
+            them: an Events & News item is published by the company, not by a
+            person, and carries no byline. */}
+        <AuthorManager initial={authors} />
 
         <SectionHeading
           title="Events & News"
           hint="Lists behind tribucare.org/events."
         />
         <NewsTagManager initial={newsTags} />
-
-        <SectionHeading
-          title="Shared"
-          hint="Used by more than one section."
-        />
-        {/* Authors are shared on purpose — a person who writes both a blog post
-            and an announcement is one person, and correcting their name should
-            not have to be done twice. */}
-        <AuthorManager initial={authors} />
       </div>
     </div>
   );
