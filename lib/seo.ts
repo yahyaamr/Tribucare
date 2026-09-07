@@ -57,12 +57,20 @@ export const OG_IMAGE = {
 export function alternatesFor(
   locale: Locale,
   path: string,
+  /** The languages the page actually exists in. Marketing pages exist in
+   *  both and omit it; a CMS record passes the ones it was ticked for, since
+   *  an `hreflang` pointing at a URL that 404s tells a crawler the opposite
+   *  of what the tag is for. Same rule the sitemap applies. */
+  locales: readonly Locale[] = LOCALES,
 ): NonNullable<Metadata["alternates"]> {
   return {
     canonical: localePath(locale, path),
     languages: {
-      ...Object.fromEntries(LOCALES.map((l) => [l, localePath(l, path)])),
-      "x-default": localePath(DEFAULT_LOCALE, path),
+      ...Object.fromEntries(locales.map((l) => [l, localePath(l, path)])),
+      // Only when English is among them: x-default must name a real page.
+      ...(locales.includes(DEFAULT_LOCALE)
+        ? { "x-default": localePath(DEFAULT_LOCALE, path) }
+        : {}),
     },
   };
 }
@@ -78,6 +86,8 @@ export interface PageMetadataInput {
   locale: Locale;
   /** Locale-free path, e.g. `/blog/some-slug`. */
   path: string;
+  /** Which language sites this page is published on. Defaults to all. */
+  locales?: readonly Locale[];
   title: string;
   description: string;
   /** Social-card copy, where it differs from the page's own. */
@@ -155,7 +165,7 @@ export function pageMetadata(input: PageMetadataInput): Metadata {
       description: ogDescription,
       images: [image.url],
     },
-    alternates: alternatesFor(locale, path),
+    alternates: alternatesFor(locale, path, input.locales),
   };
 }
 

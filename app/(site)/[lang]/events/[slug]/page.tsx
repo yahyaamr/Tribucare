@@ -45,6 +45,7 @@ export async function generateMetadata({
   return pageMetadata({
     locale,
     path: `/events/${item.slug}`,
+    locales: item.locales,
     title,
     description,
     type: "article",

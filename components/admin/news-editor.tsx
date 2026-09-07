@@ -473,7 +473,7 @@ export function NewsEditor({
                 <div className="flex flex-col gap-2 border-t border-brand-100 pt-3.5">
                   {post.status === "published" && (
                     <Link
-                      href={`/news/${post.slug}`}
+                      href={`/events/${post.slug}`}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-800"

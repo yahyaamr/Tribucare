@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Calendar } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { ArticleBody } from "@/components/blog/article-body";
 import { formatPostDate } from "@/lib/cms/format";
@@ -67,6 +67,14 @@ export function NewsView({
               <Calendar className="size-3.5" aria-hidden="true" />
               {formatPostDate(item.date)}
             </span>
+            {/* Same place the card shows it. An announcement with no venue
+                leaves it blank, and then nothing renders — not an empty pin. */}
+            {item.location && (
+              <span className="flex items-center gap-1 font-normal text-ink-faint">
+                <MapPin className="size-3.5" aria-hidden="true" />
+                {item.location}
+              </span>
+            )}
           </div>
         </MaybeReveal>
 

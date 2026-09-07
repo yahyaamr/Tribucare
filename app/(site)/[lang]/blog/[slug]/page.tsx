@@ -51,6 +51,7 @@ export async function generateMetadata({
     ...pageMetadata({
       locale,
       path: `/blog/${post.slug}`,
+      locales: post.locales,
       title,
       description,
       type: "article",
