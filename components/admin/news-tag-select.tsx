@@ -167,7 +167,7 @@ export function NewsTagSelect({
             if (e.key === "Escape") setOpen(false);
           }}
           placeholder={
-            selected.length ? "Add another tag…" : "Search or create…"
+            selected.length ? "Add another category…" : "Search or create…"
           }
           className="w-full rounded-xl border border-brand-200/80 bg-white py-2.5 pe-4 ps-9 text-sm text-ink shadow-sm transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none"
         />

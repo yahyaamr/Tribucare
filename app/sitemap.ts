@@ -150,6 +150,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
     ...newsItems.flatMap((item) =>
       entry(`/news/${item.slug}`, {
+        locales: item.locales,
         changeFrequency: "yearly",
         priority: 0.6,
         lastModified: publishedAt(item),

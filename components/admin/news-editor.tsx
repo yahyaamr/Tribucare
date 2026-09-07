@@ -17,6 +17,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LOCALES, LOCALE_LABELS } from "@/lib/i18n/config";
 import { formatPostDate, slugify } from "@/lib/cms/format";
 import type { NewsItem } from "@/lib/cms/types";
 import { BlockEditor } from "./block-editor";
@@ -33,11 +34,12 @@ import { getContent } from "@/content";
  * same sticky action bar, same Edit/Preview tab pair, same settings rail. An
  * editor who has written a post already knows this screen.
  *
- * What differs is only what news is: tags instead of categories, no reading
- * time, no byline — an announcement is published by the company, not by a
- * person — and every request it makes goes to `/api/admin/news*`. There is no
- * code path from here to a post or a blog category — that is the isolation, and
- * it is structural rather than a runtime check.
+ * What differs is only what news is: no reading time, no byline — an
+ * announcement is published by the company, not by a person — and every request
+ * it makes goes to `/api/admin/news*`. Its categories are its own vocabulary,
+ * stored apart from the blog's under `cms/news-tags.json`; there is no code
+ * path from here to a post or a blog category, and that isolation is structural
+ * rather than a runtime check.
  *
  * The preview renders `<NewsView>`, the exact component the published page
  * uses, against the in-memory draft.
@@ -183,6 +185,14 @@ export function NewsEditor({
 
   const busy = saving !== null;
 
+  /** An item with neither language ticked would appear on no site at all, so
+   *  both save paths are closed until one is — the server refuses it too, but
+   *  a button that cannot succeed should not look like it can. */
+  const noLocale = post.locales.length === 0;
+  const noLocaleReason = noLocale
+    ? "Pick a language under About the Taxonomy first."
+    : undefined;
+
   return (
     <>
       {/* ---- Action bar ------------------------------------------------- */}
@@ -231,7 +241,8 @@ export function NewsEditor({
             <button
               type="button"
               onClick={() => save("draft")}
-              disabled={busy}
+              disabled={busy || noLocale}
+              title={noLocaleReason}
               className="rounded-xl border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-ink-soft transition-colors hover:bg-brand-50 disabled:opacity-60"
             >
               {saving === "draft" ? "Saving…" : "Save draft"}
@@ -240,7 +251,8 @@ export function NewsEditor({
             <button
               type="button"
               onClick={() => save("published")}
-              disabled={busy}
+              disabled={busy || noLocale}
+              title={noLocaleReason}
               className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2 text-sm font-semibold text-white shadow-md transition-colors duration-300 hover:bg-brand-800 disabled:opacity-60"
             >
               {saving === "publish" ? (
@@ -507,7 +519,59 @@ export function NewsEditor({
               )}
             </Panel>
 
-            <Panel title="Tags">
+            {/* Placement, not translation: ticking English puts the item on
+                the English news page whatever language it is written in. The
+                blog's panel, verbatim — if you change one, change the other. */}
+            <Panel title="About the Taxonomy">
+              <p className="text-xs text-ink-faint">
+                Which language sites this item appears on. Ticking a language
+                does not translate it — it decides where it is listed.
+              </p>
+
+              <div className="space-y-2">
+                {LOCALES.map((locale) => {
+                  const checked = post.locales.includes(locale);
+                  return (
+                    <label
+                      key={locale}
+                      className="flex cursor-pointer items-center gap-2.5"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) =>
+                          update({
+                            locales: LOCALES.filter((l) =>
+                              l === locale ? e.target.checked : post.locales.includes(l),
+                            ),
+                          })
+                        }
+                        className="size-4 shrink-0 rounded border-brand-300 accent-brand-700"
+                      />
+                      <span className="text-sm font-medium text-ink">
+                        {LOCALE_LABELS[locale]}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              {noLocale && (
+                <p
+                  role="alert"
+                  className="flex items-start gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-xs font-medium text-red-700"
+                >
+                  <TriangleAlert
+                    className="mt-0.5 size-3.5 shrink-0"
+                    aria-hidden="true"
+                  />
+                  Pick at least one language — the item cannot be saved while it
+                  would appear nowhere.
+                </p>
+              )}
+            </Panel>
+
+            <Panel title="Categories">
               <NewsTagSelect
                 selected={post.tags}
                 available={tags}
@@ -515,7 +579,7 @@ export function NewsEditor({
                 onTagsChange={setTags}
               />
               <p className="text-xs text-ink-faint">
-                News tags are their own list, managed in{" "}
+                News categories are their own list, managed in{" "}
                 <Link
                   href="/admin/settings"
                   className="font-semibold text-brand-700 hover:text-brand-800"

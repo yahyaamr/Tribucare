@@ -6,7 +6,7 @@ import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal } from "@/components/site/reveal";
 import { NewsView } from "@/components/news/news-view";
 import { formatPostDate } from "@/lib/cms/format";
-import { getNewsBySlug, getPublishedNews } from "@/lib/cms/news";
+import { getNewsBySlug, getPublishedNews, getPublishedNewsFor } from "@/lib/cms/news";
 import { content, currentLocale } from "@/content/server";
 import { localePath } from "@/lib/i18n/config";
 import { JsonLd } from "@/components/site/json-ld";
@@ -33,9 +33,11 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const item = await getNewsBySlug(slug);
-  if (!item || item.status !== "published") return {};
   const locale = await currentLocale();
+  const item = await getNewsBySlug(slug);
+  if (!item || item.status !== "published" || !item.locales.includes(locale)) {
+    return {};
+  }
 
   const title = item.seo.metaTitle.trim() || item.title;
   const description = item.seo.metaDescription.trim() || item.excerpt;
@@ -61,14 +63,17 @@ export default async function NewsDetailPage({
 }) {
   const { slug } = await params;
   const item = await getNewsBySlug(slug);
-
-  // A draft is a 404 to the public, exactly as an unpublished item should be.
-  if (!item || item.status !== "published") notFound();
-
-  const { ui, nav } = await content();
   const locale = await currentLocale();
 
-  const related = (await getPublishedNews())
+  // A draft is a 404 to the public, and so is an item this language was not
+  // ticked for — same rule the blog follows.
+  if (!item || item.status !== "published" || !item.locales.includes(locale)) {
+    notFound();
+  }
+
+  const { ui, nav } = await content();
+
+  const related = (await getPublishedNewsFor(locale))
     .filter((n) => n.slug !== item.slug)
     .slice(0, 3);
 

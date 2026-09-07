@@ -159,6 +159,10 @@ export interface NewsItem {
    * and vice versa.
    */
   tags: string[];
+  /** Which language sites this item appears on — the same "About the Taxonomy"
+   *  choice a post makes, and the same rule: placement, not translation. Legacy
+   *  records parse as both, which is where they already were. */
+  locales: Locale[];
   status: PostStatus;
   /** ISO `yyyy-mm-dd`. The date the news is *dated*, which is what the index
    *  sorts on and the item header shows. */

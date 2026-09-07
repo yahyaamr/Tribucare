@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { NewsIndex } from "./news-index";
-import { getPublishedNews, getPublicNewsTags } from "@/lib/cms/news";
+import { getPublishedNewsFor, getPublicNewsTags } from "@/lib/cms/news";
 import { content, currentLocale } from "@/content/server";
 import { pageMetadata } from "@/lib/seo";
 
@@ -33,10 +33,10 @@ export default async function NewsListingPage() {
   const { ui } = await content();
   const locale = await currentLocale();
   const [items, tags] = await Promise.all([
-    getPublishedNews(),
-    // Only tags with a published item behind them, so a filter tab can never
-    // lead to an empty list.
-    getPublicNewsTags(),
+    getPublishedNewsFor(locale),
+    // Only tags with a published item behind them *in this language*, so a
+    // filter tab can never lead to an empty list.
+    getPublicNewsTags(locale),
   ]);
 
   return (

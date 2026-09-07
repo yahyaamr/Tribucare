@@ -1,6 +1,7 @@
 import { getStore } from "./store";
 import { newBlockId, newId, slugify, todayIso } from "./format";
 import type { Block, NewsItem, NewsSummary, PostStatus } from "./types";
+import { LOCALES, isLocale, type Locale } from "@/lib/i18n/config";
 
 /**
  * Storage and validation for news items.
@@ -45,8 +46,15 @@ function parseNews(raw: string): NewsItem | null {
     void authorId;
     void tag;
 
+    // Written before "About the Taxonomy" existed? Then it appeared on both
+    // language sites, and it keeps doing so until somebody says otherwise.
+    const locales = Array.isArray(value.locales)
+      ? value.locales.filter((locale): locale is Locale => isLocale(locale))
+      : [...LOCALES];
+
     return {
       ...rest,
+      locales,
       tags: tags.filter((t) => typeof t === "string" && t.trim()),
       blocks: Array.isArray(value.blocks) ? value.blocks : [],
       seo: value.seo ?? { metaTitle: "", metaDescription: "" },
@@ -96,6 +104,18 @@ export async function getPublishedNews(): Promise<NewsItem[]> {
   return (await getAllNews()).filter((n) => n.status === "published");
 }
 
+/**
+ * What one language's site shows. The blog's `getPublishedPostsFor` for news —
+ * every public news surface goes through this, so an item ticked for English
+ * only is absent from the Arabic index and its Arabic URL 404s.
+ */
+export async function getPublishedNewsFor(
+  locale: Locale,
+): Promise<NewsItem[]> {
+  const items = await getPublishedNews();
+  return items.filter((item) => item.locales.includes(locale));
+}
+
 export async function getNewsSummaries(): Promise<NewsSummary[]> {
   const items = await getAllNews();
   return items.map(({ blocks, ...rest }) => {
@@ -121,8 +141,11 @@ export async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
  * What the public filter row offers, so a tab can never return an empty list —
  * the same rule `getPublicCategories` follows for the blog.
  */
-export async function getPublicNewsTags(): Promise<string[]> {
-  const items = await getPublishedNews();
+export async function getPublicNewsTags(locale?: Locale): Promise<string[]> {
+  const items =
+    locale === undefined
+      ? await getPublishedNews()
+      : await getPublishedNewsFor(locale);
   const seen = new Map<string, string>();
   for (const tag of items.flatMap((n) => n.tags)) {
     const key = tag.toLowerCase();
@@ -157,6 +180,8 @@ export function emptyNews(): NewsItem {
     title: "",
     excerpt: "",
     tags: [],
+    // A new item appears in both languages until the editor narrows it.
+    locales: [...LOCALES],
     status: "draft",
     date: todayIso(),
     image: "",
@@ -219,6 +244,13 @@ export function validateNews(item: NewsItem, status: PostStatus): NewsErrors {
   const errors: NewsErrors = {};
 
   if (!item.title.trim()) errors.title = "A title is required.";
+
+  // Every save, not just publish — same rule the blog uses, for the same
+  // reason: an item that appears on neither site is not a state worth storing.
+  if (item.locales.length === 0) {
+    errors.locales =
+      "Pick at least one language under About the Taxonomy — an item with neither ticked would appear nowhere.";
+  }
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(item.date)) {
     errors.date = "Give the news a date.";
