@@ -356,7 +356,22 @@ export function PostEditor({
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-8">
+              <h2 className={LABEL}>Content</h2>
+              <p className="mt-1 mb-3 text-xs text-ink-faint">
+                Build the article from blocks. Hover a block for its move,
+                duplicate and delete controls.
+              </p>
+              <BlockEditor
+                blocks={post.blocks}
+                onChange={(blocks) => update({ blocks })}
+              />
+            </div>
+
+            {/* After the article rather than before it: the excerpt summarises
+                what was just written, and asking for it first meant writing it
+                twice — once as a guess, once for real. */}
+            <div className="mt-8">
               <label htmlFor="post-excerpt" className={LABEL}>
                 Excerpt
               </label>
@@ -371,18 +386,6 @@ export function PostEditor({
                 onChange={(e) => update({ excerpt: e.target.value })}
                 placeholder="A two-line summary of the article…"
                 className={cn(FIELD, "resize-y leading-relaxed")}
-              />
-            </div>
-
-            <div className="mt-8">
-              <h2 className={LABEL}>Content</h2>
-              <p className="mt-1 mb-3 text-xs text-ink-faint">
-                Build the article from blocks. Hover a block for its move,
-                duplicate and delete controls.
-              </p>
-              <BlockEditor
-                blocks={post.blocks}
-                onChange={(blocks) => update({ blocks })}
               />
             </div>
           </div>

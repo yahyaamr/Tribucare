@@ -355,7 +355,22 @@ export function NewsEditor({
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-8">
+              <h2 className={LABEL}>Content</h2>
+              <p className="mt-1 mb-3 text-xs text-ink-faint">
+                Build the item from blocks. Hover a block for its move,
+                duplicate and delete controls.
+              </p>
+              <BlockEditor
+                blocks={post.blocks}
+                onChange={(blocks) => update({ blocks })}
+              />
+            </div>
+
+            {/* After the item rather than before it: the summary summarises
+                what was just written, and asking for it first meant writing it
+                twice — once as a guess, once for real. */}
+            <div className="mt-8">
               <label htmlFor="news-excerpt" className={LABEL}>
                 Summary
               </label>
@@ -370,18 +385,6 @@ export function NewsEditor({
                 onChange={(e) => update({ excerpt: e.target.value })}
                 placeholder="A two-line summary of the news…"
                 className={cn(FIELD, "resize-y leading-relaxed")}
-              />
-            </div>
-
-            <div className="mt-8">
-              <h2 className={LABEL}>Content</h2>
-              <p className="mt-1 mb-3 text-xs text-ink-faint">
-                Build the item from blocks. Hover a block for its move,
-                duplicate and delete controls.
-              </p>
-              <BlockEditor
-                blocks={post.blocks}
-                onChange={(blocks) => update({ blocks })}
               />
             </div>
           </div>
