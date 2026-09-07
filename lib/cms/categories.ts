@@ -1,5 +1,6 @@
 import { getStore } from "./store";
 import { getAllPosts, savePost } from "./posts";
+import type { Locale } from "@/lib/i18n/config";
 import { blogCategories } from "@/content/blogs";
 
 /**
@@ -85,10 +86,23 @@ export async function getCategories(): Promise<string[]> {
 
 /** Only categories attached to a published post — what the /blog filter row
  *  offers, so a tab can never return an empty list. */
-export async function getPublicCategories(): Promise<string[]> {
+/**
+ * The filter tabs one language's blog index shows.
+ *
+ * Scoped to the locale for the reason the unscoped version existed: a tab with
+ * nothing behind it. Once a post can be English-only, counting its categories
+ * on the Arabic index would put a tab there that filters to an empty list.
+ */
+export async function getPublicCategories(locale?: Locale): Promise<string[]> {
   const posts = await getAllPosts();
   return dedupe(
-    posts.filter((p) => p.status === "published").flatMap((p) => p.categories),
+    posts
+      .filter(
+        (p) =>
+          p.status === "published" &&
+          (locale === undefined || p.locales.includes(locale)),
+      )
+      .flatMap((p) => p.categories),
   ).sort((a, b) => a.localeCompare(b));
 }
 

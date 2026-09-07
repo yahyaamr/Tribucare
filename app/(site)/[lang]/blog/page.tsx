@@ -3,7 +3,7 @@ import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { Newsletter } from "@/components/blog/newsletter";
 import { BlogIndex } from "./blog-index";
-import { getPublishedPosts } from "@/lib/cms/posts";
+import { getPublishedPostsFor } from "@/lib/cms/posts";
 import { content, currentLocale } from "@/content/server";
 import { pageMetadata } from "@/lib/seo";
 import { getPublicCategories } from "@/lib/cms/categories";
@@ -25,11 +25,12 @@ export const revalidate = 3600;
 
 export default async function BlogListingPage() {
   const { ui } = await content();
+  const locale = await currentLocale();
   const [posts, categories] = await Promise.all([
-    getPublishedPosts(),
-    // Only categories that actually have a published post behind them, so a
-    // filter tab can never lead to an empty list.
-    getPublicCategories(),
+    getPublishedPostsFor(locale),
+    // Only categories that actually have a published post behind them *in this
+    // language*, so a filter tab can never lead to an empty list.
+    getPublicCategories(locale),
   ]);
 
   return (

@@ -39,38 +39,52 @@ function publishedAt(post: Post | NewsItem): Date | undefined {
   return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
 }
 
-/** The `alternates.languages` map for one path, in the shape Next expects. */
-function alternatesFor(path: string) {
+/** The `alternates.languages` map for one path, in the shape Next expects.
+ *  Only the locales the page actually exists in — naming a language whose URL
+ *  404s tells a crawler the opposite of what hreflang is for. */
+function alternatesFor(path: string, locales: readonly Locale[] = LOCALES) {
+  const hasDefault = locales.includes(DEFAULT_LOCALE);
   return {
     languages: {
       ...Object.fromEntries(
-        LOCALES.map((locale) => [
+        locales.map((locale) => [
           locale,
           `${siteUrl}${localePath(locale, path)}`,
         ]),
       ),
       // The version a searcher gets when neither language matches theirs —
-      // English, which holds the site's established URLs.
-      "x-default": `${siteUrl}${localePath(DEFAULT_LOCALE, path)}`,
+      // English, which holds the site's established URLs. Dropped entirely
+      // when the page has no English version to point at.
+      ...(hasDefault
+        ? { "x-default": `${siteUrl}${localePath(DEFAULT_LOCALE, path)}` }
+        : {}),
     },
   };
 }
 
-/** One entry per locale for a path, each pointing at all of them. */
+/**
+ * One entry per locale for a path, each pointing at all of them.
+ *
+ * `locales` narrows that set. Marketing pages exist in both languages and omit
+ * it; a blog post passes the languages it was ticked for, because the ones it
+ * was not now 404 — and a sitemap that lists a 404 is worse than one that
+ * omits the page.
+ */
 function entry(
   path: string,
   options: {
     changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"];
     priority: number;
     lastModified?: Date;
+    locales?: readonly Locale[];
   },
 ): MetadataRoute.Sitemap {
-  return LOCALES.map((locale: Locale) => ({
+  return (options.locales ?? LOCALES).map((locale: Locale) => ({
     url: `${siteUrl}${localePath(locale, path)}`,
     ...(options.lastModified ? { lastModified: options.lastModified } : {}),
     changeFrequency: options.changeFrequency,
     priority: options.priority,
-    alternates: alternatesFor(path),
+    alternates: alternatesFor(path, options.locales),
   }));
 }
 
@@ -126,6 +140,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "yearly",
         priority: 0.6,
         lastModified: publishedAt(post),
+        locales: post.locales,
       }),
     ),
     ...entry("/news", {

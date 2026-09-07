@@ -1,3 +1,5 @@
+import type { Locale } from "@/lib/i18n/config";
+
 /**
  * The blog CMS data model.
  *
@@ -59,6 +61,21 @@ export interface Post {
    *  primary one wherever there is only room for a single badge — the article
    *  card's floating pill, the admin list row. */
   categories: string[];
+  /**
+   * Which language sites this post appears on — the "About the Taxonomy"
+   * checkboxes.
+   *
+   * This is a *placement* decision, not a statement about what language the
+   * post is written in: an Arabic article ticked `en` shows on the English
+   * blog, in Arabic. The panel has no way to know what language a body of text
+   * is in, and guessing it would be worse than letting the editor say.
+   *
+   * A record written before this field existed parses as both locales, which
+   * is exactly where those posts already appeared, so nothing moves until
+   * somebody edits it. Empty is refused by `validatePost` — a post that
+   * appears nowhere is a draft the editor did not mean to write.
+   */
+  locales: Locale[];
   status: PostStatus;
   /** Publication date as an ISO `yyyy-mm-dd` string. The long-form label the
    *  cards and article header show is derived at render time by

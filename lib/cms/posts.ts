@@ -16,6 +16,7 @@ import type {
   ResolvedPost,
 } from "./types";
 import { blogPosts as seedPosts, type BlogPost } from "@/content/blogs";
+import { LOCALES, isLocale, type Locale } from "@/lib/i18n/config";
 
 const POSTS_PREFIX = "cms/posts/";
 /** Written once the seed has run, so emptying the blog stays empty rather than
@@ -93,6 +94,8 @@ function legacyToPost(post: BlogPost): Post {
     title: post.title,
     excerpt: post.excerpt,
     categories: [post.category],
+    // The seeded articles are the ones both language sites have always shown.
+    locales: [...LOCALES],
     status: "published",
     date: legacyDateToIso(post.date),
     readTime: post.readTime,
@@ -172,9 +175,17 @@ function parsePost(raw: string): Post | null {
         ? value.authorId
         : legacyAuthorId(value.author?.name ?? "");
 
+    // Records written before "About the Taxonomy" existed appear on both
+    // language sites, which is where they already were — so an untouched post
+    // does not move the day this ships.
+    const locales = Array.isArray(value.locales)
+      ? value.locales.filter((locale): locale is Locale => isLocale(locale))
+      : [...LOCALES];
+
     return {
       ...value,
       authorId,
+      locales,
       categories: categories.filter((c) => c.trim()),
       blocks: Array.isArray(value.blocks) ? value.blocks : [],
       seo: value.seo ?? { metaTitle: "", metaDescription: "" },
@@ -244,6 +255,21 @@ export async function getPublishedPosts(): Promise<ResolvedPost[]> {
   return posts.filter((p) => p.status === "published");
 }
 
+/**
+ * What one language's site shows.
+ *
+ * Every public blog surface goes through this rather than `getPublishedPosts`,
+ * so a post ticked for English only is absent from the Arabic index, the
+ * Arabic homepage rail and the Arabic sitemap alike — and its Arabic URL 404s
+ * rather than rendering a page nothing links to.
+ */
+export async function getPublishedPostsFor(
+  locale: Locale,
+): Promise<ResolvedPost[]> {
+  const posts = await getPublishedPosts();
+  return posts.filter((post) => post.locales.includes(locale));
+}
+
 export async function getPostSummaries(): Promise<PostSummary[]> {
   const posts = await getAllPosts();
   return posts.map(({ blocks, ...rest }) => {
@@ -294,6 +320,8 @@ export function emptyPost(): Post {
     title: "",
     excerpt: "",
     categories: [],
+    // A new post appears in both languages until the editor narrows it.
+    locales: [...LOCALES],
     status: "draft",
     date: todayIso(),
     readTime: "",
@@ -366,6 +394,14 @@ export function validatePost(post: Post, status: PostStatus): PostErrors {
   const errors: PostErrors = {};
 
   if (!post.title.trim()) errors.title = "A title is required.";
+
+  // Checked on every save, not only on publish: "Update" is the button a
+  // published post shows, and a post that appears on neither site is not a
+  // state worth storing.
+  if (post.locales.length === 0) {
+    errors.locales =
+      "Pick at least one language under About the Taxonomy — a post with neither ticked would appear nowhere.";
+  }
 
   if (status === "published") {
     if (!post.excerpt.trim()) {

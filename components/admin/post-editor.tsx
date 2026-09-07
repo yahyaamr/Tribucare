@@ -17,6 +17,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LOCALES, LOCALE_LABELS } from "@/lib/i18n/config";
 import { computeReadTime, formatPostDate, slugify } from "@/lib/cms/format";
 import type { Author, Post, ResolvedPost } from "@/lib/cms/types";
 import { BlockEditor } from "./block-editor";
@@ -184,6 +185,14 @@ export function PostEditor({
 
   const busy = saving !== null;
 
+  /** A post with neither language ticked would appear on no site at all, so
+   *  both save paths are closed until one is — the server refuses it too, but
+   *  a button that cannot succeed should not look like it can. */
+  const noLocale = post.locales.length === 0;
+  const noLocaleReason = noLocale
+    ? "Pick a language under About the Taxonomy first."
+    : undefined;
+
   return (
     <>
       {/* ---- Action bar ------------------------------------------------- */}
@@ -232,7 +241,8 @@ export function PostEditor({
             <button
               type="button"
               onClick={() => save("draft")}
-              disabled={busy}
+              disabled={busy || noLocale}
+              title={noLocaleReason}
               className="rounded-xl border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-ink-soft transition-colors hover:bg-brand-50 disabled:opacity-60"
             >
               {saving === "draft" ? "Saving…" : "Save draft"}
@@ -241,7 +251,8 @@ export function PostEditor({
             <button
               type="button"
               onClick={() => save("published")}
-              disabled={busy}
+              disabled={busy || noLocale}
+              title={noLocaleReason}
               className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2 text-sm font-semibold text-white shadow-md transition-colors duration-300 hover:bg-brand-800 disabled:opacity-60"
             >
               {saving === "publish" ? (
@@ -504,6 +515,63 @@ export function PostEditor({
                   <ImagePlus className="size-5" aria-hidden="true" />
                   Set cover image
                 </button>
+              )}
+            </Panel>
+
+            {/* Placement, not translation: ticking English puts the post on
+                the English blog whatever language it is written in. Nothing
+                here inspects the body — the editor decides, because the panel
+                cannot know and guessing would be worse than asking. */}
+            <Panel title="About the Taxonomy">
+              <p className="text-xs text-ink-faint">
+                Which language sites this post appears on. Ticking a language
+                does not translate the post — it decides where it is listed.
+              </p>
+
+              <div className="space-y-2">
+                {LOCALES.map((locale) => {
+                  const checked = post.locales.includes(locale);
+                  return (
+                    <label
+                      key={locale}
+                      className="flex cursor-pointer items-center gap-2.5"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) =>
+                          update({
+                            // Rebuilt from LOCALES rather than pushed and
+                            // spliced, so the stored order is always the
+                            // canonical one and a double-click cannot leave a
+                            // duplicate behind.
+                            locales: LOCALES.filter((l) =>
+                              l === locale ? e.target.checked : post.locales.includes(l),
+                            ),
+                          })
+                        }
+                        className="size-4 shrink-0 rounded border-brand-300 accent-brand-700"
+                      />
+                      <span className="text-sm font-medium text-ink">
+                        {LOCALE_LABELS[locale]}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+
+              {post.locales.length === 0 && (
+                <p
+                  role="alert"
+                  className="flex items-start gap-1.5 rounded-xl bg-red-50 px-3 py-2 text-xs font-medium text-red-700"
+                >
+                  <TriangleAlert
+                    className="mt-0.5 size-3.5 shrink-0"
+                    aria-hidden="true"
+                  />
+                  Pick at least one language — the post cannot be saved while it
+                  would appear nowhere.
+                </p>
               )}
             </Panel>
 

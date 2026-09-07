@@ -6,7 +6,11 @@ import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal } from "@/components/site/reveal";
 import { ArticleView } from "@/components/blog/article-view";
 import { formatPostDate } from "@/lib/cms/format";
-import { getPostBySlug, getPublishedPosts } from "@/lib/cms/posts";
+import {
+  getPostBySlug,
+  getPublishedPosts,
+  getPublishedPostsFor,
+} from "@/lib/cms/posts";
 import { content, currentLocale } from "@/content/server";
 import { localePath } from "@/lib/i18n/config";
 import { JsonLd } from "@/components/site/json-ld";
@@ -20,6 +24,9 @@ import { articleSchema, breadcrumbSchema, pageMetadata } from "@/lib/seo";
  */
 export const revalidate = 3600;
 
+/** Slugs only — the locale is a separate segment, and a post published in just
+ *  one language still needs its slug prerendered for that one. The page itself
+ *  404s the locales the post was not ticked for. */
 export async function generateStaticParams() {
   const posts = await getPublishedPosts();
   return posts.map((post) => ({ slug: post.slug }));
@@ -31,9 +38,11 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getPostBySlug(slug);
-  if (!post || post.status !== "published") return {};
   const locale = await currentLocale();
+  const post = await getPostBySlug(slug);
+  if (!post || post.status !== "published" || !post.locales.includes(locale)) {
+    return {};
+  }
 
   const title = post.seo.metaTitle.trim() || post.title;
   const description = post.seo.metaDescription.trim() || post.excerpt;
@@ -63,14 +72,18 @@ export default async function BlogPostDetailPage({
 }) {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
-
-  // A draft is a 404 to the public, exactly as an unpublished post should be.
-  if (!post || post.status !== "published") notFound();
-
-  const { ui, nav } = await content();
   const locale = await currentLocale();
 
-  const relatedPosts = (await getPublishedPosts())
+  // A draft is a 404 to the public, exactly as an unpublished post should be —
+  // and so is a post this language was not ticked for, rather than a page that
+  // exists but nothing on the site links to.
+  if (!post || post.status !== "published" || !post.locales.includes(locale)) {
+    notFound();
+  }
+
+  const { ui, nav } = await content();
+
+  const relatedPosts = (await getPublishedPostsFor(locale))
     .filter((p) => p.slug !== post.slug)
     .slice(0, 3);
 

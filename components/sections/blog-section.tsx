@@ -4,14 +4,14 @@ import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { PostCard } from "@/components/blog/post-card";
 import { CardStepper } from "@/components/site/card-stepper";
-import { getPublishedPosts } from "@/lib/cms/posts";
+import { getPublishedPostsFor } from "@/lib/cms/posts";
 import { content, currentLocale } from "@/content/server";
 import { localePath } from "@/lib/i18n/config";
 
 export async function BlogSection() {
-  const posts = (await getPublishedPosts()).slice(0, 3);
   const { ui } = await content();
   const locale = await currentLocale();
+  const posts = (await getPublishedPostsFor(locale)).slice(0, 3);
 
   return (
     <section
