@@ -11,6 +11,18 @@ import { adminStrings } from "@/lib/i18n/admin-strings";
 export const metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
 
+/** A divider naming the section the panels under it belong to. */
+function SectionHeading({ title, hint }: { title: string; hint: string }) {
+  return (
+    <div className="flex items-baseline gap-3 pt-2 first:pt-0">
+      <h2 className="font-display text-sm font-semibold tracking-wide text-ink uppercase">
+        {title}
+      </h2>
+      <span className="text-xs text-ink-faint">{hint}</span>
+    </div>
+  );
+}
+
 export default async function AdminSettingsPage() {
   const [categories, newsTags, authors] = await Promise.all([
     getCategories(),
@@ -24,9 +36,9 @@ export default async function AdminSettingsPage() {
     <div className="mx-auto max-w-4xl px-5 py-8 sm:px-8">
       <h1 className="font-display text-2xl font-semibold text-ink">Settings</h1>
       <p className="mt-1 text-sm text-ink-soft">
-        The lists blogs and news draw from. The two vocabularies are kept apart:
-        blog categories drive the blog, news tags drive the news page, and
-        editing one never touches the other.
+        The lists each section draws from, grouped by the section they belong
+        to. The two category lists are entirely separate — adding one to Events
+        &amp; News never adds it to the blog, and the reverse.
       </p>
 
 
@@ -47,8 +59,26 @@ export default async function AdminSettingsPage() {
           </div>
         </section>
 
+        {/* Grouped by section rather than by kind of list. Two lists both
+            called "Categories" side by side is what made the blog's read as
+            the only one — the heading above each group is what says which
+            section you are editing. */}
+        <SectionHeading
+          title="Blog"
+          hint="Lists behind tribucare.org/blog."
+        />
         <CategoryManager initial={categories} />
+
+        <SectionHeading
+          title="Events & News"
+          hint="Lists behind tribucare.org/events."
+        />
         <NewsTagManager initial={newsTags} />
+
+        <SectionHeading
+          title="Shared"
+          hint="Used by more than one section."
+        />
         {/* Authors are shared on purpose — a person who writes both a blog post
             and an announcement is one person, and correcting their name should
             not have to be done twice. */}

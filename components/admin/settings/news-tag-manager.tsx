@@ -74,7 +74,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
       "add",
     );
 
-    if (!ok) return setError(body?.error ?? "Could not add that tag.");
+    if (!ok) return setError(body?.error ?? "Could not add that category.");
     setTags(body.tags);
     setAdding("");
     router.refresh();
@@ -93,7 +93,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
       editing.from,
     );
 
-    if (!ok) return setError(body?.error ?? "Could not rename that tag.");
+    if (!ok) return setError(body?.error ?? "Could not rename that category.");
     setTags(body.tags);
     setEditing(null);
     router.refresh();
@@ -119,7 +119,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
       setConfirming({ name, usage: body.usage });
       return;
     }
-    setError(body?.error ?? "Could not delete that tag.");
+    setError(body?.error ?? "Could not delete that category.");
   }
 
   /** Second click: do it, stripping the tag from the affected items. */
@@ -132,7 +132,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
       confirming.name,
     );
 
-    if (!ok) return setError(body?.error ?? "Could not delete that tag.");
+    if (!ok) return setError(body?.error ?? "Could not delete that category.");
     setTags(body.tags);
     setConfirming(null);
     router.refresh();
@@ -142,12 +142,12 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
     <section className="card-surface overflow-hidden">
       <div className="border-b border-brand-100 bg-brand-50/50 px-5 py-3.5">
         <h2 className="font-display text-base font-semibold text-ink">
-          News tags
+          Events &amp; News categories
         </h2>
         <p className="mt-0.5 text-xs text-ink-soft">
-          The filter tabs on the news page. Renaming one updates every news item
-          using it. These are separate from the blog&rsquo;s categories above —
-          editing them affects the news page only.
+          The filter tabs on the Events &amp; News page. Renaming one updates
+          every item using it. A separate list from the blog&rsquo;s above —
+          adding one here never adds it to the blog, and the reverse.
         </p>
       </div>
 
@@ -267,7 +267,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
         <input
           value={adding}
           onChange={(e) => setAdding(e.target.value)}
-          placeholder="New tag name"
+          placeholder="New category name"
           className="flex-1 rounded-xl border border-brand-200/80 bg-white px-3.5 py-2 text-sm text-ink shadow-sm transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none"
         />
         <button
@@ -323,7 +323,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
             title: item.title,
             status: item.status,
             flagged: item.onlyTag,
-            flagLabel: "will have no tag",
+            flagLabel: "will have no category",
           }))}
         />
       )}

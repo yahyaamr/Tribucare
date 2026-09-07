@@ -133,7 +133,7 @@ export function CategoryManager({ initial }: { initial: string[] }) {
     <section className="card-surface overflow-hidden">
       <div className="border-b border-brand-100 bg-brand-50/50 px-5 py-3.5">
         <h2 className="font-display text-base font-semibold text-ink">
-          Categories
+          Blog categories
         </h2>
         <p className="mt-0.5 text-xs text-ink-soft">
           These are the filter tabs on the blog. Renaming one updates every post
