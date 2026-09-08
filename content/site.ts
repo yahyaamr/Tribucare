@@ -27,7 +27,7 @@ export const nav = [
   { label: "Home", href: "/", icon: "home" },
   { label: "Our Expertise", href: "/#expertise", icon: "layers" },
   { label: "Core Values", href: "/#core-values", icon: "gem" },
-  { label: "Partnerships", href: "/#partner", icon: "handshake" },
+  { label: "Events & News", href: "/events", icon: "calendar" },
   { label: "Blog", href: "/blog", icon: "newspaper" },
 ] as const;
 

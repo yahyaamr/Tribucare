@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLenis } from "lenis/react";
 import {
+  Calendar,
   Gem,
   Handshake,
   Home,
@@ -52,6 +53,7 @@ const ICONS: Record<string, LucideIcon> = {
   gem: Gem,
   newspaper: Newspaper,
   handshake: Handshake,
+  calendar: Calendar,
 };
 
 /* --------------------------------------------------------------------------
