@@ -605,6 +605,25 @@ export const partner = {
   ],
   primaryCta: { label: "Partner With Us", href: "/partner" },
   secondaryCta: { label: "Explore Our Brands", href: "#brands" },
+  /**
+   * The /partner hero's visual. Not used by the homepage's Partner section,
+   * which is centred type on a dark ground and carries no figure.
+   *
+   * Same two-layer construction as `missionVision.media`, and deliberately the
+   * same shield backdrop file: the figure was composited onto that image's
+   * 1036×1197 crop box, so `object-contain` resolves both to one size and
+   * origin and they register exactly. Re-export the figure at any other
+   * dimensions and it slides out of the shield.
+   */
+  media: {
+    backdrop: { src: "/brand/mission-backdrop.webp" },
+    figure: {
+      src: "/brand/partners-figure.webp",
+      alt: "Two professionals in business dress shaking hands, one holding a laptop.",
+    },
+    width: 1036,
+    height: 1197,
+  },
 } as const;
 
 /**

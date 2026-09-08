@@ -433,6 +433,13 @@ export const partner = {
   ],
   primaryCta: { label: "كن شريكًا لنا" },
   secondaryCta: { label: "تعرّف على علاماتنا" },
+  // Only the alt text is translated; the image paths and the crop dimensions
+  // inherit from English, which is what keeps the two layers registering.
+  media: {
+    figure: {
+      alt: "شخصان بملابس رسمية يتصافحان، وأحدهما يحمل حاسوبًا محمولًا.",
+    },
+  },
 };
 
 export const footerNav = [
