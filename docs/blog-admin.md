@@ -1,8 +1,22 @@
-# Blog admin
+# The admin panel
 
-A password-protected panel at **`/admin`** where the SEO team writes, edits and
-publishes TribuCare articles. Share that link plus the password — that is the
-whole onboarding.
+A password-protected panel at **`/admin`** where the SEO team publishes
+everything on the site that changes week to week. Share that link plus the
+password — that is the whole onboarding.
+
+It covers three content types, plus the media and lists they draw from:
+
+| Section | Publishes to | Notes |
+|---|---|---|
+| **Blogs** | `/blog` and `/blog/<slug>` | Block editor, live preview, categories, authors |
+| **Events & News** | `/events` | Same editor, with a date, a location and tags |
+| **Careers** | the Careers section on `/` | Role, department, type, location, blurb |
+| **Media** | shared by all three | Drag-and-drop uploads, reusable library |
+| **Settings** | — | Categories, authors, news tags, panel language |
+
+Everything below describes blogs; **events, news and careers work the same
+way** — same editor, same draft/publish model, same media library. Where they
+differ it is called out.
 
 ---
 
@@ -113,6 +127,16 @@ images.
   /blog filter. Reorder by removing and re-adding.
 - **Authors and categories are managed in Settings**, not per post. The post
   editor picks from those lists.
+- **A record can choose which language sites it appears on.** A post written
+  only in Arabic can be shown on `/ar/blog` and hidden from `/blog`, rather
+  than appearing untranslated on both.
+- **Events & news** behave identically, with a date and a location instead of a
+  read time, and tags instead of categories. Past and upcoming are derived from
+  the date, so an event moves itself into the archive.
+- **Careers** are the simplest of the three: a role with a department, type,
+  location and blurb. They render as the cards in the Careers section on the
+  homepage, and the "apply" button is left out entirely until an apply URL is
+  set — an empty one ships no dead link.
 
 ### Settings
 
@@ -184,20 +208,27 @@ the real article, because it *is* the real article.
 
 ```
 lib/cms/
-  types.ts        Post and Block shapes
+  types.ts        Post, News, Role and Block shapes
   format.ts       Pure helpers — safe to import from client components
   store.ts        Storage interface + Vercel Blob and filesystem implementations
-  posts.ts        Post CRUD, seeding, validation
+  posts.ts        Blog CRUD, seeding, validation
+  news.ts         Events & news CRUD
+  roles.ts        Career roles CRUD
   categories.ts   Category list, rename, delete-with-usage-report
-  authors.ts      Author list; posts reference these by id
+  news-tags.ts    The same, for the events & news tag list
+  authors.ts      Author list; posts reference these by id, so an edit
+                  reaches every article that author wrote
   media.ts        Uploads
   auth.ts         Password check and signed session cookie
   session.ts      The server-side gate used by pages and API routes
   revalidate.ts   Cache refresh on publish
+lib/i18n/
+  admin.ts        The panel's language cookie
+  admin-strings.ts The panel's own strings, EN + AR, one typed object
 proxy.ts          Redirects signed-out visitors to the login form
 app/(admin)/admin/ The panel (login sits outside the gated (panel) group)
-app/api/admin/    Its API
-components/admin/ Shell, list table, block editor, media library
+app/api/admin/    Its API — every handler calls requireSession()
+components/admin/ Shell, list tables, block editor, media library, settings
 ```
 
 ### Swapping the storage later

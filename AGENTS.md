@@ -82,7 +82,8 @@ app/
     page.tsx            homepage = ordered list of <Section /> components
     dermatology/ mlay/ altesse-soin/ partner/ blog/ news/ events/
     not-found.tsx       branded 404; [...rest]/page.tsx routes unknown paths to it
-  (admin)/admin/        blog + news CMS panel. Own root layout, cookie language.
+  (admin)/admin/        the CMS panel — blogs, events & news, careers, media,
+                        settings. Own root layout; language is a cookie, not a URL.
   api/admin/            the panel's JSON API — every handler calls requireSession
   globals.css           ALL design tokens, utilities, keyframes. Single source.
   sitemap.ts robots.ts manifest.ts opengraph-image.tsx    SEO surface
@@ -97,16 +98,21 @@ components/
   blog/ news/ events/   post-card (canonical), news-card, event-card, views
   admin/                the panel's UI
 content/
-  site.ts dermatology.ts mlay.ts altesse.ts   ALL marketing copy. `as const`.
-  blogs.ts              seed for the CMS store — not read by the site
-  en/index.ts           the English bundle, plus `ui` and `meta` strings
+  site.ts dermatology.ts mlay.ts altesse.ts collections.ts
+                        ALL marketing copy. `as const`.
+  blogs.ts              seed for the CMS store — NOT read by the site
+  en/index.ts           the English bundle, plus the `ui` and `meta` strings
   ar/                   Arabic — a deep OVERRIDE of English, never a copy
   index.ts server.ts    getContent(locale); content() / currentLocale()
 lib/
   seo.ts                pageMetadata() + every schema.org builder
   site.ts               canonical siteUrl resolution
-  i18n/                 locales, URL shapes, admin language cookie
-  cms/                  store, posts, news, authors, categories, auth
+  fonts.ts              the four faces, shared by both root layouts
+  i18n/config.ts        locales, URL shapes, localePath / splitLocale
+  i18n/admin.ts         the panel's language cookie
+  i18n/admin-strings.ts the panel's OWN strings, EN + AR — not content/
+  cms/                  store, posts, news, roles, authors, categories,
+                        news-tags, media, auth, session, revalidate
   forms.ts utils.ts
 ```
 
@@ -129,6 +135,25 @@ lib/
 - Sections take no props. They read their own content and render.
 - A new page is a route file that composes existing section components, or new
   sections built to the pattern below.
+
+**The CMS owns three content types.** Blog posts, events & news, and career
+roles are authored in `/admin` and live in the store (`lib/cms/`), not in
+`content/`. `content/blogs.ts` is the one-time seed and is never read by a
+page. So:
+
+- Never add a post, event or role by editing a file — it will be ignored, or
+  overwritten. Add it in the panel.
+- Every handler under `app/api/admin/` starts with `requireSession()`. The only
+  two that do not are `login` (which cannot) and `logout` (which need not) —
+  anything else is a bug. The proxy's redirect is an optimistic UX check, not
+  the gate; `requireSession` is.
+- After any create / update / delete, call `revalidateBlog()` (or its news
+  equivalent) from `lib/cms/revalidate.ts`. The public pages are ISR-cached and
+  will otherwise keep serving the old copy until the window ages out.
+- Panel strings go in `lib/i18n/admin-strings.ts`, never in `content/`. That
+  file is software chrome — "Move to trash" does not belong beside the homepage
+  headline. Both locales are one typed object, so a missing Arabic key is a
+  build error.
 
 ## Design tokens — use these, never raw hex
 
@@ -254,6 +279,83 @@ Fixed values in that block — reuse them exactly:
   headline in white with a `#7fdcec` accent line, `#f5a623` rule above the
   eyebrow.
 
+## Arabic & RTL
+
+The site is one codebase serving two languages. English keeps the bare URLs it
+already ranks for; Arabic is added under `/ar`. Both are the same route tree —
+`proxy.ts` rewrites `/x` onto `/en/x`, lets `/ar/x` through, and 308s `/en/x`
+back to `/x` so nothing is published at two URLs.
+
+### Writing copy
+
+- Arabic lives in `content/ar/` and is a **deep override**, not a copy. Put only
+  translated strings there. Slugs, hrefs, image paths, icon keys, dimensions and
+  brand names inherit from English — that is what keeps both languages on the
+  same URL, which is what makes the language switch land on the same page.
+- **Arrays merge by index.** A short Arabic array silently leaves the tail in
+  English, which is how a missing fifth bullet hides. Match the English length.
+- Anything untranslated falls back to English rather than rendering blank. That
+  is deliberate, and it means a new English section ships readable — but it also
+  means nothing shouts when a translation is missing. Sweep the rendered `/ar`
+  pages for Latin text before calling a translation done.
+- Register: Modern Standard Arabic as Egyptian professionals read it. Not
+  colloquial Egyptian, not Gulf-inflected marketing Arabic.
+- **Do not translate:** brand and model names (MLAY, Rejuran, `IDS Tridi`),
+  technical notation (`755 nm`, `2,500 W`, `33G`, `PLLA`), standard
+  designations (CE, ISO 13485, FDA 510(k)) — a standard's name is its
+  identifier — or SKU names as they appear on the packaging.
+- Device copy in `content/ar/products-dermatology.ts` carries a clinical-review
+  notice. Indications, depths and protocols are regulated claims; keep the
+  numbers identical to the English and leave the notice in place.
+
+### Layout
+
+Everything directional is expressed **logically**, so `dir="rtl"` mirrors the
+page on its own:
+
+| Never | Always |
+|---|---|
+| `ml-` `mr-` | `ms-` `me-` |
+| `pl-` `pr-` | `ps-` `pe-` |
+| `left-` `right-` | `start-` `end-` |
+| `text-left` `text-right` | `text-start` `text-end` |
+| `border-l-` `border-r-` | `border-s-` `border-e-` |
+
+Four things have no logical form and need an explicit `rtl:` counterpart. Miss
+one and it only shows in Arabic:
+
+- `group-hover:translate-x-1` → add `rtl:group-hover:-translate-x-1`
+- `origin-left` → add `rtl:origin-right`
+- `bg-gradient-to-r` → add `rtl:bg-gradient-to-l`
+- Directional lucide icons mirror globally from `globals.css` — do not add a
+  per-icon flip.
+
+### The two deliberate exceptions — do not "fix" these
+
+- **`.notch-fillet-*`** in `nav.tsx` and `footer.tsx` keep **physical**
+  `left-full` / `right-full`. Each fillet's mask is a radial gradient centred on
+  the specific corner it fairs into (`circle at 0 0` for the left one). Logical
+  insets swap their *positions* under RTL while leaving the *masks* alone, so
+  the left-cut arc lands on the right and the curve reads inverted. The header
+  and footer bars are symmetric overall, so physical is correct here. This has
+  been broken twice; leave it.
+- **`<WaveField>`'s `left-0`** — a 200%-wide decorative line field that should
+  overflow the same way in both directions.
+
+`globals.css` ends with the RTL block: Cairo rebinds `--font-display` and
+`--font-sans` under `[dir="rtl"]` (Outfit and Figtree carry no Arabic glyphs),
+and `.eyebrow` drops its uppercase and mono face, neither of which means
+anything in Arabic.
+
+### Client components
+
+`next/root-params` — how server components read the locale — **cannot be called
+from a client component, or from any module a client component imports.** A
+client component receives what it needs as props from its server parent. If a
+shared component is rendered from inside a client component (as `<EventCard>` is
+from the carousel), it takes a prop too; making it async breaks the build with
+an "only available in Server Components" error.
+
 ## Inner scroll areas
 
 **Never hand-roll one.** Use `<ScrollColumn>` (vertical) or `<Rail>`
@@ -315,3 +417,19 @@ overflows the viewport on phones.
 
 `npx tsc --noEmit` if you touched types or added files. That's it — no browser
 run unless the change is visual *and* risky, or the user asks.
+
+Add to that only when the change earns it:
+
+- **Moved or added routes, or touched `proxy.ts`:** `npm run build`. Route
+  resolution, the two root layouts and `generateStaticParams` are only fully
+  exercised at build time, and `tsc` will not catch a client component pulling
+  in `next/root-params`.
+- **Touched a client component or a hook:** `npx eslint .`. The React rules
+  catch the two failures that look fine in review and break at runtime —
+  setState in an effect body, and a component declared inside a render (which
+  remounts its inputs and loses focus on every keystroke).
+- **Added or changed copy:** load `/ar` for the pages you touched and look for
+  Latin text. The English fallback means a missing translation renders silently
+  rather than failing.
+- **Anything visual on a page that has an Arabic version:** check it in both
+  directions. A logical-property miss is invisible in English by definition.
