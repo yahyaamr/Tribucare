@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { SquarePen } from "lucide-react";
-import { roleIcon } from "@/components/careers/role-icons";
+import {
+  FALLBACK_ROLE_ICON,
+  ROLE_ICON_MAP,
+} from "@/components/careers/role-icons";
 import type { Role } from "@/lib/cms/types";
 
 /**
@@ -31,7 +34,7 @@ export function RolesTable({ roles }: { roles: Role[] }) {
       <div className="card-surface mt-6 overflow-hidden">
         <ul className="divide-y divide-brand-50">
           {roles.map((role) => {
-            const Icon = roleIcon(role.icon);
+            const Icon = ROLE_ICON_MAP[role.icon] ?? FALLBACK_ROLE_ICON;
             return (
               <li
                 key={role.id}

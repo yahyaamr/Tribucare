@@ -1,6 +1,5 @@
 import {
   Briefcase,
-  Calculator,
   FlaskConical,
   GraduationCap,
   HeartPulse,
@@ -53,11 +52,15 @@ export const ROLE_ICONS: { key: string; label: string; Icon: LucideIcon }[] = [
   { key: "ShieldCheck", label: "Quality & regulatory", Icon: ShieldCheck },
 ];
 
-const BY_KEY = new Map(ROLE_ICONS.map((icon) => [icon.key, icon.Icon]));
+/**
+ * Keyed lookup, exported as a plain map rather than behind a `roleIcon(key)`
+ * helper: a call that returns a component reads to React's lint rules as a
+ * component *created during render*, which is the thing that resets state. An
+ * index into a stable map is what it is — a lookup.
+ */
+export const ROLE_ICON_MAP: Record<string, LucideIcon> = Object.fromEntries(
+  ROLE_ICONS.map((icon) => [icon.key, icon.Icon]),
+);
 
 /** The default for an unset, unknown or retired key. */
 export const FALLBACK_ROLE_ICON = Briefcase;
-
-export function roleIcon(key: string): LucideIcon {
-  return BY_KEY.get(key) ?? FALLBACK_ROLE_ICON;
-}

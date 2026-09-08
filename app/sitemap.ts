@@ -109,6 +109,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .map(publishedAt)
     .filter((date): date is Date => date !== undefined);
 
+  // The Events & News index inherits the newest item's date, the way /blog
+  // inherits the newest post's — the two pages are the same shape.
   const newestNews = newsDates.length
     ? new Date(Math.max(...newsDates.map((date) => date.getTime())))
     : undefined;
@@ -129,7 +131,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
     ...entry("/mlay", { changeFrequency: "monthly", priority: 0.8 }),
     ...entry("/altesse-soin", { changeFrequency: "monthly", priority: 0.8 }),
-    ...entry("/events", { changeFrequency: "weekly", priority: 0.8 }),
+    ...entry("/events", {
+      changeFrequency: "weekly",
+      priority: 0.8,
+      lastModified: newestNews,
+    }),
     ...entry("/blog", {
       changeFrequency: "weekly",
       priority: 0.8,

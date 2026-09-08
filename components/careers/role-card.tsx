@@ -1,5 +1,8 @@
 import { ArrowRight, Briefcase, MapPin } from "lucide-react";
-import { roleIcon } from "@/components/careers/role-icons";
+import {
+  FALLBACK_ROLE_ICON,
+  ROLE_ICON_MAP,
+} from "@/components/careers/role-icons";
 
 /**
  * One open role.
@@ -24,7 +27,7 @@ export function RoleCard({
   };
   href?: string;
 }) {
-  const Icon = roleIcon(role.icon);
+  const Icon = ROLE_ICON_MAP[role.icon] ?? FALLBACK_ROLE_ICON;
 
   return (
     <article className="card-surface card-interactive group relative flex h-full flex-col justify-between overflow-hidden p-8">
