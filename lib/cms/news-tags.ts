@@ -26,9 +26,13 @@ export function normaliseTag(name: string) {
   return name.trim().replace(/\s+/g, " ").slice(0, 60);
 }
 
-async function readStored(): Promise<string[]> {
-  // No catch: absence is null, failure throws. See categories.ts.
-  const raw = await getStore().read(TAGS_PATH);
+/** `strict` splits rendering from writing. See `readAuthors`. */
+async function readStored(strict = false): Promise<string[]> {
+  const raw = strict
+    ? await getStore().read(TAGS_PATH)
+    : await getStore()
+        .read(TAGS_PATH)
+        .catch(() => null);
 
   if (!raw) return [];
 
@@ -88,7 +92,7 @@ export async function addNewsTag(
   // near-duplicate.
   if (match) return { ok: true, tag: match, tags: existing };
 
-  const stored = await readStored();
+  const stored = await readStored(true);
   await writeStored([...stored, clean]);
 
   return {
@@ -166,7 +170,7 @@ export async function renameNewsTag(
     await saveNews({ ...item, tags: next });
   }
 
-  const stored = await readStored();
+  const stored = await readStored(true);
   const renamed = stored.map((t) =>
     t.toLowerCase() === before.toLowerCase() ? after : t,
   );
@@ -217,7 +221,7 @@ export async function deleteNewsTag(
     }
   }
 
-  const stored = await readStored();
+  const stored = await readStored(true);
   await writeStored(
     stored.filter((t) => t.toLowerCase() !== clean.toLowerCase()),
   );

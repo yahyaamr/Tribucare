@@ -20,9 +20,23 @@ export function normaliseAuthorName(name: string) {
   return name.trim().replace(/\s+/g, " ").slice(0, 80);
 }
 
-async function readAuthors(): Promise<Author[]> {
-  // No catch: absence is null, failure throws. See categories.ts.
-  const raw = await getStore().read(AUTHORS_PATH);
+/**
+ * `strict` splits the two callers, exactly as it does for posts and news.
+ *
+ * Rendering a page must degrade: a byline that cannot be looked up is a card
+ * without a name, which is survivable. Making it throw took the whole
+ * production build down, because resolving every post asks for this map and a
+ * prerender has nowhere to put the error.
+ *
+ * A *writer* must not degrade: every mutator below reads this list and writes
+ * it back, so treating a failed read as "no authors" would erase them all.
+ */
+async function readAuthors(strict = false): Promise<Author[]> {
+  const raw = strict
+    ? await getStore().read(AUTHORS_PATH)
+    : await getStore()
+        .read(AUTHORS_PATH)
+        .catch(() => null);
   if (!raw) return [];
   try {
     const value = JSON.parse(raw) as { authors?: unknown };
@@ -78,7 +92,7 @@ export async function getAuthorMap(): Promise<Map<string, Author>> {
 export async function ensureAuthorsFor(
   inline: { name: string; role: string; avatar: string }[],
 ) {
-  const existing = await readAuthors();
+  const existing = await readAuthors(true);
   const known = new Set(existing.map((a) => a.id));
   const added: Author[] = [];
 
@@ -106,7 +120,7 @@ export async function createAuthor(input: {
   const name = normaliseAuthorName(input.name);
   if (!name) return { ok: false, error: "Give the author a name." };
 
-  const authors = await readAuthors();
+  const authors = await readAuthors(true);
   if (authors.some((a) => a.name.toLowerCase() === name.toLowerCase())) {
     return { ok: false, error: `“${name}” is already in the list.` };
   }
@@ -131,7 +145,7 @@ export async function updateAuthor(
   id: string,
   patch: { name?: string; role?: string; avatar?: string },
 ): Promise<{ ok: true; author: Author } | { ok: false; error: string }> {
-  const authors = await readAuthors();
+  const authors = await readAuthors(true);
   const index = authors.findIndex((a) => a.id === id);
   if (index === -1) return { ok: false, error: "That author no longer exists." };
 
@@ -166,6 +180,6 @@ export async function updateAuthor(
 }
 
 export async function deleteAuthor(id: string) {
-  const authors = await readAuthors();
+  const authors = await readAuthors(true);
   await writeAuthors(authors.filter((a) => a.id !== id));
 }

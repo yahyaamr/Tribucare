@@ -32,11 +32,17 @@ export function normaliseCategory(name: string) {
   return name.trim().replace(/\s+/g, " ").slice(0, 60);
 }
 
-async function readStored(): Promise<string[]> {
-  // No catch: `read` is null only when the file is absent. A failure throws,
-  // and must — treating it as absence is what once re-seeded this list over a
-  // user's categories.
-  const raw = await getStore().read(CATEGORIES_PATH);
+/**
+ * `strict` splits rendering from writing. See `readAuthors` — a page degrades,
+ * a writer stops. Strict also matters for the seed below: only a definite
+ * absence may seed, never a read that merely failed.
+ */
+async function readStored(strict = false): Promise<string[]> {
+  const raw = strict
+    ? await getStore().read(CATEGORIES_PATH)
+    : await getStore()
+        .read(CATEGORIES_PATH)
+        .catch(() => null);
 
   // No file at all means the seed has never run. An *empty* file is a
   // deliberately emptied list and is left alone — the same distinction the
@@ -120,7 +126,7 @@ export async function addCategory(
   // a near-duplicate.
   if (match) return { ok: true, category: match, categories: existing };
 
-  const stored = await readStored();
+  const stored = await readStored(true);
   await writeStored([...stored, clean]);
 
   return {
@@ -205,7 +211,7 @@ export async function renameCategory(
     await savePost({ ...post, categories: next });
   }
 
-  const stored = await readStored();
+  const stored = await readStored(true);
   const renamed = stored.map((c) =>
     c.toLowerCase() === before.toLowerCase() ? after : c,
   );
@@ -260,7 +266,7 @@ export async function deleteCategory(
     }
   }
 
-  const stored = await readStored();
+  const stored = await readStored(true);
   await writeStored(
     stored.filter((c) => c.toLowerCase() !== clean.toLowerCase()),
   );
