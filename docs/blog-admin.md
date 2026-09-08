@@ -224,8 +224,7 @@ Present on every screen once signed in.
 |---|---|
 | **☰** (mobile) | Opens the sidebar. |
 | **Globe** | Switches the *panel's* language between English and Arabic. A cookie, so it is per person and does not change any content. |
-| **View blog** | Opens the public `/blog` index in a new tab. |
-| **View events** | Opens the public `/events` index in a new tab. |
+| **View site** | Opens the public homepage in a new tab. |
 | **Sign out** | Ends the session and returns to the login screen. |
 | **Dashboard / Posts / Events & News / Careers / Media / Settings** | Navigation. The current section is highlighted. |
 | **New post / New item** | Shortcuts straight into an empty editor. |

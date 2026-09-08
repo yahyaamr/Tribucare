@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   BriefcaseBusiness,
+  ExternalLink,
   FileText,
   Image as ImageIcon,
   LayoutDashboard,
@@ -103,38 +104,14 @@ export function AdminShell({
             locale={locale}
             label={locale === "ar" ? "Switch to English" : "التبديل إلى العربية"}
           />
-          {/* The two public indexes the panel publishes to. Carrying the same
-              icons the sidebar gives those sections is what keeps them apart on
-              a phone, where the labels are hidden — two identical external-link
-              glyphs would have been a coin toss. `aria-label` rather than the
-              visible span alone, because `hidden` drops that span out of the
-              accessibility tree, leaving the link unnamed at exactly the width
-              where the icon is all there is to go on. */}
           <Link
             href="/blog"
             target="_blank"
             rel="noreferrer"
-            aria-label={t.viewSite}
-            title={t.viewSite}
             className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-brand-200 transition-colors hover:bg-white/10 hover:text-white"
           >
-            <FileText className="size-3.5" aria-hidden="true" />
-            <span className="hidden sm:inline" aria-hidden="true">
-              {t.viewSite}
-            </span>
-          </Link>
-          <Link
-            href="/events"
-            target="_blank"
-            rel="noreferrer"
-            aria-label={t.viewEvents}
-            title={t.viewEvents}
-            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-brand-200 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            <Newspaper className="size-3.5" aria-hidden="true" />
-            <span className="hidden sm:inline" aria-hidden="true">
-              {t.viewEvents}
-            </span>
+            <ExternalLink className="size-3.5" aria-hidden="true" />
+            <span className="hidden sm:inline">{t.viewSite}</span>
           </Link>
           <button
             type="button"

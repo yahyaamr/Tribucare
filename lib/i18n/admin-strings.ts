@@ -16,11 +16,7 @@ import type { Locale } from "./config";
 interface AdminStringsShape {
   dir: "ltr" | "rtl";
   brand: string;
-  /** The two public pages the panel publishes to, opened in a new tab. Named
-   *  for the page each one lands on rather than "View site", which said
-   *  nothing about which of the two you were about to open. */
   viewSite: string;
-  viewEvents: string;
   signOut: string;
   signingOut: string;
   openMenu: string;
@@ -46,8 +42,7 @@ interface AdminStringsShape {
 const en: AdminStringsShape = {
   dir: "ltr",
   brand: "TribuCare Blog",
-  viewSite: "View blog",
-  viewEvents: "View events",
+  viewSite: "View site",
   signOut: "Sign out",
   signingOut: "Signing out…",
   openMenu: "Open menu",
@@ -77,8 +72,7 @@ const en: AdminStringsShape = {
 const ar: AdminStringsShape = {
   dir: "rtl",
   brand: "مدونة تريبوكير",
-  viewSite: "عرض المدونة",
-  viewEvents: "عرض الفعاليات",
+  viewSite: "عرض الموقع",
   signOut: "تسجيل الخروج",
   signingOut: "جارٍ تسجيل الخروج…",
   openMenu: "فتح القائمة",
