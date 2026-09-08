@@ -209,7 +209,7 @@ export const brandGroups = [
     id: "professional",
     /** Left panel of the group. Empty renders the site placeholder — see
      *  `ImageFallback`. Supply a .webp and describe it in `alt`. */
-    image: { src: "", alt: "" },
+    image: { src: "/brand/brands-dermatology.webp", alt: "Rejuran Skin Barrier sun stick and sunscreen tube on a teal ground, beside a textured exfoliant swatch and a smooth cream swatch." },
     kicker: "01 / Professional Dermatology",
     title: "Represented in Egypt",
     note: "TribuCare is the exclusive agent in Egypt for these brands.",
@@ -232,7 +232,7 @@ export const brandGroups = [
   },
   {
     id: "devices",
-    image: { src: "", alt: "" },
+    image: { src: "/brand/brands-mlay.webp", alt: "A rose-gold MLAY handheld laser hair-removal device resting on rope netting over rippling blue water, with seashells and a starfish around it." },
     kicker: "02 / Home Beauty Technology",
     title: "Distributed nationwide",
     note: "TribuCare is the exclusive official distributor of MLAY in Egypt.",
@@ -246,7 +246,7 @@ export const brandGroups = [
   },
   {
     id: "skincare",
-    image: { src: "", alt: "" },
+    image: { src: "/brand/brands-altesse.webp", alt: "Five altesse roll-on deodorants — Aurora, Délice, Sérénité, Félicité and Belle Vie — each tied with a pale blue ribbon on a light blue ground." },
     kicker: "03 / Medicated Skincare",
     title: "Our own brand",
     note: "Altesse Soin is TribuCare's flagship skincare brand.",
