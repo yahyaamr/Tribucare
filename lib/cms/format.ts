@@ -103,7 +103,7 @@ export const ALLOWED_IMAGE_TYPES = new Map([
   ["image/gif", "gif"],
 ]);
 
-export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+export const MAX_UPLOAD_BYTES = 300 * 1024;
 
 export const allowedTypeList = [...ALLOWED_IMAGE_TYPES.keys()].join(",");
 

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { ImagePlus, Loader2, Trash2, Upload, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { allowedTypeList, formatBytes } from "@/lib/cms/format";
+import { MAX_UPLOAD_BYTES, allowedTypeList, formatBytes } from "@/lib/cms/format";
 import type { MediaItem } from "@/lib/cms/types";
 
 /**
@@ -60,8 +60,8 @@ export function MediaLibrary({
       setBusy(true);
       setError("");
 
-      // Sequential rather than parallel: several 8MB uploads at once is a
-      // reliable way to hit a request limit and lose all of them.
+      // Sequential rather than parallel: several uploads at once is a reliable
+      // way to hit a request limit and lose all of them.
       for (const file of Array.from(files)) {
         const form = new FormData();
         form.append("file", file);
@@ -154,7 +154,7 @@ export function MediaLibrary({
           {busy ? "Uploading…" : "Choose files"}
         </button>
         <p className="mt-2 text-xs text-ink-faint">
-          JPG, PNG, WebP, AVIF or GIF · up to 8MB each
+          JPG, PNG, WebP, AVIF or GIF · up to {formatBytes(MAX_UPLOAD_BYTES)} each
         </p>
       </div>
 
