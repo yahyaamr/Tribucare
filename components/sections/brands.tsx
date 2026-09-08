@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Shell, Eyebrow } from "@/components/site/shell";
+import { ImageFallback } from "@/components/site/image-fallback";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { content } from "@/content/server";
 
@@ -45,6 +46,49 @@ async function BrandLogo({
       height={logo.height}
       className={cn("w-auto object-contain object-left", className)}
     />
+  );
+}
+
+/**
+ * The image panel each group is introduced by.
+ *
+ * One component for all three so the three groups cannot drift into three
+ * different treatments — same radius, same hairline, same mint ground the media
+ * bands use everywhere else. It stretches to whatever the content beside it
+ * measures (`h-full` against an `items-stretch` grid), which is what keeps the
+ * panel and the cards sharing a top and bottom edge instead of the picture
+ * dictating the row's height.
+ *
+ * With no `src` it renders the site's standard placeholder rather than
+ * collapsing, so an unsupplied image reads as "one belongs here" instead of as
+ * a layout that never had one.
+ */
+function GroupMedia({
+  image,
+  className,
+}: {
+  image: { src: string; alt: string };
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative min-h-[14rem] overflow-hidden rounded-3xl border border-brand-100 bg-brand-50 lg:min-h-full",
+        className,
+      )}
+    >
+      {image.src ? (
+        <Image
+          src={image.src}
+          alt={image.alt}
+          fill
+          sizes="(max-width: 1024px) 100vw, 33vw"
+          className="object-cover"
+        />
+      ) : (
+        <ImageFallback iconClassName="size-10" />
+      )}
+    </div>
   );
 }
 
@@ -120,13 +164,22 @@ export async function Brands() {
             </div>
           </Reveal>
 
-          <ul className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {professional.items.map((brand, i) => (
-              <Reveal as="li" key={brand.name} delay={i * 70} from="scale">
-                <BrandPlate {...brand} />
-              </Reveal>
-            ))}
-          </ul>
+          {/* Image, then the six plates two-up beside it. `items-stretch` is
+              what lets the panel take its height from the cards rather than the
+              other way round. */}
+          <div className="mt-7 grid gap-4 lg:grid-cols-12 lg:items-stretch">
+            <Reveal className="lg:col-span-4" from="left">
+              <GroupMedia image={professional.image} className="h-full" />
+            </Reveal>
+
+            <ul className="grid gap-4 sm:grid-cols-2 lg:col-span-8">
+              {professional.items.map((brand, i) => (
+                <Reveal as="li" key={brand.name} delay={i * 70} from="scale">
+                  <BrandPlate {...brand} />
+                </Reveal>
+              ))}
+            </ul>
+          </div>
         </div>
 
         {/* 02 — MLAY, with its real distribution footprint */}
@@ -144,66 +197,78 @@ export async function Brands() {
           </Reveal>
 
           <Reveal delay={90}>
-            <div className="mt-7 grid overflow-hidden rounded-3xl border border-brand-100 bg-white lg:grid-cols-5">
-              <div className="flex flex-col justify-center gap-5 border-b border-brand-100 p-8 lg:col-span-2 lg:border-r lg:border-b-0 lg:p-10">
+            {/* The brand's own copy used to sit in a left cell of its own, with
+                the channels in a right one. It now leads the right-hand side —
+                logo, line, revenue, then the two channel lists under a rule —
+                so the left cell is free for the picture and the reader meets
+                the brand once rather than in two columns at the same time. */}
+            <div className="mt-7 grid overflow-hidden rounded-3xl border border-brand-100 bg-white lg:grid-cols-5 lg:items-stretch">
+              <GroupMedia
+                image={devices.image}
+                className="rounded-none border-0 border-b border-brand-100 lg:col-span-2 lg:border-e lg:border-b-0"
+              />
+
+              <div className="p-8 lg:col-span-3 lg:p-10">
                 <div className="flex items-start justify-between gap-4">
                   <BrandLogo
                     name={devices.items[0].name}
                     className="h-9 max-w-[13rem]"
                   />
-                  <span className="eyebrow pt-2 text-ink-faint">
+                  <span className="eyebrow shrink-0 pt-2 text-ink-faint">
                     {devices.items[0].origin}
                   </span>
                 </div>
-                <p className="text-[0.975rem] leading-relaxed text-ink-soft">
+
+                <p className="mt-5 text-[0.975rem] leading-relaxed text-ink-soft">
                   {devices.items[0].role}
                 </p>
-                <p className="mt-2 font-display text-2xl font-semibold text-brand-600">
+
+                <p className="mt-5 font-display text-2xl font-semibold text-brand-600">
                   EGP 100M+
                   <span className="ms-2 align-middle text-sm font-medium text-ink-faint">
                     {ui.sections.brands.annualRevenue}
                   </span>
                 </p>
-              </div>
 
-              <div className="grid gap-8 p-8 sm:grid-cols-2 lg:col-span-3 lg:p-10">
-                <div>
-                  <p className="eyebrow text-ink-faint">
-                    {ui.sections.flagshipBranches}
-                  </p>
-                  <ul className="mt-4 space-y-2.5">
-                    {mlayChannels.flagship.map((mall) => (
-                      <li
-                        key={mall}
-                        className="flex items-center gap-2.5 text-[0.9375rem] text-ink"
-                      >
-                        <span
-                          aria-hidden="true"
-                          className="size-1.5 shrink-0 rounded-full bg-signal-500"
-                        />
-                        {mall}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <div>
-                  <p className="eyebrow text-ink-faint">
-                    {ui.sections.retailEcommerce}
-                  </p>
-                  <ul className="mt-4 space-y-2.5">
-                    {mlayChannels.retail.map((channel) => (
-                      <li
-                        key={channel}
-                        className="flex items-center gap-2.5 text-[0.9375rem] text-ink"
-                      >
-                        <span
-                          aria-hidden="true"
-                          className="size-1.5 shrink-0 rounded-full bg-circuit-400"
-                        />
-                        {channel}
-                      </li>
-                    ))}
-                  </ul>
+                <div className="mt-8 grid gap-8 border-t border-brand-100 pt-8 sm:grid-cols-2">
+                  <div>
+                    <p className="eyebrow text-ink-faint">
+                      {ui.sections.flagshipBranches}
+                    </p>
+                    <ul className="mt-4 space-y-2.5">
+                      {mlayChannels.flagship.map((mall) => (
+                        <li
+                          key={mall}
+                          className="flex items-center gap-2.5 text-[0.9375rem] text-ink"
+                        >
+                          <span
+                            aria-hidden="true"
+                            className="size-1.5 shrink-0 rounded-full bg-signal-500"
+                          />
+                          {mall}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="eyebrow text-ink-faint">
+                      {ui.sections.retailEcommerce}
+                    </p>
+                    <ul className="mt-4 space-y-2.5">
+                      {mlayChannels.retail.map((channel) => (
+                        <li
+                          key={channel}
+                          className="flex items-center gap-2.5 text-[0.9375rem] text-ink"
+                        >
+                          <span
+                            aria-hidden="true"
+                            className="size-1.5 shrink-0 rounded-full bg-circuit-400"
+                          />
+                          {channel}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
@@ -227,24 +292,31 @@ export async function Brands() {
           </Reveal>
 
           <Reveal delay={90}>
-            <div className="relative mt-7 overflow-hidden rounded-3xl border border-brand-800/20 bg-brand-900 p-8 md:p-10">
-              <div className="relative grid gap-10 lg:grid-cols-5 lg:gap-12">
-                <div className="lg:col-span-2">
-                  {/* Deep-teal ground, so this one takes the knocked-out variant */}
-                  <BrandLogo
-                    name={skincare.items[0].name}
-                    onDark
-                    className="h-11 max-w-[14rem]"
-                  />
-                  <p className="mt-5 text-[0.975rem] leading-relaxed text-brand-100/80">
-                    {skincare.items[0].role}
-                  </p>
-                  <p className="eyebrow mt-6 inline-flex rounded-xl border border-signal-500/50 px-3 py-1.5 text-signal-400">
-                    {ui.sections.brands.flagshipBrand}
-                  </p>
-                </div>
+            {/* Same move as MLAY above: the picture takes the left cell and the
+                brand's own copy leads the right, above its lines. The panel
+                keeps its own padding off so the image can meet the rounded
+                edge; the copy carries the inset instead. */}
+            <div className="relative mt-7 grid overflow-hidden rounded-3xl border border-brand-800/20 bg-brand-900 lg:grid-cols-5 lg:items-stretch">
+              <GroupMedia
+                image={skincare.image}
+                className="rounded-none border-0 border-b border-white/10 bg-brand-800 lg:col-span-2 lg:border-e lg:border-b-0"
+              />
 
-                <ul className="grid gap-px overflow-hidden rounded-2xl bg-white/10 sm:grid-cols-2 lg:col-span-3 lg:grid-cols-3">
+              <div className="p-8 lg:col-span-3 md:p-10">
+                {/* Deep-teal ground, so this one takes the knocked-out variant */}
+                <BrandLogo
+                  name={skincare.items[0].name}
+                  onDark
+                  className="h-11 max-w-[14rem]"
+                />
+                <p className="mt-5 text-[0.975rem] leading-relaxed text-brand-100/80">
+                  {skincare.items[0].role}
+                </p>
+                <p className="eyebrow mt-6 inline-flex rounded-xl border border-signal-500/50 px-3 py-1.5 text-signal-400">
+                  {ui.sections.brands.flagshipBrand}
+                </p>
+
+                <ul className="mt-8 grid gap-px overflow-hidden rounded-2xl bg-white/10 sm:grid-cols-2 lg:grid-cols-3">
                   {altesseLines.map((line) => (
                     <li
                       key={line.name}

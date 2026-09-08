@@ -207,6 +207,9 @@ export const brandLogos: Record<
 export const brandGroups = [
   {
     id: "professional",
+    /** Left panel of the group. Empty renders the site placeholder — see
+     *  `ImageFallback`. Supply a .webp and describe it in `alt`. */
+    image: { src: "", alt: "" },
     kicker: "01 / Professional Dermatology",
     title: "Represented in Egypt",
     note: "TribuCare is the exclusive agent in Egypt for these brands.",
@@ -229,6 +232,7 @@ export const brandGroups = [
   },
   {
     id: "devices",
+    image: { src: "", alt: "" },
     kicker: "02 / Home Beauty Technology",
     title: "Distributed nationwide",
     note: "TribuCare is the exclusive official distributor of MLAY in Egypt.",
@@ -242,6 +246,7 @@ export const brandGroups = [
   },
   {
     id: "skincare",
+    image: { src: "", alt: "" },
     kicker: "03 / Medicated Skincare",
     title: "Our own brand",
     note: "Altesse Soin is TribuCare's flagship skincare brand.",
