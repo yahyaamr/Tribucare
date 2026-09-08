@@ -1,5 +1,5 @@
 import { getStore } from "./store";
-import { getAllNews, saveNews } from "./news";
+import { getAllNewsStrict, saveNews } from "./news";
 
 /**
  * The news tag vocabulary.
@@ -27,9 +27,8 @@ export function normaliseTag(name: string) {
 }
 
 async function readStored(): Promise<string[]> {
-  const raw = await getStore()
-    .read(TAGS_PATH)
-    .catch(() => null);
+  // No catch: absence is null, failure throws. See categories.ts.
+  const raw = await getStore().read(TAGS_PATH);
 
   if (!raw) return [];
 
@@ -68,7 +67,7 @@ function dedupe(names: string[]) {
  * never be missing from the panel while a news item is still filed under it.
  */
 export async function getNewsTags(): Promise<string[]> {
-  const [stored, items] = await Promise.all([readStored(), getAllNews()]);
+  const [stored, items] = await Promise.all([readStored(), getAllNewsStrict()]);
   return dedupe([...stored, ...items.flatMap((n) => n.tags)]).sort((a, b) =>
     a.localeCompare(b),
   );
@@ -108,7 +107,7 @@ export interface NewsTagUsage {
 
 export async function getNewsTagUsage(name: string): Promise<NewsTagUsage> {
   const clean = normaliseTag(name).toLowerCase();
-  const items = await getAllNews();
+  const items = await getAllNewsStrict();
 
   const using = items.filter((n) =>
     n.tags.some((t) => t.toLowerCase() === clean),
@@ -153,7 +152,7 @@ export async function renameNewsTag(
     };
   }
 
-  for (const item of await getAllNews()) {
+  for (const item of await getAllNewsStrict()) {
     if (!item.tags.some((t) => t.toLowerCase() === before.toLowerCase())) {
       continue;
     }
@@ -207,7 +206,7 @@ export async function deleteNewsTag(
   }
 
   if (force && usage.items.length > 0) {
-    for (const item of await getAllNews()) {
+    for (const item of await getAllNewsStrict()) {
       if (!item.tags.some((t) => t.toLowerCase() === clean.toLowerCase())) {
         continue;
       }

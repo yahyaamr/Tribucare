@@ -69,15 +69,23 @@ function parseRole(value: unknown): Role | null {
   };
 }
 
-async function readRoles(): Promise<Role[]> {
+async function readRoles(strict: boolean): Promise<Role[]> {
   const store = getStore();
-  const found = await store.list(ROLES_PREFIX).catch(() => []);
+  let found;
+  try {
+    found = await store.list(ROLES_PREFIX);
+  } catch (error) {
+    if (strict) throw error;
+    return [];
+  }
 
   const roles = await Promise.all(
     found
       .filter((object) => object.pathname.endsWith(".json"))
       .map(async (object) => {
-        const raw = await store.read(object.pathname).catch(() => null);
+        const raw = strict
+          ? await store.read(object.pathname)
+          : await store.read(object.pathname).catch(() => null);
         if (!raw) return null;
         try {
           return parseRole(JSON.parse(raw));
@@ -138,7 +146,7 @@ function seedRoles(): Role[] {
  * something to repair in place.
  */
 export async function getRoles(): Promise<Role[]> {
-  return readRoles();
+  return readRoles(false);
 }
 
 /**
@@ -149,11 +157,14 @@ export async function getRoles(): Promise<Role[]> {
  * it renders *is* this seed.
  */
 export async function ensureRolesSeeded(): Promise<Role[]> {
-  const roles = await readRoles();
+  // Strict on purpose: "no roles" must mean the store answered and holds
+  // none, never that it failed to answer. Seeding on a failed read would
+  // overwrite the three real roles with the originals.
+  const roles = await readRoles(true);
   if (roles.length > 0) return roles;
 
   const store = getStore();
-  const marker = await store.read(SEED_MARKER).catch(() => null);
+  const marker = await store.read(SEED_MARKER);
   // Seeded before, so this empty read is a blip. Hand back nothing rather than
   // overwriting whatever is really in there.
   if (marker) return [];

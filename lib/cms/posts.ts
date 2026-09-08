@@ -118,10 +118,21 @@ function legacyToPost(post: BlogPost): Post {
  * only way this fails is a missing/incorrect blob token, which the admin
  * panel reports directly.
  */
+/** Once the marker has been seen this process never asks again — one fewer
+ *  storage round trip on every post read, and the answer cannot change. */
+let seededConfirmed = false;
+
 async function ensureSeeded() {
+  if (seededConfirmed) return;
   const store = getStore();
   try {
-    if (await store.read(SEED_MARKER)) return;
+    // `read` returns null only for genuine absence; a failure throws and is
+    // swallowed below *without* seeding — a blip must never re-seed a live
+    // store, and the marker check is exactly what stops it.
+    if (await store.read(SEED_MARKER)) {
+      seededConfirmed = true;
+      return;
+    }
 
     const existing = await store.list(POSTS_PREFIX);
     if (existing.length === 0) {
@@ -204,14 +215,16 @@ function byDateDesc(a: Post, b: Post) {
 }
 
 /** Stored records, unresolved. Only `savePost` and the resolver want these. */
-async function readAllPosts(): Promise<Post[]> {
+/** See `readAllNews` for why `strict` exists: pages degrade, writers stop. */
+async function readAllPosts(strict: boolean): Promise<Post[]> {
   await ensureSeeded();
   const store = getStore();
 
   let objects;
   try {
     objects = await store.list(POSTS_PREFIX);
-  } catch {
+  } catch (error) {
+    if (strict) throw error;
     return [];
   }
 
@@ -219,7 +232,9 @@ async function readAllPosts(): Promise<Post[]> {
     objects
       .filter((o) => o.pathname.endsWith(".json"))
       .map(async (o) => {
-        const raw = await store.read(o.pathname).catch(() => null);
+        const raw = strict
+          ? await store.read(o.pathname)
+          : await store.read(o.pathname).catch(() => null);
         return raw ? parsePost(raw) : null;
       }),
   );
@@ -236,7 +251,16 @@ async function readAllPosts(): Promise<Post[]> {
  * single read.
  */
 export async function getAllPosts(): Promise<ResolvedPost[]> {
-  const posts = await readAllPosts();
+  return resolveAll(false);
+}
+
+/** For writers and the panel: fails loudly rather than reporting a partial set. */
+export async function getAllPostsStrict(): Promise<ResolvedPost[]> {
+  return resolveAll(true);
+}
+
+async function resolveAll(strict: boolean): Promise<ResolvedPost[]> {
+  const posts = await readAllPosts(strict);
 
   const inline = posts
     .map((post) => (post as Post & { author?: Author }).author)
@@ -271,7 +295,7 @@ export async function getPublishedPostsFor(
 }
 
 export async function getPostSummaries(): Promise<PostSummary[]> {
-  const posts = await getAllPosts();
+  const posts = await getAllPostsStrict();
   return posts.map(({ blocks, ...rest }) => {
     void blocks;
     return rest;
@@ -280,9 +304,7 @@ export async function getPostSummaries(): Promise<PostSummary[]> {
 
 export async function getPostById(id: string): Promise<ResolvedPost | null> {
   await ensureSeeded();
-  const raw = await getStore()
-    .read(postPath(id))
-    .catch(() => null);
+  const raw = await getStore().read(postPath(id));
   const post = raw ? parsePost(raw) : null;
   if (!post) return null;
 
@@ -301,7 +323,7 @@ export async function getPostBySlug(slug: string): Promise<ResolvedPost | null> 
  *  its own slug when it is saved without renaming. */
 export async function uniqueSlug(desired: string, excludeId?: string) {
   const base = slugify(desired) || "post";
-  const posts = await getAllPosts();
+  const posts = await getAllPostsStrict();
   const taken = new Set(
     posts.filter((p) => p.id !== excludeId).map((p) => p.slug),
   );

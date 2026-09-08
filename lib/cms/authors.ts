@@ -21,9 +21,8 @@ export function normaliseAuthorName(name: string) {
 }
 
 async function readAuthors(): Promise<Author[]> {
-  const raw = await getStore()
-    .read(AUTHORS_PATH)
-    .catch(() => null);
+  // No catch: absence is null, failure throws. See categories.ts.
+  const raw = await getStore().read(AUTHORS_PATH);
   if (!raw) return [];
   try {
     const value = JSON.parse(raw) as { authors?: unknown };

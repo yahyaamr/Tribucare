@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/cms/session";
+import { guardStore } from "@/lib/cms/store";
 import { revalidateBlog } from "@/lib/cms/revalidate";
 import { deleteAuthor, getAuthors, updateAuthor } from "@/lib/cms/authors";
 import { getAllPosts, savePost } from "@/lib/cms/posts";
@@ -14,7 +15,7 @@ async function usageFor(id: string) {
     .map((p) => ({ id: p.id, title: p.title || "(untitled)", status: p.status }));
 }
 
-export async function GET(_request: Request, { params }: Context) {
+async function GET_(_request: Request, { params }: Context) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -24,7 +25,7 @@ export async function GET(_request: Request, { params }: Context) {
   );
 }
 
-export async function PUT(request: Request, { params }: Context) {
+async function PUT_(request: Request, { params }: Context) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -56,7 +57,7 @@ export async function PUT(request: Request, { params }: Context) {
  * Without `?force=true` this reports which posts would be affected rather than
  * doing it, so the panel can warn before anything is lost.
  */
-export async function DELETE(request: Request, { params }: Context) {
+async function DELETE_(request: Request, { params }: Context) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -87,3 +88,10 @@ export async function DELETE(request: Request, { params }: Context) {
 
   return Response.json({ authors: await getAuthors() });
 }
+
+// A storage failure becomes a clear JSON error with the right status, which the
+// editors display verbatim, rather than a bare 500 they render as "check your
+// connection". Nothing is written on the failing path.
+export const GET = guardStore(GET_);
+export const PUT = guardStore(PUT_);
+export const DELETE = guardStore(DELETE_);

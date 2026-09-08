@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/cms/session";
+import { guardStore } from "@/lib/cms/store";
 import { revalidateCareers } from "@/lib/cms/revalidate";
 import { getRoleById, saveRole, validateRole } from "@/lib/cms/roles";
 import type { Role } from "@/lib/cms/types";
@@ -6,7 +7,7 @@ import type { Role } from "@/lib/cms/types";
 /** `params` is a Promise in Next 16 — synchronous access was removed. */
 type Context = { params: Promise<{ id: string }> };
 
-export async function GET(_request: Request, { params }: Context) {
+async function GET_(_request: Request, { params }: Context) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -16,7 +17,7 @@ export async function GET(_request: Request, { params }: Context) {
   return Response.json({ role }, { headers: { "cache-control": "no-store" } });
 }
 
-export async function PUT(request: Request, { params }: Context) {
+async function PUT_(request: Request, { params }: Context) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -45,3 +46,9 @@ export async function PUT(request: Request, { params }: Context) {
 
   return Response.json({ role: saved });
 }
+
+// A storage failure becomes a clear JSON error with the right status, which the
+// editors display verbatim, rather than a bare 500 they render as "check your
+// connection". Nothing is written on the failing path.
+export const GET = guardStore(GET_);
+export const PUT = guardStore(PUT_);

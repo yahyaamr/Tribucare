@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/cms/session";
+import { guardStore } from "@/lib/cms/store";
 import { revalidateBlog } from "@/lib/cms/revalidate";
 import {
   addCategory,
@@ -8,7 +9,7 @@ import {
   renameCategory,
 } from "@/lib/cms/categories";
 
-export async function GET(request: Request) {
+async function GET_(request: Request) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
   );
 }
 
-export async function POST(request: Request) {
+async function POST_(request: Request) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
 }
 
 /** Rename. Rewrites every post carrying the old name in the same operation. */
-export async function PUT(request: Request) {
+async function PUT_(request: Request) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -71,7 +72,7 @@ export async function PUT(request: Request) {
  * The name travels as a query parameter because it can contain spaces and
  * ampersands ("Dermatology & Tech").
  */
-export async function DELETE(request: Request) {
+async function DELETE_(request: Request) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -92,3 +93,11 @@ export async function DELETE(request: Request) {
   revalidateBlog();
   return Response.json({ categories: result.categories });
 }
+
+// A storage failure becomes a clear JSON error with the right status, which the
+// editors display verbatim, rather than a bare 500 they render as "check your
+// connection". Nothing is written on the failing path.
+export const GET = guardStore(GET_);
+export const POST = guardStore(POST_);
+export const PUT = guardStore(PUT_);
+export const DELETE = guardStore(DELETE_);

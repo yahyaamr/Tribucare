@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/cms/session";
+import { guardStore } from "@/lib/cms/store";
 import { revalidateBlog } from "@/lib/cms/revalidate";
 import {
   deletePost,
@@ -12,7 +13,7 @@ import type { Post } from "@/lib/cms/types";
 /** `params` is a Promise in Next 16 — synchronous access was removed. */
 type Context = { params: Promise<{ id: string }> };
 
-export async function GET(_request: Request, { params }: Context) {
+async function GET_(_request: Request, { params }: Context) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -22,7 +23,7 @@ export async function GET(_request: Request, { params }: Context) {
   return Response.json({ post }, { headers: { "cache-control": "no-store" } });
 }
 
-export async function PUT(request: Request, { params }: Context) {
+async function PUT_(request: Request, { params }: Context) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -47,7 +48,11 @@ export async function PUT(request: Request, { params }: Context) {
     return Response.json({ errors }, { status: 422 });
   }
 
-  next.slug = await uniqueSlug(next.slug || next.title, next.id);
+  // The uniqueness scan reads every post; only pay for it when the slug is
+  // actually new. An unchanged slug is unique by construction.
+  if (!next.slug || next.slug !== existing.slug) {
+    next.slug = await uniqueSlug(next.slug || next.title, next.id);
+  }
 
   const saved = await savePost(next);
   // Both slugs: renaming a published post leaves the old URL cached, and it
@@ -57,7 +62,7 @@ export async function PUT(request: Request, { params }: Context) {
   return Response.json({ post: saved });
 }
 
-export async function DELETE(_request: Request, { params }: Context) {
+async function DELETE_(_request: Request, { params }: Context) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -70,3 +75,10 @@ export async function DELETE(_request: Request, { params }: Context) {
 
   return Response.json({ ok: true });
 }
+
+// A storage failure becomes a clear JSON error with the right status, which the
+// editors display verbatim, rather than a bare 500 they render as "check your
+// connection". Nothing is written on the failing path.
+export const GET = guardStore(GET_);
+export const PUT = guardStore(PUT_);
+export const DELETE = guardStore(DELETE_);

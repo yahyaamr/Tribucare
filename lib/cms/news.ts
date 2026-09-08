@@ -73,15 +73,24 @@ function byDateDesc(a: NewsItem, b: NewsItem) {
   return a.updatedAt < b.updatedAt ? 1 : -1;
 }
 
-async function readAllNews(): Promise<NewsItem[]> {
+/**
+ * `strict` is the difference between a page and a write.
+ *
+ * A public page that cannot reach storage should render an empty state, so the
+ * lenient read turns failures into an empty list. A writer that cannot reach
+ * storage must *stop*: a rename that saw only half the items renames half of
+ * them, and a delete that saw none deletes the vocabulary entry from under
+ * items still using it. The strict read throws instead, and the route reports
+ * it. Every read-modify-write in this folder uses the strict form.
+ */
+async function readAllNews(strict: boolean): Promise<NewsItem[]> {
   const store = getStore();
 
   let objects;
   try {
     objects = await store.list(NEWS_PREFIX);
-  } catch {
-    // Storage unreachable. An empty list renders an empty state; throwing
-    // would 500 the public page.
+  } catch (error) {
+    if (strict) throw error;
     return [];
   }
 
@@ -89,7 +98,9 @@ async function readAllNews(): Promise<NewsItem[]> {
     objects
       .filter((o) => o.pathname.endsWith(".json"))
       .map(async (o) => {
-        const raw = await store.read(o.pathname).catch(() => null);
+        const raw = strict
+          ? await store.read(o.pathname)
+          : await store.read(o.pathname).catch(() => null);
         return raw ? parseNews(raw) : null;
       }),
   );
@@ -98,7 +109,12 @@ async function readAllNews(): Promise<NewsItem[]> {
 }
 
 export async function getAllNews(): Promise<NewsItem[]> {
-  return readAllNews();
+  return readAllNews(false);
+}
+
+/** For writers and the panel: fails loudly rather than reporting a partial set. */
+export async function getAllNewsStrict(): Promise<NewsItem[]> {
+  return readAllNews(true);
 }
 
 export async function getPublishedNews(): Promise<NewsItem[]> {
@@ -118,7 +134,7 @@ export async function getPublishedNewsFor(
 }
 
 export async function getNewsSummaries(): Promise<NewsSummary[]> {
-  const items = await getAllNews();
+  const items = await getAllNewsStrict();
   return items.map(({ blocks, ...rest }) => {
     void blocks;
     return rest;
@@ -126,9 +142,7 @@ export async function getNewsSummaries(): Promise<NewsSummary[]> {
 }
 
 export async function getNewsById(id: string): Promise<NewsItem | null> {
-  const raw = await getStore()
-    .read(newsPath(id))
-    .catch(() => null);
+  const raw = await getStore().read(newsPath(id));
   return raw ? parseNews(raw) : null;
 }
 
@@ -162,7 +176,7 @@ export async function getPublicNewsTags(locale?: Locale): Promise<string[]> {
  *  share a slug — they live on different routes. */
 export async function uniqueNewsSlug(desired: string, excludeId?: string) {
   const base = slugify(desired) || "news";
-  const items = await getAllNews();
+  const items = await getAllNewsStrict();
   const taken = new Set(
     items.filter((n) => n.id !== excludeId).map((n) => n.slug),
   );

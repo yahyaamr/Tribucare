@@ -1,7 +1,8 @@
 import { requireSession } from "@/lib/cms/session";
+import { guardStore } from "@/lib/cms/store";
 import { createAuthor, getAuthors } from "@/lib/cms/authors";
 
-export async function GET() {
+async function GET_() {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -11,7 +12,7 @@ export async function GET() {
   );
 }
 
-export async function POST(request: Request) {
+async function POST_(request: Request) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -34,3 +35,9 @@ export async function POST(request: Request) {
     { status: 201 },
   );
 }
+
+// A storage failure becomes a clear JSON error with the right status, which the
+// editors display verbatim, rather than a bare 500 they render as "check your
+// connection". Nothing is written on the failing path.
+export const GET = guardStore(GET_);
+export const POST = guardStore(POST_);

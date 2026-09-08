@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/cms/session";
+import { guardStore } from "@/lib/cms/store";
 import { ensureRolesSeeded } from "@/lib/cms/roles";
 
 /**
@@ -9,7 +10,7 @@ import { ensureRolesSeeded } from "@/lib/cms/roles";
  * Adding a role is a content decision that changes the homepage's shape, so it
  * stays a code change until somebody asks for it to stop being one.
  */
-export async function GET() {
+async function GET_() {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -18,3 +19,8 @@ export async function GET() {
     { headers: { "cache-control": "no-store" } },
   );
 }
+
+// A storage failure becomes a clear JSON error with the right status, which the
+// editors display verbatim, rather than a bare 500 they render as "check your
+// connection". Nothing is written on the failing path.
+export const GET = guardStore(GET_);

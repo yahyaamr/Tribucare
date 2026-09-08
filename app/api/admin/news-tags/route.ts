@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/cms/session";
+import { guardStore } from "@/lib/cms/store";
 import { revalidateNews } from "@/lib/cms/revalidate";
 import {
   addNewsTag,
@@ -16,7 +17,7 @@ import {
  * edit refreshes the news surfaces and nothing else.
  */
 
-export async function GET(request: Request) {
+async function GET_(request: Request) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -36,7 +37,7 @@ export async function GET(request: Request) {
   );
 }
 
-export async function POST(request: Request) {
+async function POST_(request: Request) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
 }
 
 /** Rename. Rewrites every news item carrying the old name in the same call. */
-export async function PUT(request: Request) {
+async function PUT_(request: Request) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -75,7 +76,7 @@ export async function PUT(request: Request) {
  * acting. The name travels as a query parameter because it can contain spaces
  * and ampersands.
  */
-export async function DELETE(request: Request) {
+async function DELETE_(request: Request) {
   const denied = await requireSession();
   if (denied) return denied;
 
@@ -96,3 +97,11 @@ export async function DELETE(request: Request) {
   revalidateNews();
   return Response.json({ tags: result.tags });
 }
+
+// A storage failure becomes a clear JSON error with the right status, which the
+// editors display verbatim, rather than a bare 500 they render as "check your
+// connection". Nothing is written on the failing path.
+export const GET = guardStore(GET_);
+export const POST = guardStore(POST_);
+export const PUT = guardStore(PUT_);
+export const DELETE = guardStore(DELETE_);

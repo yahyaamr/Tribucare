@@ -1,5 +1,5 @@
 import { getStore } from "./store";
-import { getAllPosts, savePost } from "./posts";
+import { getAllPosts, getAllPostsStrict, savePost } from "./posts";
 import type { Locale } from "@/lib/i18n/config";
 import { blogCategories } from "@/content/blogs";
 
@@ -33,9 +33,10 @@ export function normaliseCategory(name: string) {
 }
 
 async function readStored(): Promise<string[]> {
-  const raw = await getStore()
-    .read(CATEGORIES_PATH)
-    .catch(() => null);
+  // No catch: `read` is null only when the file is absent. A failure throws,
+  // and must — treating it as absence is what once re-seeded this list over a
+  // user's categories.
+  const raw = await getStore().read(CATEGORIES_PATH);
 
   // No file at all means the seed has never run. An *empty* file is a
   // deliberately emptied list and is left alone — the same distinction the
@@ -77,7 +78,7 @@ function dedupe(names: string[]) {
 }
 
 export async function getCategories(): Promise<string[]> {
-  const [stored, posts] = await Promise.all([readStored(), getAllPosts()]);
+  const [stored, posts] = await Promise.all([readStored(), getAllPostsStrict()]);
   return dedupe([
     ...stored,
     ...posts.flatMap((post) => post.categories),
@@ -140,7 +141,7 @@ export interface CategoryUsage {
 
 export async function getCategoryUsage(name: string): Promise<CategoryUsage> {
   const clean = normaliseCategory(name).toLowerCase();
-  const posts = await getAllPosts();
+  const posts = await getAllPostsStrict();
 
   const using = posts.filter((p) =>
     p.categories.some((c) => c.toLowerCase() === clean),
@@ -188,7 +189,7 @@ export async function renameCategory(
     };
   }
 
-  const posts = await getAllPosts();
+  const posts = await getAllPostsStrict();
   for (const post of posts) {
     if (!post.categories.some((c) => c.toLowerCase() === before.toLowerCase())) {
       continue;
@@ -245,7 +246,7 @@ export async function deleteCategory(
   }
 
   if (force && usage.posts.length > 0) {
-    const posts = await getAllPosts();
+    const posts = await getAllPostsStrict();
     for (const post of posts) {
       if (!post.categories.some((c) => c.toLowerCase() === clean.toLowerCase())) {
         continue;
