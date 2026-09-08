@@ -30,12 +30,25 @@ Metadata, structured data, sitemap and the go-live checklist:
 
 ## The admin panel
 
-The SEO team publishes blogs, events & news and career roles at **`/admin`** —
-no code, no redeploy. Two things need setting up once in Vercel
-(`ADMIN_PASSWORD` and a Blob store), and without the Blob store anything
-written in production is lost on the next deploy.
+The SEO team publishes blogs, events & news and career roles from a
+password-protected CMS — no code, no redeploy.
 
-**→ [docs/blog-admin.md](docs/blog-admin.md)**
+**It is not at `/admin`.** That path returns the site's 404. The panel is served
+from the secret segment named by `ADMIN_PATH`, and the URL should be treated as
+a credential. Four things are set up once in Vercel:
+
+| | |
+|---|---|
+| `ADMIN_PASSWORD` | the shared password |
+| `ADMIN_PATH` | the secret path the panel is served from |
+| **Vercel Blob** | where posts and uploads live — without it, anything written in production is lost on the next deploy |
+| **Upstash Redis** | counts failed logins; three wrong passwords block an address for a week |
+
+Sessions end on browser quit, on closing the tab, or after an hour idle.
+Locked out? `node scripts/unlock-login.mjs --all`.
+
+**→ [docs/blog-admin.md](docs/blog-admin.md)** — setup, every screen and button,
+the editor, the security model, and troubleshooting.
 
 ## Languages
 
@@ -55,4 +68,9 @@ a cookie: see [docs/blog-admin.md](docs/blog-admin.md#languages).
 
 The site deploys to Vercel from `main`. Set the environment variables above in
 the project settings and redeploy — see [docs/blog-admin.md](docs/blog-admin.md)
-for the Blob store the panel needs.
+for the Blob and Redis stores the panel needs.
+
+Environment variables only reach builds that start after they exist, so a change
+to any of them needs a redeploy before it takes effect. `vercel env pull`
+overwrites `.env.local` with the **Development** environment only — back the
+file up first, or variables set solely for Production disappear locally.

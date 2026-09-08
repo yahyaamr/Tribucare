@@ -84,11 +84,14 @@ app/
     not-found.tsx       branded 404; [...rest]/page.tsx routes unknown paths to it
   (admin)/admin/        the CMS panel — blogs, events & news, careers, media,
                         settings. Own root layout; language is a cookie, not a URL.
+                        Reached ONLY through the secret path — see below.
   api/admin/            the panel's JSON API — every handler calls requireSession
   globals.css           ALL design tokens, utilities, keyframes. Single source.
   sitemap.ts robots.ts manifest.ts opengraph-image.tsx    SEO surface
 proxy.ts                locale routing (/x → /en/x rewrite, /ar/x passes,
-                        /en/x → /x 308) and the admin redirect
+                        /en/x → /x 308); mounts the panel on ADMIN_PATH, seals
+                        /admin and /api/admin with the site's 404, and slides
+                        the session's idle window on each authenticated request
 components/
   sections/             one file per page section, named export, no props
   site/                 layout + motion primitives (Shell, Eyebrow, Reveal, …)
@@ -112,8 +115,14 @@ lib/
   i18n/admin.ts         the panel's language cookie
   i18n/admin-strings.ts the panel's OWN strings, EN + AR — not content/
   cms/                  store, posts, news, roles, authors, categories,
-                        news-tags, media, auth, session, revalidate
+                        news-tags, media, revalidate
+  cms/gate.ts           where the panel is mounted (ADMIN_PATH). Server only.
+  cms/auth.ts           password check, signed cookie, 60-minute idle window
+  cms/rate-limit.ts     login lockout, backed by Upstash over its REST API
+  cms/compress.ts       browser-side shrinking for pasted images
   forms.ts utils.ts
+scripts/
+  unlock-login.mjs      lifts a login block — the escape hatch for the lockout
 ```
 
 **Rules that follow from this:**
@@ -137,7 +146,7 @@ lib/
   sections built to the pattern below.
 
 **The CMS owns three content types.** Blog posts, events & news, and career
-roles are authored in `/admin` and live in the store (`lib/cms/`), not in
+roles are authored in the panel and live in the store (`lib/cms/`), not in
 `content/`. `content/blogs.ts` is the one-time seed and is never read by a
 page. So:
 
@@ -147,9 +156,30 @@ page. So:
   two that do not are `login` (which cannot) and `logout` (which need not) —
   anything else is a bug. The proxy's redirect is an optimistic UX check, not
   the gate; `requireSession` is.
+- **Never hardcode `/admin` or `/api/admin` in a link or a fetch.** The routes
+  live at those paths but are never *served* from them: `ADMIN_PATH` names the
+  secret segment the proxy rewrites onto them, and a direct request to either
+  gets the site's 404. Client components build URLs with `useAdminBase()` and
+  `useAdminApi()` from `components/admin/base-path.tsx`; server components call
+  `adminBase()` from `lib/cms/gate.ts`. A hardcoded path 404s the moment
+  `ADMIN_PATH` is set, and it will look like a routing bug rather than a typo.
+- **`ADMIN_PATH` must never become `NEXT_PUBLIC_`.** Next inlines those into
+  every client bundle, including the marketing site's — which would publish the
+  secret on the pages it is hidden from. The panel's layout reads it on the
+  server and passes it down through context. That indirection is the point.
 - After any create / update / delete, call `revalidateBlog()` (or its news
   equivalent) from `lib/cms/revalidate.ts`. The public pages are ISR-cached and
   will otherwise keep serving the old copy until the window ages out.
+- **An article is an ordered `Block[]`, and that is a contract.**
+  `components/blog/article-body.tsx` is the single renderer for both the
+  published page and the editor's preview, so a change to what a block means
+  changes every article already written. A block holds a *plain string*, emitted
+  as a text node — which is why the editor offers no bold, italic or inline
+  link: there is nowhere to store a mark. Adding them means either losing the
+  formatting on save or teaching the published page to render HTML, and the
+  second one puts a hole in the design system big enough for an article to look
+  foreign. `components/admin/doc-editor.tsx` is a writing surface over that
+  array and nothing more; replacing it must leave the array untouched.
 - Panel strings go in `lib/i18n/admin-strings.ts`, never in `content/`. That
   file is software chrome — "Move to trash" does not belong beside the homepage
   headline. Both locales are one typed object, so a missing Arabic key is a
