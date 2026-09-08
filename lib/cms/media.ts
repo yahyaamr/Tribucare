@@ -6,6 +6,9 @@ import {
   isAllowedType,
   slugify,
 } from "./format";
+import { getAllPosts } from "./posts";
+import { getAllNews } from "./news";
+import { getAuthors } from "./authors";
 import type { MediaItem } from "./types";
 
 const MEDIA_PREFIX = "cms/media/";
@@ -48,8 +51,79 @@ export async function listMedia(): Promise<MediaItem[]> {
       filename: o.pathname.slice(MEDIA_PREFIX.length),
       size: o.size,
       uploadedAt: o.uploadedAt,
+      source: "upload" as const,
     }))
     .sort((a, b) => (a.uploadedAt < b.uploadedAt ? 1 : -1));
+}
+
+/**
+ * The artwork the site already ships, listed alongside the uploads.
+ *
+ * Every blog cover written before the panel existed lives in `public/` and was
+ * committed with the code, so the media library — which lists blob storage —
+ * could not see any of it. That left the picker unable to offer the six images
+ * the current articles are actually illustrated with.
+ *
+ * These are found by reading what posts, news and authors reference rather than
+ * by listing a directory, so the library shows artwork in use rather than every
+ * file that happens to sit in `public/`. They are returned as ordinary
+ * `MediaItem`s so the picker needs no special case to offer them, and marked
+ * `source: "site"` so the manager knows not to offer a delete it cannot honour.
+ */
+export async function listSiteMedia(): Promise<MediaItem[]> {
+  const [posts, news, authors] = await Promise.all([
+    getAllPosts(),
+    getAllNews(),
+    getAuthors(),
+  ]);
+
+  const urls = new Set<string>();
+
+  const add = (value: string | undefined) => {
+    // Site-relative only: an absolute URL is a blob upload, already listed.
+    if (value?.startsWith("/") && IMAGE_EXTENSION.test(value)) urls.add(value);
+  };
+
+  for (const post of posts) {
+    add(post.image);
+    for (const block of post.blocks) if (block.type === "image") add(block.src);
+  }
+  for (const item of news) {
+    add(item.image);
+    for (const block of item.blocks) if (block.type === "image") add(block.src);
+  }
+  for (const author of authors) add(author.avatar);
+
+  return Promise.all([...urls].sort().map(toSiteItem));
+}
+
+const IMAGE_EXTENSION = /\.(jpe?g|png|webp|avif|gif)$/i;
+
+async function toSiteItem(url: string): Promise<MediaItem> {
+  return {
+    pathname: url,
+    url,
+    filename: url.split("/").pop() ?? url,
+    size: await fileSize(url),
+    // Committed with the code, so there is no upload moment to report. The
+    // manager shows the source label in place of a date for these.
+    uploadedAt: "",
+    source: "site",
+  };
+}
+
+/** Best-effort: the byte count matters here because these predate the upload
+ *  cap and are several times over it, which is worth seeing before one is
+ *  reused. A deployment that cannot stat `public/` reports 0 and shows a dash. */
+async function fileSize(url: string) {
+  try {
+    const { stat } = await import("node:fs/promises");
+    const path = await import("node:path");
+    const file = path.join(process.cwd(), "public", url.replace(/^\//, ""));
+    return (await stat(file)).size;
+  } catch {
+    return 0;
+  }
 }
 
 export async function uploadMedia(
@@ -81,6 +155,7 @@ export async function uploadMedia(
       filename: stored.pathname.slice(MEDIA_PREFIX.length),
       size: stored.size,
       uploadedAt: stored.uploadedAt,
+      source: "upload",
     },
   };
 }

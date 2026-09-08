@@ -1,12 +1,21 @@
 import { requireSession } from "@/lib/cms/session";
-import { deleteMedia, listMedia, uploadMedia } from "@/lib/cms/media";
+import {
+  deleteMedia,
+  listMedia,
+  listSiteMedia,
+  uploadMedia,
+} from "@/lib/cms/media";
 
+/** Uploads first, then the artwork the site already ships. One list rather than
+ *  two endpoints, so the picker offers both without knowing the difference. */
 export async function GET() {
   const denied = await requireSession();
   if (denied) return denied;
 
+  const [uploads, site] = await Promise.all([listMedia(), listSiteMedia()]);
+
   return Response.json(
-    { items: await listMedia() },
+    { items: [...uploads, ...site] },
     { headers: { "cache-control": "no-store" } },
   );
 }

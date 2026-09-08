@@ -126,6 +126,16 @@ export interface MediaItem {
   filename: string;
   size: number;
   uploadedAt: string;
+  /**
+   * Where the image came from, which decides whether the panel may delete it.
+   *
+   * `upload` is the library proper — a file in blob storage that the panel put
+   * there and can remove again. `site` is an image committed to `public/` and
+   * referenced by a post, news item or author; it is listed so the picker can
+   * reuse the artwork the site already has, but removing it would need a code
+   * change, so the panel offers to select it and nothing else.
+   */
+  source: "upload" | "site";
 }
 
 /* -------------------------------------------------------------- news ----- */
