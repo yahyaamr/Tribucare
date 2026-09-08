@@ -1,71 +1,45 @@
 /**
- * The knock gate — the panel's outer door, in front of the password.
+ * Where the admin panel is mounted.
  *
- * `ADMIN_PATH` names a secret URL. Visiting it sets a signed cookie and
- * nothing else; from then on `/admin` behaves normally for that browser, and
- * for everybody else `/admin` and `/api/admin/*` answer with the site's own
- * 404. Not a redirect and not a 401 — either of those confirms a panel is
- * there, which is the thing being hidden.
+ * The routes live at `app/(admin)/admin/` and the API at `app/api/admin/`, but
+ * those are internal addresses that nothing is ever served at. `ADMIN_PATH`
+ * names the secret segment the panel is actually reached through, and
+ * `proxy.ts` rewrites it onto the internal tree:
  *
- * This is obscurity, and obscurity is a layer rather than a lock: anyone who
- * sees the URL once keeps it. What it buys is that the scanners which sweep
- * every site for `/admin` find nothing to attack, so the shared password is
- * never reached by a drive-by. The password is still what stops a person who
- * has the URL.
+ *     /<secret>            →  /admin
+ *     /<secret>/posts      →  /admin/posts
+ *     /<secret>/api/posts  →  /api/admin/posts
  *
- * Unset `ADMIN_PATH` and the gate is simply off — `/admin` is reachable and
- * the password guards it as before. Failing open is deliberate: a missing env
- * var should not lock the SEO team out of their own site, and the credential
- * behind it has not moved.
+ * A direct request to `/admin` or `/api/admin/*` answers with the site's own
+ * 404 — not a redirect and not a 401, either of which confirms a panel is
+ * there. Scanners sweeping for `/admin` find an ordinary missing page.
  *
- * The cookie carries a hash rather than the path, so a cookie jar read off a
- * shared machine does not hand over the URL itself. Web Crypto rather than
- * `node:crypto` because `proxy.ts` runs without the Node runtime.
+ * This is obscurity, and obscurity is a layer rather than a lock: the secret
+ * now sits in the URL bar, in browser history and in any screenshot of the
+ * panel, so treat it as discoverable and let the password do the real work.
+ * What it buys is that the password is never *reached* by a drive-by.
+ *
+ * Unset `ADMIN_PATH` and the base falls back to `/admin`, which is how local
+ * development runs. Falling back rather than sealing shut is deliberate: a
+ * missing env var should not lock the SEO team out of their own site, and the
+ * credential behind it has not moved.
+ *
+ * `adminBase()` reads the environment and is therefore server-only. Client
+ * components must not import it — a non-`NEXT_PUBLIC_` variable is `undefined`
+ * in the browser bundle, so it would silently resolve to `/admin` and every
+ * link would 404. They take the base from `useAdminBase()` instead, which the
+ * panel layout hands down. That indirection is also what keeps the secret out
+ * of the public site's JavaScript.
  */
 
-export const KNOCK_COOKIE = "tribucare_gate";
+const INTERNAL = "/admin";
 
-const KNOCK_DAYS = 365;
-
-/** The secret first segment, normalised without slashes. Empty means off. */
-export function knockPath() {
-  return (process.env.ADMIN_PATH ?? "").trim().replace(/^\/+|\/+$/g, "");
+export function adminBase() {
+  const configured = (process.env.ADMIN_PATH ?? "").trim().replace(/^\/+|\/+$/g, "");
+  return configured ? `/${configured}` : INTERNAL;
 }
 
+/** True once the panel has been moved off its internal address. */
 export function isGateEnabled() {
-  return knockPath().length > 0;
+  return adminBase() !== INTERNAL;
 }
-
-export async function knockToken() {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(`tribucare-gate:${knockPath()}`),
-  );
-  return [...new Uint8Array(digest)]
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-/** Constant-time over two hex digests of equal width. */
-function safeEqual(a: string, b: string) {
-  if (a.length !== b.length) return false;
-  let diff = 0;
-  for (let i = 0; i < a.length; i += 1) {
-    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return diff === 0;
-}
-
-export async function hasKnocked(value: string | undefined) {
-  if (!isGateEnabled()) return true;
-  if (!value) return false;
-  return safeEqual(value, await knockToken());
-}
-
-export const knockCookieOptions = {
-  httpOnly: true,
-  sameSite: "lax" as const,
-  secure: process.env.NODE_ENV === "production",
-  path: "/",
-  maxAge: KNOCK_DAYS * 24 * 60 * 60,
-};

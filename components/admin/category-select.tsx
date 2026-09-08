@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminApi } from "@/components/admin/base-path";
+
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Check, Loader2, Plus, Search, Tag, X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -29,6 +31,7 @@ export function CategorySelect({
   /** Lets the editor keep its own copy of the list in step after a create. */
   onCategoriesChange: (categories: string[]) => void;
 }) {
+  const api = useAdminApi();
   const [query, setQuery] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
@@ -75,7 +78,7 @@ export function CategorySelect({
     setCreating(true);
     setError("");
 
-    const response = await fetch("/api/admin/categories", {
+    const response = await fetch(api("/categories"), {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ name: trimmed }),

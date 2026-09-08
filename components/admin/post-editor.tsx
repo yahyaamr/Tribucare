@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminApi, useAdminBase } from "@/components/admin/base-path";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -80,6 +82,8 @@ export function PostEditor({
   isNew: boolean;
 }) {
   const router = useRouter();
+  const base = useAdminBase();
+  const api = useAdminApi();
   const [post, setPost] = useState(initialPost);
   // Held in state rather than read straight from the prop so a category
   // created in the picker appears in the list without a round trip.
@@ -132,7 +136,7 @@ export function PostEditor({
     };
 
     const response = await fetch(
-      isNew ? "/api/admin/posts" : `/api/admin/posts/${post.id}`,
+      isNew ? api("/posts") : api(`/posts/${post.id}`),
       {
         method: isNew ? "POST" : "PUT",
         headers: { "content-type": "application/json" },
@@ -164,7 +168,7 @@ export function PostEditor({
     if (isNew) {
       // Swap the URL from /new to the real record so a refresh doesn't create
       // a second copy.
-      router.replace(`/admin/posts/${saved.id}`);
+      router.replace(`${base}/posts/${saved.id}`);
     }
     router.refresh();
   }
@@ -177,9 +181,9 @@ export function PostEditor({
     ) {
       return;
     }
-    await fetch(`/api/admin/posts/${post.id}`, { method: "DELETE" });
+    await fetch(api(`/posts/${post.id}`), { method: "DELETE" });
     setDirty(false);
-    router.replace("/admin/posts");
+    router.replace(`${base}/posts`);
     router.refresh();
   }
 
@@ -199,7 +203,7 @@ export function PostEditor({
       <div className="sticky top-12 z-30 border-b border-brand-100 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-[100rem] flex-wrap items-center gap-3 px-5 py-3 sm:px-8">
           <Link
-            href="/admin/posts"
+            href={`${base}/posts`}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft transition-colors hover:text-brand-700"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
@@ -609,7 +613,7 @@ export function PostEditor({
               <p className="text-xs text-ink-faint">
                 Authors are managed once in{" "}
                 <Link
-                  href="/admin/settings"
+                  href={`${base}/settings`}
                   className="font-semibold text-brand-700 hover:text-brand-800"
                 >
                   Settings

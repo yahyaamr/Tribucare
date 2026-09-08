@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/admin/shell";
 import { StorageNotice } from "@/components/admin/storage-notice";
+import { TabSessionGuard } from "@/components/admin/tab-session";
+import { adminBase } from "@/lib/cms/gate";
 import { hasSession } from "@/lib/cms/session";
 import { isBlobConfigured } from "@/lib/cms/store";
 import { adminLocale } from "@/lib/i18n/admin";
@@ -26,11 +28,12 @@ export default async function PanelLayout({
 }: {
   children: React.ReactNode;
 }) {
-  if (!(await hasSession())) redirect("/admin/login");
+  if (!(await hasSession())) redirect(`${adminBase()}/login`);
 
   const locale = await adminLocale();
   return (
     <AdminShell locale={locale} t={adminStrings(locale)}>
+      <TabSessionGuard />
       <div className="mx-auto max-w-6xl px-5 pt-6 sm:px-8 empty:hidden [&>*]:mt-0">
         <StorageNotice configured={isBlobConfigured()} />
       </div>

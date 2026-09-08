@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminApi } from "@/components/admin/base-path";
+
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -99,6 +101,7 @@ function Fields({
  * Deleting warns first, and names the posts that would lose their byline.
  */
 export function AuthorManager({ initial }: { initial: Author[] }) {
+  const api = useAdminApi();
   const router = useRouter();
   const [authors, setAuthors] = useState(initial);
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -126,7 +129,7 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
     if (!draft?.name.trim()) return;
 
     const { ok, body } = await call(
-      "/api/admin/authors",
+      api("/authors"),
       {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -143,7 +146,7 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
 
   async function save(id: string) {
     const { ok, body } = await call(
-      `/api/admin/authors/${id}`,
+      api(`/authors/${id}`),
       {
         method: "PUT",
         headers: { "content-type": "application/json" },
@@ -160,7 +163,7 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
 
   async function requestDelete(author: Author) {
     const { ok, status, body } = await call(
-      `/api/admin/authors/${author.id}`,
+      api(`/authors/${author.id}`),
       { method: "DELETE" },
       author.id,
     );
@@ -182,7 +185,7 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
     if (!confirming) return;
 
     const { ok, body } = await call(
-      `/api/admin/authors/${confirming.author.id}?force=true`,
+      api(`/authors/${confirming.author.id}?force=true`),
       { method: "DELETE" },
       confirming.author.id,
     );

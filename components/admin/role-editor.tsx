@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminApi, useAdminBase } from "@/components/admin/base-path";
+
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -60,6 +62,8 @@ const FIELDS = [
 type FieldKey = (typeof FIELDS)[number]["key"];
 
 export function RoleEditor({ initialRole }: { initialRole: Role }) {
+  const api = useAdminApi();
+  const base = useAdminBase();
   const router = useRouter();
   const [role, setRole] = useState(initialRole);
   const [saving, setSaving] = useState(false);
@@ -99,7 +103,7 @@ export function RoleEditor({ initialRole }: { initialRole: Role }) {
     setErrors({});
     setNotice("");
 
-    const response = await fetch(`/api/admin/careers/${role.id}`, {
+    const response = await fetch(api(`/careers/${role.id}`), {
       method: "PUT",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(role),
@@ -144,7 +148,7 @@ export function RoleEditor({ initialRole }: { initialRole: Role }) {
       <div className="sticky top-12 z-30 border-b border-brand-100 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-[100rem] flex-wrap items-center gap-3 px-5 py-3 sm:px-8">
           <Link
-            href="/admin/careers"
+            href={`${base}/careers`}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft transition-colors hover:text-brand-700"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />

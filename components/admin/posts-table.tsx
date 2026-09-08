@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminApi, useAdminBase } from "@/components/admin/base-path";
+
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { ImageFallback } from "@/components/site/image-fallback";
@@ -36,6 +38,8 @@ type Filter = "all" | PostStatus;
  */
 export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
   const router = useRouter();
+  const base = useAdminBase();
+  const api = useAdminApi();
   const [posts, setPosts] = useState(initialPosts);
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
@@ -77,7 +81,7 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
     setDeleting(post.id);
     setError("");
 
-    const response = await fetch(`/api/admin/posts/${post.id}`, {
+    const response = await fetch(api(`/posts/${post.id}`), {
       method: "DELETE",
     }).catch(() => null);
 
@@ -109,7 +113,7 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
           </p>
         </div>
         <Link
-          href="/admin/posts/new"
+          href={`${base}/posts/new`}
           className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-colors duration-300 hover:bg-brand-800"
         >
           <PlusCircle className="size-4" aria-hidden="true" />
@@ -212,7 +216,7 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <Link
-                      href={`/admin/posts/${post.id}`}
+                      href={`${base}/posts/${post.id}`}
                       className="truncate text-sm font-semibold text-ink transition-colors hover:text-brand-700"
                     >
                       {post.title || "(untitled)"}
@@ -237,7 +241,7 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
                     mouse, which is the wp-admin row-actions pattern. */}
                 <div className="flex shrink-0 items-center gap-0.5 opacity-100 transition-opacity duration-200 lg:opacity-0 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
                   <Link
-                    href={`/admin/posts/${post.id}`}
+                    href={`${base}/posts/${post.id}`}
                     title="Edit"
                     className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-100 hover:text-brand-800"
                   >
@@ -248,7 +252,7 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
                     href={
                       post.status === "published"
                         ? `/blog/${post.slug}`
-                        : `/admin/posts/${post.id}#preview`
+                        : `${base}/posts/${post.id}#preview`
                     }
                     target={post.status === "published" ? "_blank" : undefined}
                     rel="noreferrer"

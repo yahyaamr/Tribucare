@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminApi, useAdminBase } from "@/components/admin/base-path";
+
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
@@ -39,12 +41,12 @@ import type { AdminStrings } from "@/lib/i18n/admin-strings";
  */
 
 const NAV = [
-  { href: "/admin", key: "dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/posts", key: "posts", icon: FileText, exact: false },
-  { href: "/admin/news", key: "news", icon: Newspaper, exact: false },
-  { href: "/admin/careers", key: "careers", icon: BriefcaseBusiness, exact: false },
-  { href: "/admin/media", key: "media", icon: ImageIcon, exact: false },
-  { href: "/admin/settings", key: "settings", icon: Settings, exact: false },
+  { href: "", key: "dashboard", icon: LayoutDashboard, exact: true },
+  { href: "/posts", key: "posts", icon: FileText, exact: false },
+  { href: "/news", key: "news", icon: Newspaper, exact: false },
+  { href: "/careers", key: "careers", icon: BriefcaseBusiness, exact: false },
+  { href: "/media", key: "media", icon: ImageIcon, exact: false },
+  { href: "/settings", key: "settings", icon: Settings, exact: false },
 ] as const;
 
 export function AdminShell({
@@ -58,15 +60,17 @@ export function AdminShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const base = useAdminBase();
+  const api = useAdminApi();
   const [open, setOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
   async function signOut() {
     setSigningOut(true);
-    await fetch("/api/admin/logout", { method: "POST" });
+    await fetch(api("/logout"), { method: "POST" });
     // `refresh` clears the cached server render of the panel before the
     // redirect, so signing back in never shows the previous session's data.
-    router.replace("/admin/login");
+    router.replace(`${base}/login`);
     router.refresh();
   }
 
@@ -160,7 +164,7 @@ export function AdminShell({
             sidebar. */}
         <div className="space-y-2 px-3 pt-4">
           <Link
-            href="/admin/posts/new"
+            href={`${base}/posts/new`}
             onClick={() => setOpen(false)}
             className="flex items-center justify-center gap-2 rounded-xl bg-brand-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors duration-300 hover:bg-brand-500"
           >
@@ -168,7 +172,7 @@ export function AdminShell({
             {t.newPost}
           </Link>
           <Link
-            href="/admin/news/new"
+            href={`${base}/news/new`}
             onClick={() => setOpen(false)}
             className="flex items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-3 py-2.5 text-sm font-semibold text-brand-100 transition-colors duration-300 hover:border-white/25 hover:bg-white/10 hover:text-white"
           >
@@ -179,13 +183,14 @@ export function AdminShell({
 
         <ul className="mt-4 flex-1 space-y-0.5 px-3">
           {NAV.map((item) => {
+            const href = `${base}${item.href}`;
             const active = item.exact
-              ? pathname === item.href
-              : pathname.startsWith(item.href);
+              ? pathname === href
+              : pathname.startsWith(href);
             return (
               <li key={item.href}>
                 <Link
-                  href={item.href}
+                  href={href}
                   onClick={() => setOpen(false)}
                   aria-current={active ? "page" : undefined}
                   className={cn(

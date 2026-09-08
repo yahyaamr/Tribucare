@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminApi } from "@/components/admin/base-path";
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
@@ -101,11 +103,11 @@ function shortcutFor(value: string): Block | null {
   return null;
 }
 
-async function uploadImage(file: File) {
+async function uploadImage(file: File, endpoint: string) {
   const form = new FormData();
   form.append("file", file);
 
-  const response = await fetch("/api/admin/media", {
+  const response = await fetch(endpoint, {
     method: "POST",
     body: form,
   }).catch(() => null);
@@ -262,6 +264,7 @@ export function DocEditor({
   blocks: Block[];
   onChange: (blocks: Block[]) => void;
 }) {
+  const api = useAdminApi();
   const [active, setActive] = useState<number | null>(null);
   const [pending, setPending] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
@@ -545,7 +548,7 @@ export function DocEditor({
     }
 
     setPending((current) => ({ ...current, [placeholder.id]: "Uploading…" }));
-    const uploaded = await uploadImage(fitted.file);
+    const uploaded = await uploadImage(fitted.file, api("/media"));
 
     if (!uploaded.ok) {
       drop(uploaded.error);

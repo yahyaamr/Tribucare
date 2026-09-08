@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { adminBase } from "@/lib/cms/gate";
 import { SquarePen } from "lucide-react";
 import {
   FALLBACK_ROLE_ICON,
@@ -19,6 +20,7 @@ import type { Role } from "@/lib/cms/types";
  * state to hold, and the rows are links.
  */
 export function RolesTable({ roles }: { roles: Role[] }) {
+  const base = adminBase();
   return (
     <>
       <div>
@@ -46,7 +48,7 @@ export function RolesTable({ roles }: { roles: Role[] }) {
 
                 <div className="min-w-0 flex-1">
                   <Link
-                    href={`/admin/careers/${role.id}`}
+                    href={`${base}/careers/${role.id}`}
                     className="font-display text-[0.9375rem] font-semibold text-ink transition-colors hover:text-brand-700"
                   >
                     {role.title.en || "Untitled role"}
@@ -69,7 +71,7 @@ export function RolesTable({ roles }: { roles: Role[] }) {
                 </div>
 
                 <Link
-                  href={`/admin/careers/${role.id}`}
+                  href={`${base}/careers/${role.id}`}
                   className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-ink-soft transition-colors hover:bg-brand-50 hover:text-brand-700"
                 >
                   <SquarePen className="size-3.5" aria-hidden="true" />

@@ -1,13 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE, isValidSessionValue } from "@/lib/cms/auth";
 import {
-  KNOCK_COOKIE,
-  hasKnocked,
-  isGateEnabled,
-  knockCookieOptions,
-  knockPath,
-  knockToken,
-} from "@/lib/cms/gate";
+  SESSION_COOKIE,
+  createSessionValue,
+  isValidSessionValue,
+  sessionCookieOptions,
+} from "@/lib/cms/auth";
+import { adminBase, isGateEnabled } from "@/lib/cms/gate";
 import { DEFAULT_LOCALE, LOCALES } from "@/lib/i18n/config";
 
 /**
@@ -52,64 +50,107 @@ const NOT_LOCALISED = [
  * byte-for-byte the one any other bad URL produces. A bespoke response — even a
  * plausible-looking one — is a tell, because it differs from the 404 next door.
  */
+/**
+ * What a request to the panel's internal address gets: the site's own 404, at a
+ * real 404 status.
+ *
+ * Rewritten onto the locale catch-all rather than answered here, so the page is
+ * the one any other bad URL produces. A bespoke response — even a plausible
+ * one — is a tell, because it differs from the 404 next door.
+ */
 function notFound(request: NextRequest) {
   const url = request.nextUrl.clone();
-  // The requested path, moved under the default locale, where nothing matches
-  // it and the catch-all throws. `/admin` is treated as exactly what it would
-  // be if the panel did not exist: an unknown public URL.
   url.pathname = `/${DEFAULT_LOCALE}${request.nextUrl.pathname}`;
   return NextResponse.rewrite(url);
 }
 
-async function adminGate(request: NextRequest) {
-  const { pathname, search } = request.nextUrl;
+/** Serves an internal admin path, re-issuing the session so the idle window
+ *  slides while somebody is actually working. */
+async function serve(request: NextRequest, pathname: string) {
+  const url = request.nextUrl.clone();
+  url.pathname = pathname;
+  const response = NextResponse.rewrite(url);
+  response.cookies.set(
+    SESSION_COOKIE,
+    await createSessionValue(),
+    sessionCookieOptions,
+  );
+  return response;
+}
 
-  // Before anything else, including before admitting the panel exists.
-  if (!(await hasKnocked(request.cookies.get(KNOCK_COOKIE)?.value))) {
-    return notFound(request);
-  }
+/**
+ * The panel, reached through the secret base.
+ *
+ * `rest` is what followed it: "" for the dashboard, "/posts", "/login". Every
+ * redirect is written back in terms of the public base, every rewrite in terms
+ * of the internal one — mixing the two is how the secret leaks into a Location
+ * header or how a link lands on a 404.
+ */
+async function adminGate(request: NextRequest, base: string, rest: string) {
+  const { search } = request.nextUrl;
 
   const authed = await isValidSessionValue(
     request.cookies.get(SESSION_COOKIE)?.value,
   );
 
-  if (pathname === "/admin/login") {
-    if (!authed) return NextResponse.next();
-    return NextResponse.redirect(new URL("/admin/posts", request.url));
+  if (rest === "/login") {
+    if (!authed) return NextResponse.rewrite(pathUrl(request, "/admin/login"));
+    return NextResponse.redirect(new URL(`${base}/posts`, request.url));
   }
 
-  if (authed) return NextResponse.next();
+  if (authed) return serve(request, `/admin${rest}`);
 
-  const login = new URL("/admin/login", request.url);
+  const login = new URL(`${base}/login`, request.url);
   // Round-trips the requested page so a deep link survives the sign-in.
-  login.searchParams.set("from", `${pathname}${search}`);
+  login.searchParams.set("from", `${rest}${search}`);
   return NextResponse.redirect(login);
+}
+
+function pathUrl(request: NextRequest, pathname: string) {
+  const url = request.nextUrl.clone();
+  url.pathname = pathname;
+  return url;
 }
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const base = adminBase();
+  const gated = isGateEnabled();
 
-  // The knock. Sets the cookie and sends the visitor on to the panel — the
-  // secret is spent here and never has to appear in the URL bar again.
-  const secret = knockPath();
-  if (secret && (pathname === `/${secret}` || pathname === `/${secret}/`)) {
-    const response = NextResponse.redirect(new URL("/admin", request.url));
-    response.cookies.set(KNOCK_COOKIE, await knockToken(), knockCookieOptions);
-    return response;
+  // The internal addresses, sealed. Nothing is ever served at them once the
+  // panel has been mounted elsewhere — not a redirect to the real path, which
+  // would hand the secret to whoever guessed `/admin`.
+  if (gated && (pathname === "/admin" || pathname.startsWith("/admin/"))) {
+    return notFound(request);
   }
-
-  // The admin API is matched only so it can be hidden. A bare 404 rather than
-  // the 401 the handlers would give: `/api/admin/login` answering at all is
-  // enough to tell a prober there is a panel to attack.
-  if (pathname.startsWith("/api/admin")) {
-    if (isGateEnabled() && !(await hasKnocked(request.cookies.get(KNOCK_COOKIE)?.value))) {
-      return new NextResponse(null, { status: 404 });
-    }
+  if (pathname === "/api/admin" || pathname.startsWith("/api/admin/")) {
+    // A bare 404 rather than the 401 the handlers would give: `/api/admin/login`
+    // answering at all tells a prober there is a panel to attack.
+    if (gated) return new NextResponse(null, { status: 404 });
     return NextResponse.next();
   }
 
-  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
-    return adminGate(request);
+  // The panel, at the secret base.
+  if (pathname === base || pathname.startsWith(`${base}/`)) {
+    const rest = pathname.slice(base.length);
+
+    // Its API lives under the same segment, so there is one secret rather than
+    // two and no guessable URL left over.
+    if (rest === "/api" || rest.startsWith("/api/")) {
+      const target = `/api/admin${rest.slice(4)}`;
+      const authed = await isValidSessionValue(
+        request.cookies.get(SESSION_COOKIE)?.value,
+      );
+      // The handlers guard themselves with `requireSession`, so an
+      // unauthenticated call is simply passed through to be refused. The proxy
+      // only slides the idle window for someone who already has a session —
+      // and must not, for the login route, which issues its own.
+      return authed
+        ? serve(request, target)
+        : NextResponse.rewrite(pathUrl(request, target));
+    }
+
+    return adminGate(request, base, rest);
   }
 
   if (

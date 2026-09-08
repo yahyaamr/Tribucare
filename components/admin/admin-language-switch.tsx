@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminApi } from "@/components/admin/base-path";
+
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Globe, Loader2 } from "lucide-react";
@@ -28,13 +30,14 @@ export function AdminLanguageSwitch({
   className?: string;
 }) {
   const router = useRouter();
+  const api = useAdminApi();
   const [pending, startTransition] = useTransition();
   const [saving, setSaving] = useState(false);
 
   async function choose(next: Locale) {
     if (next === locale) return;
     setSaving(true);
-    await fetch("/api/admin/language", {
+    await fetch(api("/language"), {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ locale: next }),

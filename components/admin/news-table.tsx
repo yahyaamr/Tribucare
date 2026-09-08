@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminApi, useAdminBase } from "@/components/admin/base-path";
+
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { ImageFallback } from "@/components/site/image-fallback";
@@ -32,6 +34,8 @@ type Filter = "all" | PostStatus;
  */
 export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
   const router = useRouter();
+  const base = useAdminBase();
+  const api = useAdminApi();
   const [news, setNews] = useState(initialNews);
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
@@ -73,7 +77,7 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
     setDeleting(item.id);
     setError("");
 
-    const response = await fetch(`/api/admin/news/${item.id}`, {
+    const response = await fetch(api(`/news/${item.id}`), {
       method: "DELETE",
     }).catch(() => null);
 
@@ -109,7 +113,7 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
           </p>
         </div>
         <Link
-          href="/admin/news/new"
+          href={`${base}/news/new`}
           className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-colors duration-300 hover:bg-brand-800"
         >
           <PlusCircle className="size-4" aria-hidden="true" />
@@ -187,7 +191,7 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
             </p>
             {news.length === 0 && (
               <Link
-                href="/admin/news/new"
+                href={`${base}/news/new`}
                 className="mt-5 inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
               >
                 <PlusCircle className="size-4" aria-hidden="true" />
@@ -219,7 +223,7 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <Link
-                      href={`/admin/news/${item.id}`}
+                      href={`${base}/news/${item.id}`}
                       className="truncate text-sm font-semibold text-ink transition-colors hover:text-brand-700"
                     >
                       {item.title || "(untitled)"}
@@ -245,7 +249,7 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
 
                 <div className="flex shrink-0 items-center gap-0.5 opacity-100 transition-opacity duration-200 lg:opacity-0 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
                   <Link
-                    href={`/admin/news/${item.id}`}
+                    href={`${base}/news/${item.id}`}
                     title="Edit"
                     className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-100 hover:text-brand-800"
                   >
@@ -256,7 +260,7 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
                     href={
                       item.status === "published"
                         ? `/events/${item.slug}`
-                        : `/admin/news/${item.id}#preview`
+                        : `${base}/news/${item.id}#preview`
                     }
                     target={item.status === "published" ? "_blank" : undefined}
                     rel="noreferrer"

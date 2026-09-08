@@ -1,11 +1,16 @@
 "use client";
 
+import { useAdminApi, useAdminBase } from "@/components/admin/base-path";
+import { TAB_MARKER } from "@/components/admin/tab-session";
+
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { KeyRound, Loader2 } from "lucide-react";
 import { TribuLogo } from "@/components/brand/logo";
 
 export function LoginForm({ configured }: { configured: boolean }) {
+  const base = useAdminBase();
+  const api = useAdminApi();
   const router = useRouter();
   const params = useSearchParams();
   const [password, setPassword] = useState("");
@@ -15,14 +20,14 @@ export function LoginForm({ configured }: { configured: boolean }) {
   /** Where the proxy sent them from. Only same-origin relative paths are
    *  honoured — an absolute URL here would be an open redirect. */
   const from = params.get("from");
-  const next = from?.startsWith("/") && !from.startsWith("//") ? from : "/admin";
+  const next = from?.startsWith("/") && !from.startsWith("//") ? `${base}${from}` : base;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
     setError("");
 
-    const response = await fetch("/api/admin/login", {
+    const response = await fetch(api("/login"), {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ password }),
@@ -33,6 +38,12 @@ export function LoginForm({ configured }: { configured: boolean }) {
       setError(body?.error ?? "Could not sign in. Check your connection.");
       setBusy(false);
       return;
+    }
+
+    try {
+      window.sessionStorage.setItem(TAB_MARKER, "1");
+    } catch {
+      // Storage unavailable (private mode); the guard no-ops to match.
     }
 
     router.replace(next);

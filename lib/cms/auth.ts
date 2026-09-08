@@ -16,7 +16,16 @@
  */
 
 export const SESSION_COOKIE = "tribucare_admin";
-const SESSION_DAYS = 7;
+
+/**
+ * How long a session survives without activity.
+ *
+ * The signed payload carries the moment it stops being valid, and `proxy.ts`
+ * re-issues the cookie on every authenticated request — so the hour is an idle
+ * window that slides while somebody is working, not a hard cap that would sign
+ * an editor out mid-article.
+ */
+export const IDLE_MINUTES = 60;
 
 export function getAdminPassword() {
   return process.env.ADMIN_PASSWORD ?? "";
@@ -62,7 +71,7 @@ function safeEqual(a: string, b: string) {
 }
 
 export async function createSessionValue() {
-  const expiry = String(Date.now() + SESSION_DAYS * 24 * 60 * 60 * 1000);
+  const expiry = String(Date.now() + IDLE_MINUTES * 60 * 1000);
   return `${expiry}.${await sign(expiry)}`;
 }
 
@@ -90,11 +99,17 @@ export async function verifyPassword(candidate: string) {
   return safeEqual(a, b);
 }
 
+/**
+ * Deliberately without `maxAge` or `expires`, which makes this a browser
+ * session cookie: it is discarded when the browser quits, so a machine left
+ * signed in overnight is signed out by morning. The idle window inside the
+ * signed value is the other half — one bounds the browser's lifetime, the
+ * other bounds inactivity, and neither alone covers both.
+ */
 export const sessionCookieOptions = {
   httpOnly: true,
   sameSite: "lax" as const,
   // Vercel always serves HTTPS; locally it would make the cookie undeliverable.
   secure: process.env.NODE_ENV === "production",
   path: "/",
-  maxAge: SESSION_DAYS * 24 * 60 * 60,
 };

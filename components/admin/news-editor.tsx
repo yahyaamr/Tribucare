@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminApi, useAdminBase } from "@/components/admin/base-path";
+
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -36,7 +38,7 @@ import { getContent } from "@/content";
  *
  * What differs is only what news is: no reading time, no byline — an
  * announcement is published by the company, not by a person — and every request
- * it makes goes to `/api/admin/news*`. Its categories are its own vocabulary,
+ * it makes goes to the news API.  Its categories are its own vocabulary,
  * stored apart from the blog's under `cms/news-tags.json`; there is no code
  * path from here to a post or a blog category, and that isolation is structural
  * rather than a runtime check.
@@ -81,6 +83,8 @@ export function NewsEditor({
   isNew: boolean;
 }) {
   const router = useRouter();
+  const base = useAdminBase();
+  const api = useAdminApi();
   const [post, setPost] = useState(initialItem);
   // Held in state rather than read straight from the prop so a tag created in
   // the picker appears in the list without a round trip.
@@ -132,7 +136,7 @@ export function NewsEditor({
     };
 
     const response = await fetch(
-      isNew ? "/api/admin/news" : `/api/admin/news/${post.id}`,
+      isNew ? api("/news") : api(`/news/${post.id}`),
       {
         method: isNew ? "POST" : "PUT",
         headers: { "content-type": "application/json" },
@@ -164,7 +168,7 @@ export function NewsEditor({
     if (isNew) {
       // Swap the URL from /new to the real record so a refresh doesn't create
       // a second copy.
-      router.replace(`/admin/news/${saved.id}`);
+      router.replace(`${base}/news/${saved.id}`);
     }
     router.refresh();
   }
@@ -177,9 +181,9 @@ export function NewsEditor({
     ) {
       return;
     }
-    await fetch(`/api/admin/news/${post.id}`, { method: "DELETE" });
+    await fetch(api(`/news/${post.id}`), { method: "DELETE" });
     setDirty(false);
-    router.replace("/admin/news");
+    router.replace(`${base}/news`);
     router.refresh();
   }
 
@@ -199,7 +203,7 @@ export function NewsEditor({
       <div className="sticky top-12 z-30 border-b border-brand-100 bg-white/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-[100rem] flex-wrap items-center gap-3 px-5 py-3 sm:px-8">
           <Link
-            href="/admin/news"
+            href={`${base}/news`}
             className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft transition-colors hover:text-brand-700"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
@@ -600,7 +604,7 @@ export function NewsEditor({
               <p className="text-xs text-ink-faint">
                 News categories are their own list, managed in{" "}
                 <Link
-                  href="/admin/settings"
+                  href={`${base}/settings`}
                   className="font-semibold text-brand-700 hover:text-brand-800"
                 >
                   Settings

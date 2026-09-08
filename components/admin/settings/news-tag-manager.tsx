@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminApi } from "@/components/admin/base-path";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -19,7 +21,7 @@ import { DeleteWarning } from "./category-manager";
  *
  * `CategoryManager` for the news vocabulary, and deliberately its own component
  * rather than the same one pointed at a different endpoint: nothing in this
- * file can address `/api/admin/categories`, so a news tag edit has no path to
+ * file can address the categories API, so a news tag edit has no path to
  * the blog's data even by mistake. That is the isolation the panel promises,
  * expressed as structure rather than as a runtime check.
  *
@@ -34,6 +36,7 @@ import { DeleteWarning } from "./category-manager";
  * of the two files has to own it.
  */
 export function NewsTagManager({ initial }: { initial: string[] }) {
+  const api = useAdminApi();
   const router = useRouter();
   const [tags, setTags] = useState(initial);
   const [adding, setAdding] = useState("");
@@ -65,7 +68,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
     if (!adding.trim()) return;
 
     const { ok, body } = await call(
-      "/api/admin/news-tags",
+      api("/news-tags"),
       {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -84,7 +87,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
     if (!editing) return;
 
     const { ok, body } = await call(
-      "/api/admin/news-tags",
+      api("/news-tags"),
       {
         method: "PUT",
         headers: { "content-type": "application/json" },
@@ -102,7 +105,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
   /** First click: ask what it is attached to. */
   async function requestDelete(name: string) {
     const { ok, status, body } = await call(
-      `/api/admin/news-tags?name=${encodeURIComponent(name)}`,
+      api(`/news-tags?name=${encodeURIComponent(name)}`),
       { method: "DELETE" },
       name,
     );
@@ -127,7 +130,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
     if (!confirming) return;
 
     const { ok, body } = await call(
-      `/api/admin/news-tags?name=${encodeURIComponent(confirming.name)}&force=true`,
+      api(`/news-tags?name=${encodeURIComponent(confirming.name)}&force=true`),
       { method: "DELETE" },
       confirming.name,
     );

@@ -5,6 +5,7 @@ import { getNewsSummaries } from "@/lib/cms/news";
 import { listMedia } from "@/lib/cms/media";
 import { formatPostDate } from "@/lib/cms/posts";
 import { StatusPill } from "@/components/admin/status-pill";
+import { adminBase } from "@/lib/cms/gate";
 
 export const metadata = { title: "Dashboard" };
 /** The panel always reflects the store as it is right now, never a cached
@@ -12,6 +13,7 @@ export const metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
+  const base = adminBase();
   const [posts, news, media] = await Promise.all([
     getPostSummaries(),
     getNewsSummaries(),
@@ -61,7 +63,7 @@ export default async function AdminDashboard() {
             Recent blogs
           </h2>
           <Link
-            href="/admin/posts"
+            href={`${base}/posts`}
             className="group inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700 transition-colors hover:text-brand-800"
           >
             View all
@@ -76,7 +78,7 @@ export default async function AdminDashboard() {
           <div className="px-5 py-10 text-center">
             <p className="text-sm text-ink-soft">No blogs yet.</p>
             <Link
-              href="/admin/posts/new"
+              href={`${base}/posts/new`}
               className="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
             >
               Write the first one
@@ -87,7 +89,7 @@ export default async function AdminDashboard() {
             {recent.map((post) => (
               <li key={post.id}>
                 <Link
-                  href={`/admin/posts/${post.id}`}
+                  href={`${base}/posts/${post.id}`}
                   className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-brand-50/60"
                 >
                   <span className="min-w-0 flex-1">
@@ -117,7 +119,7 @@ export default async function AdminDashboard() {
             Recent news
           </h2>
           <Link
-            href="/admin/news"
+            href={`${base}/news`}
             className="group inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700 transition-colors hover:text-brand-800"
           >
             View all
@@ -132,7 +134,7 @@ export default async function AdminDashboard() {
           <div className="px-5 py-10 text-center">
             <p className="text-sm text-ink-soft">No news yet.</p>
             <Link
-              href="/admin/news/new"
+              href={`${base}/news/new`}
               className="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
             >
               Add the first one
@@ -143,7 +145,7 @@ export default async function AdminDashboard() {
             {recentNews.map((item) => (
               <li key={item.id}>
                 <Link
-                  href={`/admin/news/${item.id}`}
+                  href={`${base}/news/${item.id}`}
                   className="flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-brand-50/60"
                 >
                   <span className="min-w-0 flex-1">

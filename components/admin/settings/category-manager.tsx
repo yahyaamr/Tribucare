@@ -1,5 +1,7 @@
 "use client";
 
+import { useAdminApi } from "@/components/admin/base-path";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -27,6 +29,7 @@ import type { CategoryUsage } from "@/lib/cms/categories";
  * uncategorised. Nothing is removed until that warning is confirmed.
  */
 export function CategoryManager({ initial }: { initial: string[] }) {
+  const api = useAdminApi();
   const router = useRouter();
   const [categories, setCategories] = useState(initial);
   const [adding, setAdding] = useState("");
@@ -56,7 +59,7 @@ export function CategoryManager({ initial }: { initial: string[] }) {
     if (!adding.trim()) return;
 
     const { ok, body } = await call(
-      "/api/admin/categories",
+      api("/categories"),
       {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -75,7 +78,7 @@ export function CategoryManager({ initial }: { initial: string[] }) {
     if (!editing) return;
 
     const { ok, body } = await call(
-      "/api/admin/categories",
+      api("/categories"),
       {
         method: "PUT",
         headers: { "content-type": "application/json" },
@@ -93,7 +96,7 @@ export function CategoryManager({ initial }: { initial: string[] }) {
   /** First click: ask what it is attached to. */
   async function requestDelete(name: string) {
     const { ok, status, body } = await call(
-      `/api/admin/categories?name=${encodeURIComponent(name)}`,
+      api(`/categories?name=${encodeURIComponent(name)}`),
       { method: "DELETE" },
       name,
     );
@@ -118,7 +121,7 @@ export function CategoryManager({ initial }: { initial: string[] }) {
     if (!confirming) return;
 
     const { ok, body } = await call(
-      `/api/admin/categories?name=${encodeURIComponent(confirming.name)}&force=true`,
+      api(`/categories?name=${encodeURIComponent(confirming.name)}&force=true`),
       { method: "DELETE" },
       confirming.name,
     );
