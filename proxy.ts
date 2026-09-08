@@ -1,5 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, isValidSessionValue } from "@/lib/cms/auth";
+import {
+  KNOCK_COOKIE,
+  hasKnocked,
+  isGateEnabled,
+  knockCookieOptions,
+  knockPath,
+  knockToken,
+} from "@/lib/cms/gate";
 import { DEFAULT_LOCALE, LOCALES } from "@/lib/i18n/config";
 
 /**
@@ -37,8 +45,29 @@ const NOT_LOCALISED = [
   "/robots.txt",
 ];
 
+/**
+ * What an un-knocked visitor gets: the site's own 404, at a real 404 status.
+ *
+ * Rewritten onto the locale catch-all rather than answered here, so the page is
+ * byte-for-byte the one any other bad URL produces. A bespoke response — even a
+ * plausible-looking one — is a tell, because it differs from the 404 next door.
+ */
+function notFound(request: NextRequest) {
+  const url = request.nextUrl.clone();
+  // The requested path, moved under the default locale, where nothing matches
+  // it and the catch-all throws. `/admin` is treated as exactly what it would
+  // be if the panel did not exist: an unknown public URL.
+  url.pathname = `/${DEFAULT_LOCALE}${request.nextUrl.pathname}`;
+  return NextResponse.rewrite(url);
+}
+
 async function adminGate(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+
+  // Before anything else, including before admitting the panel exists.
+  if (!(await hasKnocked(request.cookies.get(KNOCK_COOKIE)?.value))) {
+    return notFound(request);
+  }
 
   const authed = await isValidSessionValue(
     request.cookies.get(SESSION_COOKIE)?.value,
@@ -59,6 +88,25 @@ async function adminGate(request: NextRequest) {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // The knock. Sets the cookie and sends the visitor on to the panel — the
+  // secret is spent here and never has to appear in the URL bar again.
+  const secret = knockPath();
+  if (secret && (pathname === `/${secret}` || pathname === `/${secret}/`)) {
+    const response = NextResponse.redirect(new URL("/admin", request.url));
+    response.cookies.set(KNOCK_COOKIE, await knockToken(), knockCookieOptions);
+    return response;
+  }
+
+  // The admin API is matched only so it can be hidden. A bare 404 rather than
+  // the 401 the handlers would give: `/api/admin/login` answering at all is
+  // enough to tell a prober there is a panel to attack.
+  if (pathname.startsWith("/api/admin")) {
+    if (isGateEnabled() && !(await hasKnocked(request.cookies.get(KNOCK_COOKIE)?.value))) {
+      return new NextResponse(null, { status: 404 });
+    }
+    return NextResponse.next();
+  }
 
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     return adminGate(request);
@@ -98,8 +146,12 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Everything except Next internals and files with an extension. The admin API
-  // guards itself and must answer with JSON rather than a redirect, so `/api`
-  // is excluded here and handled by `requireSession` in each route.
-  matcher: ["/((?!api|_next/static|_next/image|.*\\..*).*)"],
+  // Everything except Next internals and files with an extension. `/api` is
+  // excluded — those handlers guard themselves with `requireSession` and must
+  // answer with JSON rather than a redirect — with `/api/admin` added back so
+  // the knock gate can hide it entirely from anyone who has not knocked.
+  matcher: [
+    "/((?!api|_next/static|_next/image|.*\\..*).*)",
+    "/api/admin/:path*",
+  ],
 };
