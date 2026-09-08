@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { LOCALES, LOCALE_LABELS } from "@/lib/i18n/config";
 import { formatPostDate, slugify } from "@/lib/cms/format";
 import type { NewsItem } from "@/lib/cms/types";
-import { BlockEditor } from "./block-editor";
+import { DocEditor } from "./doc-editor";
 import { MediaPickerDialog } from "./media-picker";
 import { StatusPill } from "./status-pill";
 import { NewsTagSelect } from "./news-tag-select";
@@ -370,10 +370,10 @@ export function NewsEditor({
             <div className="mt-8">
               <h2 className={LABEL}>Content</h2>
               <p className="mt-1 mb-3 text-xs text-ink-faint">
-                Build the item from blocks. Hover a block for its move,
-                duplicate and delete controls.
+                Write the item straight through. Enter starts a new paragraph,
+                and you can paste an image in where you want it.
               </p>
-              <BlockEditor
+              <DocEditor
                 blocks={post.blocks}
                 onChange={(blocks) => update({ blocks })}
               />
