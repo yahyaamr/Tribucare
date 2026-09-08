@@ -296,6 +296,14 @@ const ui = {
   },
 
   pageMeta: {
+    about: {
+      title: "من نحن",
+      description:
+        "تريبوكير شركة رعاية صحية وتجميل ضمن مجموعة مونديال إنفستيسمون، تربط تقنيات الجلدية العالمية وأجهزة التجميل المنزلية ومستحضرات العناية المطوَّرة إكلينيكيًا في مصر ومنطقة الشرق الأوسط وشمال أفريقيا.",
+      ogTitle: "من نحن — تريبوكير للرعاية الصحية والتجميل",
+      ogDescription:
+        "رسالتنا ورؤيتنا وخطوطنا الثلاثة في مصر ومنطقة الشرق الأوسط وشمال أفريقيا.",
+    },
     dermatology: {
       title: "حلول طب الجلد",
       description:
@@ -361,6 +369,7 @@ export const ar: DeepPartial<ContentData> = {
   partnerStats: site.partnerStats,
   footerNav: site.footerNav,
   careers: site.careers,
+  about: site.about,
 
   dermatology,
   products,

@@ -352,6 +352,14 @@ const ui = {
       ogDescription:
         "Congresses, hands-on training days, brand launches and regional exhibitions across Egypt and the MENA region.",
     },
+    about: {
+      title: "About TribuCare",
+      description:
+        "TribuCare is a healthcare and beauty company under Mondial Investissement Corporation, connecting global dermatology technologies, home-use beauty devices and clinically inspired skincare across Egypt and MENA.",
+      ogTitle: "About TribuCare — Healthcare & Beauty Group in Egypt & MENA",
+      ogDescription:
+        "Our mission, our vision and the three lines we run across Egypt and the MENA region.",
+    },
     partner: {
       title: "Partner With Us",
       description:
@@ -394,6 +402,7 @@ export const data = {
   contact: site.contact,
   footerNav: site.footerNav,
   careers: site.careers,
+  about: site.about,
 
   products: derm.products,
   productLines: derm.productLines,

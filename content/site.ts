@@ -25,6 +25,7 @@ export const company = {
  */
 export const nav = [
   { label: "Home", href: "/", icon: "home" },
+  { label: "About", href: "/about", icon: "building" },
   { label: "Our Expertise", href: "/#expertise", icon: "layers" },
   { label: "Core Values", href: "/#core-values", icon: "gem" },
   { label: "Events & News", href: "/events", icon: "calendar" },
@@ -816,4 +817,66 @@ export const careers = {
         "Run the supply chain behind the portfolio — planning, warehousing and distribution across the regions we serve.",
     },
   ],
+} as const;
+
+/**
+ * The About page.
+ *
+ * ⚠️ PARTIALLY UNWRITTEN. The sourcing rule at the top of this file applies
+ * here as strictly as anywhere: the hero, the parent-company line and the
+ * figures on this page are all from the deck, and the mission, vision and
+ * reach numbers are reused from the exports above rather than restated, so
+ * they cannot drift.
+ *
+ * `story.paragraphs` and `leadership` are NOT written. They say so on the page
+ * rather than guessing at a founding narrative, a milestone or a quote — an
+ * invented company history is the exact failure the sourcing rule exists to
+ * prevent, and this site deploys straight to production. Replace the strings
+ * marked PLACEHOLDER below with the real copy and delete `placeholder: true`;
+ * the draft notice disappears with it.
+ *
+ * `leadership.people` is empty on purpose. It renders nothing at all until
+ * somebody is added, so the section cannot ship a half-built team grid.
+ */
+export const about = {
+  eyebrow: "About TribuCare",
+  headlineLead: "A healthcare and beauty group,",
+  headlineAccent: "built for the region it serves.",
+  /** Reused verbatim from `company.description` — one source, one wording. */
+  intro: company.description,
+  /** The same figures the homepage shows, referenced rather than restated so
+   *  the two can never disagree. */
+  stats: reach,
+  parentNote: `Operating under ${company.legalParent}.`,
+
+  story: {
+    eyebrow: "Our Story",
+    headline: "How TribuCare came to be",
+    placeholder: true,
+    paragraphs: [
+      "PLACEHOLDER — the founding story has not been written yet. Replace this with how TribuCare started, who started it, and what gap in the Egyptian market it was built to close.",
+      "PLACEHOLDER — the second paragraph is reserved for how the company grew into the three lines it runs today: professional dermatology technology, home-use beauty devices, and clinically inspired skincare.",
+    ],
+  },
+
+  leadership: {
+    eyebrow: "Leadership",
+    headline: "The people behind the group",
+    placeholder: true,
+    body: "PLACEHOLDER — replace with a short introduction to the leadership team, and add each person below. Until somebody is added, no cards are rendered.",
+    /** Empty until real people are supplied. Names, roles and photographs are
+     *  exactly the kind of detail that must never be invented. */
+    people: [] as ReadonlyArray<{
+      name: string;
+      role: string;
+      photo: string;
+    }>,
+  },
+
+  cta: {
+    headline: "Work with us",
+    body: "Distribution, clinical partnerships, physician training — the ways we collaborate are set out on the partnerships page.",
+    label: "Partner with us",
+    href: "/partner",
+  },
 } as const;
