@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
 import { MissionVision } from "@/components/sections/mission-vision";
+import { Partner } from "@/components/sections/partner";
 import { Counter } from "@/components/site/counter";
 import { content, currentLocale } from "@/content/server";
-import { localePath } from "@/lib/i18n/config";
 import { pageMetadata } from "@/lib/seo";
 
 /**
@@ -50,7 +48,6 @@ function DraftNotice() {
 
 export default async function AboutPage() {
   const { about } = await content();
-  const locale = await currentLocale();
 
   return (
     <>
@@ -215,30 +212,11 @@ export default async function AboutPage() {
         </Shell>
       </section>
 
-      {/* ---- Closing CTA ------------------------------------------------- */}
-      <section className="ground-deep relative py-24 md:py-32">
-        <Shell>
-          <div className="max-w-2xl">
-            <Reveal>
-              <Eyebrow tone="light">{about.cta.headline}</Eyebrow>
-            </Reveal>
-            <Reveal delay={90}>
-              <p className="mt-6 text-[1.0625rem] leading-relaxed text-brand-200">
-                {about.cta.body}
-              </p>
-            </Reveal>
-            <Reveal delay={140}>
-              <Link
-                href={localePath(locale, about.cta.href)}
-                className="group mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-brand-900 shadow-md transition-colors duration-300 hover:bg-brand-50"
-              >
-                {about.cta.label}
-                <ArrowRight className="size-4 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
-              </Link>
-            </Reveal>
-          </div>
-        </Shell>
-      </section>
+      {/* The homepage's own closing section, not a variation on it. This page
+          used to end with a smaller left-aligned CTA of its own, which meant
+          two different treatments for one invitation. `#partner` is not in the
+          nav, so the second copy of that anchor costs no active-state. */}
+      <Partner />
     </>
   );
 }

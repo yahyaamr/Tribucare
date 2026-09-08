@@ -11,6 +11,10 @@ const STRIP = "h-3.5";
 const INSET = "mx-5 sm:mx-8 lg:mx-12 xl:mx-auto max-w-[78rem]";
 const NOTCH = "[--notch:1.75rem] lg:[--notch:2.5rem]";
 
+/** Locale-stripped paths whose closing section is `<Partner />`, which brings a
+ *  footer of its own. */
+const EMBEDS_OWN_FOOTER = new Set(["/", "/about"]);
+
 /**
  * Content arrives as props for the same reason the header's does: this is a
  * client component, and the locale is a root parameter only server components
@@ -35,12 +39,19 @@ export function Footer({
   // The proxy rewrites English to `/en/…`, so the home test has to run against
   // the locale-stripped path or the footer would double up on the Arabic home.
   const pathname = splitLocale(rawPathname ?? "/").path;
-  const isHome = pathname === "/";
   const hasContact = Boolean(contact.email || contact.phone || contact.address);
 
-  // If this is the standalone layout Footer on the home page, return null
-  // because Partner section on the home page embeds Footer directly.
-  if (isHome && !embedded) {
+  // The layout renders a Footer after every page, but `<Partner />` embeds one
+  // of its own — the white card rises out of that section, which is why it sits
+  // inside it rather than after it. So on any page ending in `<Partner />` the
+  // standalone copy has to stand down, or the page gets two.
+  //
+  // The list is explicit because a footer cannot see what sections a page
+  // rendered: it is a sibling of `children`, not a descendant, so no context or
+  // ref can reach it. Add a page here when you add `<Partner />` to it — the
+  // symptom otherwise is two footers, which is obvious on sight but easy to
+  // ship if nobody scrolls to the bottom.
+  if (!embedded && EMBEDS_OWN_FOOTER.has(pathname)) {
     return null;
   }
 

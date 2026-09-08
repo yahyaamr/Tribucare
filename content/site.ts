@@ -872,11 +872,4 @@ export const about = {
       photo: string;
     }>,
   },
-
-  cta: {
-    headline: "Work with us",
-    body: "Distribution, clinical partnerships, physician training — the ways we collaborate are set out on the partnerships page.",
-    label: "Partner with us",
-    href: "/partner",
-  },
 } as const;
