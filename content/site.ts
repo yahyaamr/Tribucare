@@ -910,6 +910,24 @@ export const about = {
   stats: reach,
   parentNote: `Operating under ${company.legalParent}.`,
 
+  /**
+   * The hero composite — the same two-layer construction the Mission & Vision
+   * section and the Partner page use, and deliberately the same shield file.
+   * The team photograph was composited onto that image's 1036×1197 crop box,
+   * so `object-contain` resolves both layers to one size and origin and they
+   * register exactly. Re-export the figure at any other dimensions and the
+   * team slides out of the shield.
+   */
+  media: {
+    backdrop: { src: "/brand/mission-backdrop.webp" },
+    figure: {
+      src: "/brand/about-figure.webp",
+      alt: "The TribuCare team standing together in professional and clinical dress.",
+    },
+    width: 1036,
+    height: 1197,
+  },
+
   story: {
     eyebrow: "Our Story",
     headline: "How TribuCare came to be",

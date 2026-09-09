@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
+import { Parallax } from "@/components/site/parallax";
+import { Rise } from "@/components/site/rise";
 import { MissionVision } from "@/components/sections/mission-vision";
 import { Partner } from "@/components/sections/partner";
 import { Counter } from "@/components/site/counter";
@@ -35,6 +38,8 @@ export async function generateMetadata(): Promise<Metadata> {
     ogDescription: m.ogDescription,
   });
 }
+
+const MEDIA_SIZES = "(max-width: 1024px) 100vw, 42vw";
 
 /** Marks copy that is a stand-in, so an unfinished section can never be
  *  mistaken for a finished one — least of all after it ships. */
@@ -92,6 +97,39 @@ export default async function AboutPage() {
                 {about.parentNote}
               </p>
             </Reveal>
+          </div>
+
+          {/* The same two-layer composite the Mission & Vision section and the
+              Partner page use, with the same motion: an outer Parallax
+              drifting the whole thing against the scroll, and the shield
+              rising into place inside it so it reads as sitting behind the
+              team rather than pasted flat against it. The team stays out of
+              the Rise — it is the anchor the shield settles against.
+
+              Both layers share the one 1036×1197 crop box, so `object-contain`
+              resolves them to the same size and origin. That is the whole
+              reason they line up; it is not a coincidence of aspect ratios. */}
+          <div className="relative mx-auto mt-12 min-h-[24rem] w-full max-w-sm sm:min-h-[30rem] sm:max-w-md lg:mt-16 lg:min-h-[42rem] lg:max-w-xl">
+            <Parallax speed={0.06} className="absolute inset-y-0 -inset-x-[8%]">
+              <Rise distance={80} className="absolute inset-0">
+                <Image
+                  src={about.media.backdrop.src}
+                  alt=""
+                  aria-hidden="true"
+                  fill
+                  sizes={MEDIA_SIZES}
+                  className="object-contain"
+                />
+              </Rise>
+              <Image
+                src={about.media.figure.src}
+                alt={about.media.figure.alt}
+                fill
+                sizes={MEDIA_SIZES}
+                className="object-contain"
+                priority
+              />
+            </Parallax>
           </div>
         </Shell>
       </div>
