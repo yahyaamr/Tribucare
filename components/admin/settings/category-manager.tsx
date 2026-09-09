@@ -15,7 +15,8 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { CategoryUsage } from "@/lib/cms/categories";
+import type { Category, CategoryUsage } from "@/lib/cms/categories";
+import { LOCALES, LOCALE_LABELS, type Locale } from "@/lib/i18n/config";
 
 /**
  * Category management.
@@ -27,12 +28,19 @@ import type { CategoryUsage } from "@/lib/cms/categories";
  * category is attached to and shows the answer — including, specifically, the
  * posts for which it is the *only* category and which would therefore be left
  * uncategorised. Nothing is removed until that warning is confirmed.
+ *
+ * Every category belongs to one language site, and the row says which: the
+ * editor only offers a post the categories of the language it is written in,
+ * so a category filed under the wrong one is invisible where it was meant to
+ * be used. A name may be taken only once across both — two identical rows
+ * here would rename and delete differently with nothing to tell them apart.
  */
-export function CategoryManager({ initial }: { initial: string[] }) {
+export function CategoryManager({ initial }: { initial: Category[] }) {
   const api = useAdminApi();
   const router = useRouter();
   const [categories, setCategories] = useState(initial);
   const [adding, setAdding] = useState("");
+  const [addingLocale, setAddingLocale] = useState<Locale>(LOCALES[0]);
   const [editing, setEditing] = useState<{ from: string; to: string } | null>(null);
   const [confirming, setConfirming] = useState<{
     name: string;
@@ -54,6 +62,24 @@ export function CategoryManager({ initial }: { initial: string[] }) {
     return { ok: Boolean(response?.ok), status: response?.status ?? 0, body };
   }
 
+  /** Moves a category to the other language site. The name — and so every
+   *  post filed under it — is untouched; only which editor offers it moves. */
+  async function move(category: string, locale: Locale) {
+    const { ok, body } = await call(
+      api("/categories"),
+      {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ from: category, locale }),
+      },
+      category,
+    );
+
+    if (!ok) return setError(body?.error ?? "Could not move that category.");
+    setCategories(body.categories);
+    router.refresh();
+  }
+
   async function add(e: React.FormEvent) {
     e.preventDefault();
     if (!adding.trim()) return;
@@ -63,7 +89,7 @@ export function CategoryManager({ initial }: { initial: string[] }) {
       {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: adding }),
+        body: JSON.stringify({ name: adding, locale: addingLocale }),
       },
       "add",
     );
@@ -151,7 +177,7 @@ export function CategoryManager({ initial }: { initial: string[] }) {
       )}
 
       <ul className="divide-y divide-brand-50">
-        {categories.map((category) => {
+        {categories.map(({ name: category, locale }) => {
           const isEditing = editing?.from === category;
 
           return (
@@ -199,9 +225,25 @@ export function CategoryManager({ initial }: { initial: string[] }) {
               ) : (
                 <>
                   <Tag className="size-4 shrink-0 text-brand-400" aria-hidden="true" />
-                  <span className="flex-1 text-sm font-medium text-ink">
+                  <span
+                    dir={locale === "ar" ? "rtl" : "ltr"}
+                    className="flex-1 text-sm font-medium text-ink"
+                  >
                     {category}
                   </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void move(category, locale === "ar" ? LOCALES[0] : "ar")
+                    }
+                    disabled={busy === category}
+                    title={`Move to the ${
+                      locale === "ar" ? LOCALE_LABELS[LOCALES[0]] : LOCALE_LABELS.ar
+                    } site`}
+                    className="shrink-0 rounded-md border border-brand-200/60 bg-brand-50 px-2 py-0.5 text-[0.6875rem] font-semibold text-brand-800 transition-colors hover:border-brand-300 hover:bg-brand-100 disabled:opacity-50"
+                  >
+                    {LOCALE_LABELS[locale]}
+                  </button>
 
                   <div className="flex items-center gap-0.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
                     <button
@@ -234,9 +276,33 @@ export function CategoryManager({ initial }: { initial: string[] }) {
         })}
       </ul>
 
-      <form onSubmit={add} className="flex gap-2 border-t border-brand-100 px-5 py-3.5">
+      <form
+        onSubmit={add}
+        className="flex flex-wrap gap-2 border-t border-brand-100 px-5 py-3.5"
+      >
+        {/* Which site the new shelf goes on. The same segmented control the
+            editor uses for Edit / Preview. */}
+        <div className="flex shrink-0 rounded-xl bg-brand-50 p-0.5">
+          {LOCALES.map((locale) => (
+            <button
+              key={locale}
+              type="button"
+              onClick={() => setAddingLocale(locale)}
+              aria-pressed={addingLocale === locale}
+              className={cn(
+                "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors duration-200",
+                addingLocale === locale
+                  ? "bg-white text-brand-800 shadow-sm"
+                  : "text-ink-faint hover:text-ink",
+              )}
+            >
+              {LOCALE_LABELS[locale]}
+            </button>
+          ))}
+        </div>
         <input
           value={adding}
+          dir={addingLocale === "ar" ? "rtl" : "ltr"}
           onChange={(e) => setAdding(e.target.value)}
           placeholder="New category name"
           className="flex-1 rounded-xl border border-brand-200/80 bg-white px-3.5 py-2 text-sm text-ink shadow-sm transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none"

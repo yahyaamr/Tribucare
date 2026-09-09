@@ -147,7 +147,6 @@ const ui = {
     emptyBody: "جرّب إعادة ضبط التصنيف أو تعديل كلمات البحث.",
     resetFilters: "إعادة ضبط التصفية",
     backToArticles: "العودة إلى المقالات",
-    exploreAll: "تصفّح كل المقالات",
     relatedEyebrow: "قراءات ذات صلة",
     relatedHeadline: "المزيد من رؤى تريبوكير",
     viewAll: "عرض كل المقالات",

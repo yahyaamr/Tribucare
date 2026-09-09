@@ -1,5 +1,6 @@
 import { getStore } from "./store";
 import { formatPostDate, newBlockId, newId, slugify, todayIso } from "./format";
+import { sanitizeBlocks } from "./rich-text";
 import type { Block, NewsItem, NewsSummary, PostStatus } from "./types";
 import { LOCALES, isLocale, type Locale } from "@/lib/i18n/config";
 
@@ -196,8 +197,8 @@ export function emptyNews(): NewsItem {
     excerpt: "",
     tags: [],
     location: "",
-    // A new item appears in both languages until the editor narrows it.
-    locales: [...LOCALES],
+    // One language — same rule as a post. See posts.ts.
+    locales: [LOCALES[0]],
     status: "draft",
     date: todayIso(),
     image: "",
@@ -212,6 +213,8 @@ export function emptyNews(): NewsItem {
 export async function saveNews(item: NewsItem): Promise<NewsItem> {
   const next: NewsItem = {
     ...item,
+    // Same gate as a post's body — see posts.ts and rich-text.ts.
+    blocks: sanitizeBlocks(item.blocks),
     updatedAt: new Date().toISOString(),
   };
 

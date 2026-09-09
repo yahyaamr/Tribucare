@@ -2,6 +2,7 @@ import Image from "next/image";
 import { ImageFallback } from "@/components/site/image-fallback";
 import { CheckCircle2 } from "lucide-react";
 import { Reveal } from "@/components/site/reveal";
+import { inlineToPlain, sanitizeInline } from "@/lib/cms/rich-text";
 import type { Block } from "@/lib/cms/types";
 import type { ContentData } from "@/content/en";
 
@@ -17,7 +18,40 @@ import type { ContentData } from "@/content/en";
  * the `h2`, the dark pull-quote. The two additions, `list` and `image`, are
  * built from vocabulary already on the page: the list reuses the takeaways
  * bullet, and the figure reuses the article hero's frame.
+ *
+ * A block's text is an inline fragment (bold, italic, links — see
+ * `lib/cms/rich-text.ts`) rather than a plain string, so it is written with
+ * `dangerouslySetInnerHTML`. Every fragment goes through `sanitizeInline`
+ * here, at the point of rendering, and not only on the way in: a record
+ * seeded from a file, hand-edited in storage or written by an older build is
+ * sanitized just the same. The whitelist admits no class, style, colour or
+ * size, which is what keeps a pasted article wearing the site's type scale
+ * instead of its source document's.
  */
+
+/**
+ * One inline fragment, rendered.
+ *
+ * `rich-text` is what styles the marks themselves — link colour, `code`
+ * plate — from the tokens in globals.css, so a link inside an article looks
+ * like a link everywhere else on the site.
+ */
+function Rich({
+  as: Tag = "span",
+  html,
+  className,
+}: {
+  as?: "p" | "h2" | "span";
+  html: string;
+  className?: string;
+}) {
+  return (
+    <Tag
+      className={className}
+      dangerouslySetInnerHTML={{ __html: sanitizeInline(html) }}
+    />
+  );
+}
 
 /**
  * Vertical rhythm, decided by a block and the one above it.
@@ -55,7 +89,7 @@ function BlockView({ block, ui }: { block: Block; ui: BlogUi }) {
           </h2>
           <ul className="mt-4 space-y-2.5">
             {block.items
-              .filter((item) => item.trim())
+              .filter((item) => inlineToPlain(item).trim())
               .map((item, i) => (
                 <li
                   key={`${i}-${item}`}
@@ -65,7 +99,7 @@ function BlockView({ block, ui }: { block: Block; ui: BlogUi }) {
                     aria-hidden="true"
                     className="mt-1.5 size-1.5 shrink-0 rounded-full bg-brand-600"
                   />
-                  <span>{item}</span>
+                  <Rich className="rich-text" html={item} />
                 </li>
               ))}
           </ul>
@@ -74,48 +108,72 @@ function BlockView({ block, ui }: { block: Block; ui: BlogUi }) {
 
     case "lead":
       return (
-        <p className="text-lg leading-relaxed font-medium text-ink">
-          {block.text}
-        </p>
+        <Rich
+          as="p"
+          html={block.text}
+          className="rich-text text-lg leading-relaxed font-medium text-ink"
+        />
       );
 
     case "heading":
       return (
-        <h2 className="font-display text-2xl font-semibold text-ink">
-          {block.text}
-        </h2>
+        <Rich
+          as="h2"
+          html={block.text}
+          className="rich-text font-display text-2xl font-semibold text-ink"
+        />
       );
 
     case "paragraph":
       return (
-        <p className="text-base leading-relaxed text-ink-soft">{block.text}</p>
+        <Rich
+          as="p"
+          html={block.text}
+          className="rich-text text-base leading-relaxed text-ink-soft"
+        />
       );
 
-    case "list":
+    case "list": {
+      // An ordered list is the same row, with the bullet swapped for its
+      // number — font-display for the numeral and brand-600 for its colour,
+      // which is the dot's own colour. Nothing else about the row moves.
+      const List = block.ordered ? "ol" : "ul";
       return (
-        <ul className="space-y-2.5">
+        <List className="space-y-2.5">
           {block.items
-            .filter((item) => item.trim())
+            .filter((item) => inlineToPlain(item).trim())
             .map((item, i) => (
               <li
                 key={`${i}-${item}`}
                 className="flex items-start gap-3 text-base leading-relaxed text-ink-soft"
               >
-                <span
-                  aria-hidden="true"
-                  className="mt-2 size-1.5 shrink-0 rounded-full bg-brand-600"
-                />
-                <span>{item}</span>
+                {block.ordered ? (
+                  <span
+                    aria-hidden="true"
+                    className="min-w-5 shrink-0 text-end font-display text-base font-semibold text-brand-600"
+                  >
+                    {i + 1}.
+                  </span>
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="mt-2 size-1.5 shrink-0 rounded-full bg-brand-600"
+                  />
+                )}
+                <Rich className="rich-text" html={item} />
               </li>
             ))}
-        </ul>
+        </List>
       );
+    }
 
     case "quote":
       return (
         <blockquote className="relative overflow-hidden rounded-3xl border-s-4 border-signal-500 bg-brand-900 p-8 text-white shadow-lg">
-          <p className="font-display text-xl leading-relaxed text-brand-100 italic">
-            &ldquo;{block.text}&rdquo;
+          <p className="rich-text-dark font-display text-xl leading-relaxed text-brand-100 italic">
+            &ldquo;
+            <Rich html={block.text} />
+            &rdquo;
           </p>
           <footer className="mt-4 text-xs font-semibold tracking-wider text-signal-400 uppercase">
             — {block.attribution?.trim() || ui.quoteAttribution}
@@ -143,8 +201,8 @@ function BlockView({ block, ui }: { block: Block; ui: BlogUi }) {
             )}
           </div>
           {block.caption?.trim() && (
-            <figcaption className="mt-3 text-xs text-ink-faint">
-              {block.caption}
+            <figcaption className="rich-text mt-3 text-xs text-ink-faint">
+              <Rich html={block.caption} />
             </figcaption>
           )}
         </figure>
@@ -158,11 +216,13 @@ function isEmpty(block: Block) {
   switch (block.type) {
     case "list":
     case "takeaways":
-      return block.items.every((item) => !item.trim());
+      return block.items.every((item) => !inlineToPlain(item).trim());
     case "image":
       return !block.src.trim();
     default:
-      return !block.text.trim();
+      // The words, not the markup: an emptied-out `<strong></strong>` left
+      // behind by a deletion is a blank block, not a one-tag one.
+      return !inlineToPlain(block.text).trim();
   }
 }
 

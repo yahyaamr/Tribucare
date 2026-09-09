@@ -41,7 +41,9 @@ export function NewsIndex({
   const [query, setQuery] = useState("");
 
   // Items arrive already filtered to published and sorted newest-first.
-  const featured = items.find((item) => item.featured) ?? items[0];
+  // No fallback to the newest item — same rule as the blog: the hero is opt-in,
+  // never automatic. See blogs/blog-index.tsx.
+  const featured = items.find((item) => item.featured);
   const tabs = [ALL, ...tags];
 
   const filtered = useMemo(() => {

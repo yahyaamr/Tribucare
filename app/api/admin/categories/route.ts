@@ -7,7 +7,9 @@ import {
   getCategories,
   getCategoryUsage,
   renameCategory,
+  setCategoryLocale,
 } from "@/lib/cms/categories";
+import { LOCALES } from "@/lib/i18n/config";
 
 async function GET_(request: Request) {
   const denied = await requireSession();
@@ -33,8 +35,16 @@ async function POST_(request: Request) {
   const denied = await requireSession();
   if (denied) return denied;
 
-  const body = (await request.json().catch(() => null)) as { name?: string } | null;
-  const result = await addCategory(body?.name ?? "");
+  const body = (await request.json().catch(() => null)) as {
+    name?: string;
+    locale?: string;
+  } | null;
+
+  // A category belongs to one language site, and the editor knows which one
+  // because the post being written says so. Defaulted rather than refused, so
+  // a caller that predates the field still creates an English category.
+  const locale = LOCALES.find((l) => l === body?.locale) ?? LOCALES[0];
+  const result = await addCategory(body?.name ?? "", locale);
 
   if (!result.ok) return Response.json({ error: result.error }, { status: 400 });
   return Response.json(
@@ -51,10 +61,22 @@ async function PUT_(request: Request) {
   const body = (await request.json().catch(() => null)) as {
     from?: string;
     to?: string;
+    locale?: string;
   } | null;
 
   if (!body?.from) {
     return Response.json({ error: "No category given." }, { status: 400 });
+  }
+
+  // `locale` without `to` moves the category to the other language site
+  // rather than renaming it. The posts carrying it are untouched — the name
+  // has not changed, only which editor is offered it.
+  const moveTo = LOCALES.find((l) => l === body.locale);
+  if (moveTo && body.to === undefined) {
+    const moved = await setCategoryLocale(body.from, moveTo);
+    if (!moved.ok) return Response.json({ error: moved.error }, { status: 400 });
+    revalidateBlog();
+    return Response.json({ categories: moved.categories });
   }
 
   const result = await renameCategory(body.from, body.to ?? "");

@@ -49,7 +49,11 @@ export function BlogIndex({
   const [query, setQuery] = useState("");
 
   // Posts arrive already filtered to published and sorted newest-first.
-  const featuredPost = posts.find((post) => post.featured) ?? posts[0];
+  // No fallback to the newest post: the hero appears only when an editor has
+  // actually ticked "Feature this post", otherwise every publish would silently
+  // promote itself. The grid below already lists the featured post, so an
+  // unfeatured blog simply starts at the grid.
+  const featuredPost = posts.find((post) => post.featured);
   const tabs = [ALL, ...categories];
 
   const filtered = useMemo(() => {

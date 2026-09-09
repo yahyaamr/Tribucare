@@ -8,18 +8,52 @@
  * formatting on the client, so it lives where both sides can import it.
  */
 
+import { inlineToPlain } from "./rich-text";
 import type { Block } from "./types";
 
-export function slugify(input: string) {
-  return input
-    .toLowerCase()
-    .trim()
+/**
+ * What a slug may contain.
+ *
+ * Hyphen-separated is the convention every URL on the site already follows,
+ * and it is the one a search engine reads as a word break. An underscore is
+ * kept when it is deliberately typed — it is URL-safe and unambiguous — and
+ * everything else collapses to a hyphen rather than being carried into a URL
+ * that would have to be percent-encoded to be linkable.
+ */
+const SLUG_SEPARATORS = /[^a-z0-9_]+/g;
+
+const stripAccents = (input: string) =>
+  input
     .normalize("NFD")
-    // Strip accents so "Réservoir" slugs as "reservoir" rather than losing the
-    // letter entirely to the character class below.
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
+    // So "Réservoir" slugs as "reservoir" rather than losing the letter
+    // entirely to the character class above.
+    .replace(/[\u0300-\u036f]/g, "");
+
+export function slugify(input: string) {
+  return stripAccents(input.toLowerCase().trim())
+    .replace(SLUG_SEPARATORS, "-")
     .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+/**
+ * `slugify` minus the tidying that cannot be typed through.
+ *
+ * The slug field used to run the full transform on every keystroke, which made
+ * a hyphen impossible to type: the moment `my-` was entered, the trailing
+ * separator was stripped and the caret was left back at `my`. The only way in
+ * was to paste.
+ *
+ * So while typing, a trailing separator is allowed to stand. A leading one is
+ * still removed — a slug cannot start with a hyphen, and there is no
+ * intermediate state where one is on its way to being valid. The field
+ * normalises on blur, and `uniqueSlug` runs the canonical `slugify` on save
+ * regardless, so nothing half-typed can reach a URL.
+ */
+export function slugifyDraft(input: string) {
+  return stripAccents(input.toLowerCase())
+    .replace(SLUG_SEPARATORS, "-")
+    .replace(/^-+/, "")
     .slice(0, 80);
 }
 
@@ -49,7 +83,9 @@ export function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
-/** Every word the reader actually sees, across every block type. */
+/** Every word the reader actually sees, across every block type. Read through
+ *  `inlineToPlain`, so a bolded word counts as one word rather than as its
+ *  markup — the read time is about reading, not about tags. */
 export function countWords(blocks: Block[]) {
   let words = 0;
   for (const block of blocks) {
@@ -59,7 +95,7 @@ export function countWords(blocks: Block[]) {
         : block.type === "image"
           ? (block.caption ?? "")
           : block.text;
-    words += text.trim().split(/\s+/).filter(Boolean).length;
+    words += inlineToPlain(text).trim().split(/\s+/).filter(Boolean).length;
   }
   return words;
 }

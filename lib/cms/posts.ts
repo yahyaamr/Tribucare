@@ -7,6 +7,7 @@ import {
   todayIso,
 } from "./format";
 import { ensureAuthorsFor, getAuthorMap, legacyAuthorId } from "./authors";
+import { sanitizeBlocks } from "./rich-text";
 import type {
   Author,
   Block,
@@ -342,8 +343,10 @@ export function emptyPost(): Post {
     title: "",
     excerpt: "",
     categories: [],
-    // A new post appears in both languages until the editor narrows it.
-    locales: [...LOCALES],
+    // One language, and English is the default because the English site is
+    // the one with the bare URLs. The panel's Content language radios pick
+    // exactly one — a post is written in a language, not in both at once.
+    locales: [LOCALES[0]],
     status: "draft",
     date: todayIso(),
     readTime: "",
@@ -373,7 +376,14 @@ function toStored(post: Post | ResolvedPost): Post {
 }
 
 export async function savePost(post: Post | ResolvedPost): Promise<Post> {
-  const next: Post = { ...toStored(post), updatedAt: new Date().toISOString() };
+  const stored = toStored(post);
+  const next: Post = {
+    ...stored,
+    // The body is reduced to the inline whitelist on the way in as well as on
+    // the way out, so what is on disk is what renders. See rich-text.ts.
+    blocks: sanitizeBlocks(stored.blocks),
+    updatedAt: new Date().toISOString(),
+  };
 
   // Exactly one post can be featured — the /blog index promotes a single
   // article, so a second one silently wouldn't show.

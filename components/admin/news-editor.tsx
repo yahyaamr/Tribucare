@@ -13,14 +13,17 @@ import {
   ImagePlus,
   Loader2,
   Pencil,
+  Redo2,
   Send,
   Star,
   Trash2,
   TriangleAlert,
+  Undo2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { LOCALES, LOCALE_LABELS } from "@/lib/i18n/config";
-import { formatPostDate, slugify } from "@/lib/cms/format";
+import { historyIntent, useDraftHistory } from "./use-draft-history";
+import { LOCALES, LOCALE_LABELS, type Locale } from "@/lib/i18n/config";
+import { formatPostDate, slugify, slugifyDraft } from "@/lib/cms/format";
 import type { NewsItem } from "@/lib/cms/types";
 import { DocEditor } from "./doc-editor";
 import { MediaPickerDialog } from "./media-picker";
@@ -51,10 +54,16 @@ const FIELD =
   "w-full rounded-xl border border-brand-200/80 bg-white px-3.5 py-2.5 text-sm text-ink shadow-sm transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none";
 const LABEL = "block text-xs font-semibold tracking-wide text-ink uppercase";
 
-/** The preview renders the real news component, which reads its block labels
- *  from the blog string table. The panel itself is English, so it hands over
- *  the English one — the published page picks the reader's language itself. */
-const BLOG_UI = getContent().ui.blog;
+/**
+ * The preview renders the real news component, which reads its block labels
+ * from the blog string table — and which one is a question about the
+ * *content*, not about the panel. See post-editor.tsx: both are built once
+ * and indexed by the record's own language.
+ */
+const BLOG_UI: Record<Locale, ReturnType<typeof getContent>["ui"]["blog"]> = {
+  en: getContent("en").ui.blog,
+  ar: getContent("ar").ui.blog,
+};
 
 function Panel({
   title,
@@ -73,6 +82,11 @@ function Panel({
   );
 }
 
+/** The history pair. Icon-only and quiet: they sit beside Save and Publish and
+ *  must not compete with them. */
+const HISTORY_BUTTON =
+  "inline-flex size-8 items-center justify-center rounded-xl text-ink-soft transition-colors hover:bg-brand-50 hover:text-brand-800 disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-ink-soft";
+
 export function NewsEditor({
   initialItem,
   tags: initialTags,
@@ -85,7 +99,19 @@ export function NewsEditor({
   const router = useRouter();
   const base = useAdminBase();
   const api = useAdminApi();
-  const [post, setPost] = useState(initialItem);
+  // Undo/redo covers the whole draft, not just the article body — see
+  // `use-draft-history.ts` for why the browser's own history cannot serve
+  // here, and why the unit is the record rather than one field.
+  const {
+    value: post,
+    set: setDraft,
+    commit: commitDraft,
+    amend: amendDraft,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+  } = useDraftHistory(initialItem);
   // Held in state rather than read straight from the prop so a tag created in
   // the picker appears in the list without a round trip.
   const [tags, setTags] = useState(initialTags);
@@ -101,11 +127,50 @@ export function NewsEditor({
    *  shipping with a slug from an abandoned first headline. */
   const slugTouched = useRef(!isNew && Boolean(initialItem.slug));
 
-  const update = useCallback((patch: Partial<NewsItem>) => {
-    setPost((current) => ({ ...current, ...patch }));
+  const update = useCallback(
+    (patch: Partial<NewsItem>, options?: { history?: "step" | "amend" }) => {
+      const apply =
+        options?.history === "amend"
+          ? amendDraft
+          : options?.history === "step"
+            ? commitDraft
+            : setDraft;
+      apply((current) => ({ ...current, ...patch }));
+      setDirty(true);
+      setNotice("");
+    },
+    [setDraft, commitDraft, amendDraft],
+  );
+
+  /* ---- history ------------------------------------------------------- */
+
+  const stepBack = useCallback(() => {
+    if (!canUndo) return;
+    undo();
     setDirty(true);
     setNotice("");
-  }, []);
+  }, [canUndo, undo]);
+
+  const stepForward = useCallback(() => {
+    if (!canRedo) return;
+    redo();
+    setDirty(true);
+    setNotice("");
+  }, [canRedo, redo]);
+
+  // Capture phase, so a `contenteditable` row never gets to run its own undo
+  // against a DOM that React is about to rewrite from state.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const intent = historyIntent(event);
+      if (!intent) return;
+      event.preventDefault();
+      if (intent === "undo") stepBack();
+      else stepForward();
+    };
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => window.removeEventListener("keydown", onKeyDown, true);
+  }, [stepBack, stepForward]);
 
   // Nothing here autosaves, so leaving with unsaved work has to be a
   // deliberate choice rather than an accident.
@@ -158,7 +223,7 @@ export function NewsEditor({
     }
 
     const saved = body.item as NewsItem;
-    setPost(saved);
+    commitDraft(saved);
     setDirty(false);
     setSaving(null);
     setNotice(
@@ -192,9 +257,27 @@ export function NewsEditor({
   /** An item with neither language ticked would appear on no site at all, so
    *  both save paths are closed until one is — the server refuses it too, but
    *  a button that cannot succeed should not look like it can. */
+  /**
+   * The direction the editor writes in.
+   *
+   * Taken from the item's Content language, never from the panel's. Those are
+   * two different questions: the panel's language decides what "Move to trash"
+   * says, and the item's decides which way the words being typed run. Tying
+   * the second to the first meant flipping the whole panel into Arabic just to
+   * write one Arabic article — and then flipping it back.
+   *
+   * It turns the *content* and nothing else: the fields the item is written
+   * into, and the preview of it. The layout stays put — the action bar, the
+   * two-column split, the settings rail, the toolbars — because that is
+   * panel chrome, and chrome answers to the panel's language. Turning the
+   * whole screen moved furniture nobody asked to move.
+   */
+  const contentLocale = post.locales[0] ?? LOCALES[0];
+  const contentDir = contentLocale === "ar" ? "rtl" : "ltr";
+
   const noLocale = post.locales.length === 0;
   const noLocaleReason = noLocale
-    ? "Pick a language under About the Taxonomy first."
+    ? "Pick a language under Content language first."
     : undefined;
 
   return (
@@ -218,6 +301,29 @@ export function NewsEditor({
           )}
 
           <div className="ms-auto flex items-center gap-2">
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={stepBack}
+                disabled={!canUndo}
+                title="Undo (⌘Z / Ctrl+Z)"
+                className={HISTORY_BUTTON}
+              >
+                <Undo2 className="size-4" aria-hidden="true" />
+                <span className="sr-only">Undo</span>
+              </button>
+              <button
+                type="button"
+                onClick={stepForward}
+                disabled={!canRedo}
+                title="Redo (⇧⌘Z / Ctrl+Y)"
+                className={HISTORY_BUTTON}
+              >
+                <Redo2 className="size-4" aria-hidden="true" />
+                <span className="sr-only">Redo</span>
+              </button>
+            </div>
+
             <div className="me-1 flex rounded-xl bg-brand-50 p-0.5">
               {(["edit", "preview"] as const).map((key) => (
                 <button
@@ -301,12 +407,16 @@ export function NewsEditor({
               <Eye className="size-3.5" aria-hidden="true" />
               Preview — exactly how this news item will render on the site.
             </p>
-            <NewsView
-              item={previewItem}
-              ui={BLOG_UI}
-              animate={false}
-              priority={false}
-            />
+            {/* The preview is the item itself, so it turns with the item —
+                the notice above it is panel chrome and does not. */}
+            <div dir={contentDir}>
+              <NewsView
+                item={previewItem}
+                ui={BLOG_UI[contentLocale]}
+                animate={false}
+                priority={false}
+              />
+            </div>
           </div>
         </div>
       ) : (
@@ -321,13 +431,13 @@ export function NewsEditor({
                 The announcement headline — shown on the card, the /news index
                 and the browser tab.
               </p>
-              {/* `dir="auto"` so an Arabic headline reads right-to-left in the
-                  box while an English one stays left-to-right. The panel's own
-                  direction is a cookie and cannot answer for the text typed
-                  into it, which may be either language in either panel. */}
+              {/* Direction comes from the Content language, not from the
+                  panel's: the panel's is a cookie and cannot answer for the
+                  text typed into it, which may be either language in either
+                  panel. */}
               <input
                 id="news-title"
-                dir="auto"
+                dir={contentDir}
                 value={post.title}
                 onChange={(e) => {
                   const title = e.target.value;
@@ -363,7 +473,17 @@ export function NewsEditor({
                   value={post.slug}
                   onChange={(e) => {
                     slugTouched.current = true;
-                    update({ slug: slugify(e.target.value) });
+                    // The typing-tolerant transform: the canonical one strips
+                    // a trailing separator, which makes a hyphen impossible to
+                    // type. Tidied on blur, and again by `uniqueSlug` on save.
+                    update({ slug: slugifyDraft(e.target.value) });
+                  }}
+                  onBlur={() => {
+                    // Only when it actually changes: an unconditional update
+                    // would mark the draft dirty and add a history entry every
+                    // time the field lost focus.
+                    const tidy = slugify(post.slug);
+                    if (tidy !== post.slug) update({ slug: tidy });
                   }}
                   placeholder="url-slug"
                   className={cn(FIELD, "font-mono")}
@@ -379,7 +499,8 @@ export function NewsEditor({
               </p>
               <DocEditor
                 blocks={post.blocks}
-                onChange={(blocks) => update({ blocks })}
+                dir={contentDir}
+                onChange={(blocks, options) => update({ blocks }, options)}
               />
             </div>
 
@@ -396,6 +517,7 @@ export function NewsEditor({
               </p>
               <textarea
                 id="news-excerpt"
+                dir={contentDir}
                 rows={3}
                 value={post.excerpt}
                 onChange={(e) => update({ excerpt: e.target.value })}
@@ -406,7 +528,16 @@ export function NewsEditor({
           </div>
 
           {/* ---- Settings rail --------------------------------------- */}
-          <aside className="space-y-4 lg:sticky lg:top-32 lg:self-start">
+          <aside
+            /* The rail scrolls on its own once it outgrows the viewport, so a
+               long settings column can be worked through without moving the
+               article canvas. No Lenis in the panel, so native overscroll
+               hands the wheel back to the page at either end by itself.
+               `overflow-x-clip` because giving one axis `auto` computes the
+               other to `auto` too; the negative inline margins buy the
+               scrollbar and the cards' shadows their room back. */
+            className="scroll-subtle space-y-4 lg:sticky lg:top-32 lg:-mx-2 lg:max-h-[calc(100vh-9rem)] lg:self-start lg:overflow-x-clip lg:overflow-y-auto lg:px-2"
+          >
             <Panel title="Publish">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-ink-soft">Status</span>
@@ -437,7 +568,7 @@ export function NewsEditor({
                 <input
                   id="news-location"
                   type="text"
-                  dir="auto"
+                  dir={contentDir}
                   value={post.location}
                   onChange={(e) => update({ location: e.target.value })}
                   placeholder="Cairo, Egypt"
@@ -494,7 +625,7 @@ export function NewsEditor({
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-100 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
                     >
                       <Trash2 className="size-4" aria-hidden="true" />
-                      Move to trash
+                      Permanently delete
                     </button>
                   )}
                 </div>
@@ -542,34 +673,33 @@ export function NewsEditor({
               )}
             </Panel>
 
-            {/* Placement, not translation: ticking English puts the item on
+            {/* Placement, not translation: choosing English puts the item on
                 the English news page whatever language it is written in. The
                 blog's panel, verbatim — if you change one, change the other. */}
-            <Panel title="About the Taxonomy">
+            <Panel title="Content language">
               <p className="text-xs text-ink-faint">
-                Which language sites this item appears on. Ticking a language
+                Which language site this item appears on. Choosing a language
                 does not translate it — it decides where it is listed.
               </p>
 
               <div className="space-y-2">
                 {LOCALES.map((locale) => {
-                  const checked = post.locales.includes(locale);
+                  // `[0]`, not `includes`: a record written before this was a
+                  // single choice carries both languages, and two checked
+                  // radios in one group is a state the DOM cannot show. This
+                  // is also exactly what a save would write.
+                  const checked = post.locales[0] === locale;
                   return (
                     <label
                       key={locale}
                       className="flex cursor-pointer items-center gap-2.5"
                     >
                       <input
-                        type="checkbox"
+                        type="radio"
+                        name="news-locale"
                         checked={checked}
-                        onChange={(e) =>
-                          update({
-                            locales: LOCALES.filter((l) =>
-                              l === locale ? e.target.checked : post.locales.includes(l),
-                            ),
-                          })
-                        }
-                        className="size-4 shrink-0 rounded border-brand-300 accent-brand-700"
+                        onChange={() => update({ locales: [locale] })}
+                        className="size-4 shrink-0 border-brand-300 accent-brand-700"
                       />
                       <span className="text-sm font-medium text-ink">
                         {LOCALE_LABELS[locale]}
@@ -588,8 +718,8 @@ export function NewsEditor({
                     className="mt-0.5 size-3.5 shrink-0"
                     aria-hidden="true"
                   />
-                  Pick at least one language — the item cannot be saved while it
-                  would appear nowhere.
+                  Pick a language — the item cannot be saved while it would
+                  appear nowhere.
                 </p>
               )}
             </Panel>
@@ -621,6 +751,7 @@ export function NewsEditor({
                 </label>
                 <input
                   id="seo-title"
+                  dir={contentDir}
                   value={post.seo.metaTitle}
                   onChange={(e) =>
                     update({ seo: { ...post.seo, metaTitle: e.target.value } })
@@ -639,6 +770,7 @@ export function NewsEditor({
                 </label>
                 <textarea
                   id="seo-description"
+                  dir={contentDir}
                   rows={3}
                   value={post.seo.metaDescription}
                   onChange={(e) =>

@@ -155,7 +155,6 @@ const ui = {
       "Try resetting your category filter or adjusting your search keywords.",
     resetFilters: "Reset filters",
     backToArticles: "Back to Articles",
-    exploreAll: "Explore All Articles",
     relatedEyebrow: "Related Reading",
     relatedHeadline: "More insights from TribuCare",
     viewAll: "View all articles",

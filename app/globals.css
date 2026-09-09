@@ -420,6 +420,92 @@
   }
 }
 
+/* --------------------------------------------------------------------------
+   INLINE MARKS — the formatting an article body may carry inside a block.
+
+   A block's text is an inline fragment (bold, italic, underline, links — see
+   lib/cms/rich-text.ts), and these two utilities are the only place those
+   marks are styled. Everything below resolves to a token that already exists,
+   which is the point: a link inside a pasted article reads as a TribuCare
+   link, not as whatever the source document coloured it. There is deliberately
+   no rule for size, family or colour of ordinary text — the block's own class
+   owns those, so a pasted h2 is the site's h2.
+   -------------------------------------------------------------------------- */
+
+@utility rich-text {
+  & strong {
+    font-weight: 600;
+  }
+
+  & a {
+    color: var(--color-brand-600);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--color-brand-200);
+    transition: color var(--duration-fast) var(--ease-out),
+      text-decoration-color var(--duration-fast) var(--ease-out);
+  }
+
+  & a:hover {
+    color: var(--color-brand-800);
+    text-decoration-color: var(--color-brand-400);
+  }
+
+  & code {
+    border-radius: var(--radius-sm);
+    background-color: var(--color-brand-50);
+    padding-inline: 0.35em;
+    padding-block: 0.1em;
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    color: var(--color-brand-800);
+  }
+
+  & sup,
+  & sub {
+    font-size: 0.72em;
+    line-height: 0;
+  }
+}
+
+/* The same marks on a ground-deep surface — the pull-quote. Only the two
+   colours move, to the light accents that ground already uses. */
+@utility rich-text-dark {
+  & strong {
+    font-weight: 600;
+  }
+
+  & a {
+    color: var(--color-circuit-300);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: color-mix(in srgb, var(--color-circuit-300) 45%, transparent);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  & a:hover {
+    color: var(--color-circuit-400);
+  }
+
+  & code {
+    border-radius: var(--radius-sm);
+    background-color: rgb(255 255 255 / 0.12);
+    padding-inline: 0.35em;
+    padding-block: 0.1em;
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    color: var(--color-brand-100);
+  }
+
+  & sup,
+  & sub {
+    font-size: 0.72em;
+    line-height: 0;
+  }
+}
+
 /* ==========================================================================
    SURFACES — one card language, one icon language. Every card and icon plate
    on the site resolves to one of these, so a blog card and a department card

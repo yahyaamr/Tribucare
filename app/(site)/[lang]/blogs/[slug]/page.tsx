@@ -119,23 +119,6 @@ export default async function BlogPostDetailPage({
           <ArticleView post={post} ui={ui.blog} />
         </div>
 
-        <div className="max-w-3xl">
-          <Reveal>
-            <div className="mt-16 border-t border-brand-100 pt-8">
-              <Link
-                href={localePath(locale, "/blogs")}
-                className="group inline-flex items-center gap-2 rounded-xl bg-brand-700 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-brand-800"
-              >
-                <ArrowLeft
-                  className="size-4 transition-transform duration-300 group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5"
-                  aria-hidden="true"
-                />
-                {ui.blog.exploreAll}
-              </Link>
-            </div>
-          </Reveal>
-        </div>
-
         {relatedPosts.length > 0 && (
           <div className="mt-24 border-t border-brand-100 pt-16">
             <Reveal>

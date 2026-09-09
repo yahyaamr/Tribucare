@@ -15,6 +15,12 @@ import type { Locale } from "@/lib/i18n/config";
  * template already knew how to render, so nothing new enters the design — see
  * `components/blog/article-body.tsx`, which is the single renderer for both the
  * published page and the editor's preview.
+ *
+ * Wherever a block below carries `text` or `items`, the string is an **inline
+ * HTML fragment** — bold, italic, underline, strikethrough, code, sup/sub and
+ * links, and nothing else. `lib/cms/rich-text.ts` owns that whitelist and is
+ * the only thing that may widen it. Plain text is a valid fragment, so every
+ * record written before this existed is already correct.
  */
 
 /** A block's `id` is client-generated and only ever used as a React key and a
@@ -27,8 +33,9 @@ export type Block =
   /** An `h2` inside the article body. */
   | { id: string; type: "heading"; text: string }
   | { id: string; type: "paragraph"; text: string }
-  /** A plain bulleted list. */
-  | { id: string; type: "list"; items: string[] }
+  /** A list. Bulleted by default; `ordered` numbers it instead, which is what
+   *  a pasted "5 steps to…" article needs to survive the paste as written. */
+  | { id: string; type: "list"; items: string[]; ordered?: boolean }
   /** The dark pull-quote. `attribution` defaults to the house line the article
    *  template has always used. */
   | { id: string; type: "quote"; text: string; attribution?: string }

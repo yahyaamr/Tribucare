@@ -5,6 +5,8 @@ import { useAdminApi } from "@/components/admin/base-path";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Check, Loader2, Plus, Search, Tag, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { Category } from "@/lib/cms/categories";
+import type { Locale } from "@/lib/i18n/config";
 
 /**
  * Multi-select categories, with inline creation.
@@ -18,18 +20,29 @@ import { cn } from "@/lib/utils";
  *
  * The first selected category is the primary one: it is what shows wherever
  * there is only room for a single badge, so the chip row labels it.
+ *
+ * Only the current language's categories are offered. A category is a shelf on
+ * one of the two sites, so an Arabic post can no more be filed under
+ * "Skincare Science" than an English one can be filed under "رول اون" —
+ * offering both is offering a list half of which cannot be used. Anything
+ * created here is created in the language being written.
  */
 export function CategorySelect({
   selected,
   available,
+  locale,
   onChange,
   onCategoriesChange,
 }: {
   selected: string[];
-  available: string[];
+  /** Every category the panel knows, both languages. Narrowed here rather
+   *  than by the server, because the language can change without a reload. */
+  available: Category[];
+  /** The language the post is being written in — its Content language. */
+  locale: Locale;
   onChange: (categories: string[]) => void;
   /** Lets the editor keep its own copy of the list in step after a create. */
-  onCategoriesChange: (categories: string[]) => void;
+  onCategoriesChange: (categories: Category[]) => void;
 }) {
   const api = useAdminApi();
   const [query, setQuery] = useState("");
@@ -52,17 +65,23 @@ export function CategorySelect({
 
   const trimmed = query.trim().replace(/\s+/g, " ");
 
+  const forLocale = useMemo(
+    () => available.filter((c) => c.locale === locale).map((c) => c.name),
+    [available, locale],
+  );
+
   const matches = useMemo(() => {
     const q = trimmed.toLowerCase();
-    return available.filter((c) => !q || c.toLowerCase().includes(q));
-  }, [available, trimmed]);
+    return forLocale.filter((c) => !q || c.toLowerCase().includes(q));
+  }, [forLocale, trimmed]);
 
   /** Only offer creation when the typed name isn't already a category —
-   *  matched case-insensitively, so "skincare science" doesn't create a
-   *  duplicate of "Skincare Science". */
+   *  matched case-insensitively across *both* languages, so "skincare
+   *  science" offers no duplicate of "Skincare Science" and a name taken on
+   *  the other site is refused by the server rather than silently reused. */
   const canCreate =
     trimmed.length > 0 &&
-    !available.some((c) => c.toLowerCase() === trimmed.toLowerCase());
+    !available.some((c) => c.name.toLowerCase() === trimmed.toLowerCase());
 
   function toggle(category: string) {
     setError("");
@@ -81,7 +100,7 @@ export function CategorySelect({
     const response = await fetch(api("/categories"), {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: trimmed }),
+      body: JSON.stringify({ name: trimmed, locale }),
     }).catch(() => null);
 
     const body = await response?.json().catch(() => null);
@@ -92,7 +111,7 @@ export function CategorySelect({
       return;
     }
 
-    onCategoriesChange(body.categories as string[]);
+    onCategoriesChange(body.categories as Category[]);
     // The server returns the canonical spelling, which may differ in case from
     // what was typed if it already existed.
     if (!selected.includes(body.category)) {
