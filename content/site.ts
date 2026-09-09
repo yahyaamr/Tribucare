@@ -912,20 +912,33 @@ export const about = {
 
   /**
    * The hero composite — the same two-layer construction the Mission & Vision
-   * section and the Partner page use, and deliberately the same shield file.
-   * The team photograph was composited onto that image's 1036×1197 crop box,
-   * so `object-contain` resolves both layers to one size and origin and they
-   * register exactly. Re-export the figure at any other dimensions and the
-   * team slides out of the shield.
+   * section and the Partner page use, and the same motion, but its own pair of
+   * files rather than the shared shield.
+   *
+   * The other two pages set one figure against a shield that towers over it.
+   * Here the team leads and the mark sits behind them, so the two are exported
+   * at a different relative scale — the team larger, the shield smaller — onto
+   * a landscape 1533×978 box of their own. Both layers come from that one box,
+   * which is what makes `object-contain` resolve them to the same size and
+   * origin; re-export either alone and the mark slides off the group.
+   *
+   * `mission-backdrop.webp` is deliberately untouched: it is shared by the
+   * homepage and the Partner page, and rescaling it for this one would move
+   * the figure in both.
+   *
+   * Renaming a layer is how a re-export ships. `next/image` caches by URL, as
+   * does every CDN and browser in front of it, so overwriting a file that has
+   * already been served leaves the old pixels in place — and when only one of
+   * a registered pair goes stale, the two stop lining up.
    */
   media: {
-    backdrop: { src: "/brand/mission-backdrop.webp" },
+    backdrop: { src: "/brand/about-mark.webp" },
     figure: {
-      src: "/brand/about-figure.webp",
+      src: "/brand/about-team.webp",
       alt: "The TribuCare team standing together in professional and clinical dress.",
     },
-    width: 1036,
-    height: 1197,
+    width: 1533,
+    height: 978,
   },
 
   story: {

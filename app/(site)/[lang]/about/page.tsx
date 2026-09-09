@@ -106,10 +106,13 @@ export default async function AboutPage() {
               team rather than pasted flat against it. The team stays out of
               the Rise — it is the anchor the shield settles against.
 
-              Both layers share the one 1036×1197 crop box, so `object-contain`
+              Both layers share the one 1533×978 crop box, so `object-contain`
               resolves them to the same size and origin. That is the whole
-              reason they line up; it is not a coincidence of aspect ratios. */}
-          <div className="relative mx-auto mt-12 min-h-[24rem] w-full max-w-sm sm:min-h-[30rem] sm:max-w-md lg:mt-16 lg:min-h-[42rem] lg:max-w-xl">
+              reason they line up; it is not a coincidence of aspect ratios.
+
+              Landscape, so it runs the width of the column rather than being
+              boxed to a portrait width the way the other two composites are. */}
+          <div className="relative mt-12 min-h-[15rem] sm:min-h-[22rem] lg:mt-16 lg:min-h-[34rem]">
             <Parallax speed={0.06} className="absolute inset-y-0 -inset-x-[8%]">
               <Rise distance={80} className="absolute inset-0">
                 <Image
