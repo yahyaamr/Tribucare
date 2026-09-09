@@ -38,6 +38,39 @@ const nextConfig: NextConfig = {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
 
+  /**
+   * The blog index moved from `/blog` to `/blogs`. Everything that ever linked
+   * to the old path — search results, the sitemap Google already crawled, an
+   * article shared from the panel — has to keep working, so the old segment is
+   * kept alive as a permanent redirect rather than left to 404.
+   *
+   * `permanent: true` is a 308, which is what lets a crawler consolidate the
+   * two rather than indexing both — the same reasoning as the `/en/x` → `/x`
+   * redirect in proxy.ts.
+   *
+   * These run BEFORE the proxy (headers → redirects → proxy, per
+   * node_modules/next/dist/docs/01-app/03-api-reference/03-file-conventions/proxy.md),
+   * so the proxy never sees `/blog` and its locale routing is untouched. Arabic
+   * is listed separately because the proxy is what normally strips the locale,
+   * and at this point in the pipeline it has not run yet.
+   *
+   * The index and the article form are separate entries on purpose: a single
+   * `/blog/:path*` would rewrite the bare `/blog` to `/blogs/` and cost a
+   * second hop to shed the trailing slash.
+   */
+  async redirects() {
+    return [
+      { source: "/blog", destination: "/blogs", permanent: true },
+      { source: "/blog/:slug", destination: "/blogs/:slug", permanent: true },
+      { source: "/ar/blog", destination: "/ar/blogs", permanent: true },
+      {
+        source: "/ar/blog/:slug",
+        destination: "/ar/blogs/:slug",
+        permanent: true,
+      },
+    ];
+  },
+
   experimental: {
     // Tailwind keeps the whole stylesheet under 20KB, so shipping it inline in
     // the document beats a separate render-blocking request: the page can paint

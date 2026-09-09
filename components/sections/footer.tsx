@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import { TribuLogo } from "@/components/brand/logo";
 import { WaveField } from "@/components/brand/wave-field";
+import { SOCIAL_MARKS } from "@/components/brand/social-marks";
 import { localePath, splitLocale, type Locale } from "@/lib/i18n/config";
 import type { ContentData } from "@/content/en";
 import { cn } from "@/lib/utils";
@@ -114,17 +115,43 @@ export function Footer({
               )}
 
               {contact.social.length > 0 && (
-                <ul className="mt-6 flex gap-4">
-                  {contact.social.map((link) => (
-                    <li key={link.href}>
-                      <a
-                        href={localePath(locale, link.href)}
-                        className="text-sm text-ink-soft transition-colors hover:text-brand-700"
-                      >
-                        {link.label}
-                      </a>
-                    </li>
-                  ))}
+                <ul className="mt-6 flex gap-3">
+                  {contact.social.map((link) => {
+                    const Mark = SOCIAL_MARKS[link.icon];
+                    if (!Mark) return null;
+                    return (
+                      <li key={link.href}>
+                        {/* A bare `href`, not `localePath` — every other link
+                            in this footer is an internal path that has to pick
+                            up the `/ar` prefix, but these are absolute URLs to
+                            somebody else's site. `localePath` prepends a slash
+                            to anything not already starting with one, so it
+                            would turn the address into `/ar/https://…` and 404
+                            the lot. The bug never showed because the array
+                            shipped empty.
+
+                            The plate is the site's standard interactive
+                            `icon-disc`, copied from the dermatology page and
+                            the team card — same size step, same hover. The mark
+                            sits a step below the `size-5` a lucide icon takes
+                            in a `size-10` plate: these are filled glyphs, and a
+                            filled glyph at the same box size reads heavier than
+                            a stroked one.
+
+                            `aria-label` because the mark is the only content —
+                            without it the link has no accessible name at all. */}
+                        <a
+                          href={link.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label={link.label}
+                          className="icon-disc size-10 hover:scale-110 hover:bg-brand-700 hover:text-white"
+                        >
+                          <Mark className="size-4" />
+                        </a>
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </div>

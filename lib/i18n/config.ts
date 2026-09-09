@@ -1,7 +1,7 @@
 /**
  * Locales.
  *
- * English keeps the URLs it already has — `/dermatology`, `/blog/…` — because
+ * English keeps the URLs it already has — `/dermatology`, `/blogs/…` — because
  * those are what is indexed and linked today, and moving them would cost the
  * site its rankings for nothing. Arabic is added alongside under `/ar/…`.
  *
@@ -70,7 +70,7 @@ export function localePath(locale: Locale, path: string) {
  * languages, so it keeps switching in place.
  */
 export function localeSwitchTarget(path: string): string {
-  const match = /^\/(blog|events|news)\/[^/]+\/?$/.exec(path);
+  const match = /^\/(blogs|events|news)\/[^/]+\/?$/.exec(path);
   if (!match) return path;
   // `/news` is retired — its items live under `/events`, so its index does too.
   return match[1] === "news" ? "/events" : `/${match[1]}`;

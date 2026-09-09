@@ -251,7 +251,7 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
                   <Link
                     href={
                       post.status === "published"
-                        ? `/blog/${post.slug}`
+                        ? `/blogs/${post.slug}`
                         : `${base}/posts/${post.id}#preview`
                     }
                     target={post.status === "published" ? "_blank" : undefined}

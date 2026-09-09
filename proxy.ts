@@ -20,7 +20,7 @@ import { DEFAULT_LOCALE, LOCALES } from "@/lib/i18n/config";
  *
  * Both languages are served by one route tree at `app/(site)/[lang]/`, but only
  * Arabic carries a prefix in the URL. English keeps the paths it already has —
- * `/dermatology`, `/blog/…` — because those are what is indexed and linked, and
+ * `/dermatology`, `/blogs/…` — because those are what is indexed and linked, and
  * moving them would forfeit that for nothing.
  *
  * So `/dermatology` is rewritten (invisibly) onto `/en/dermatology`, while

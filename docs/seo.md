@@ -84,7 +84,7 @@ Security Policy — see the note in the config for why.
 
 ## Known limits
 
-- **Blog articles are not translated.** `/ar/blog/<slug>` shows the English
+- **Blog articles are not translated.** `/ar/blogs/<slug>` shows the English
   article inside Arabic chrome, with `hreflang` pairing the two. That is the
   scoping decision recorded in `content/index.ts`; if Arabic articles are
   added later, the pairing already exists.

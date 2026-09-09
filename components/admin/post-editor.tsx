@@ -318,7 +318,7 @@ export function PostEditor({
                 Title
               </label>
               <p className="mt-1 mb-2 text-xs text-ink-faint">
-                The article headline — shown on the card, the /blog index and
+                The article headline — shown on the card, the /blogs index and
                 the browser tab.
               </p>
               {/* `dir="auto"` so an Arabic headline reads right-to-left in the
@@ -355,7 +355,7 @@ export function PostEditor({
                   aria-hidden="true"
                   className="shrink-0 font-mono text-xs text-ink-faint"
                 >
-                  /blog/
+                  /blogs/
                 </span>
                 <input
                   id="post-slug"
@@ -391,7 +391,7 @@ export function PostEditor({
                 Excerpt
               </label>
               <p className="mt-1 mb-2 text-xs text-ink-faint">
-                Shown on the article card, the /blog index, and as the search
+                Shown on the article card, the /blogs index, and as the search
                 and social description.
               </p>
               <textarea
@@ -457,7 +457,7 @@ export function PostEditor({
                 <div className="flex flex-col gap-2 border-t border-brand-100 pt-3.5">
                   {post.status === "published" && (
                     <Link
-                      href={`/blog/${post.slug}`}
+                      href={`/blogs/${post.slug}`}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-800"

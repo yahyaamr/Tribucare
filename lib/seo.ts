@@ -84,7 +84,7 @@ export function ogLocale(locale: Locale) {
 
 export interface PageMetadataInput {
   locale: Locale;
-  /** Locale-free path, e.g. `/blog/some-slug`. */
+  /** Locale-free path, e.g. `/blogs/some-slug`. */
   path: string;
   /** Which language sites this page is published on. Defaults to all. */
   locales?: readonly Locale[];
@@ -267,7 +267,7 @@ export function breadcrumbSchema(
 }
 
 export function articleSchema(post: ResolvedPost, locale: Locale) {
-  const url = absoluteUrl(localePath(locale, `/blog/${post.slug}`));
+  const url = absoluteUrl(localePath(locale, `/blogs/${post.slug}`));
   return {
     "@context": "https://schema.org",
     "@type": "Article",

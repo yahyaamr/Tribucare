@@ -7,7 +7,7 @@ It covers three content types, plus the media and lists they draw from:
 
 | Section | Publishes to | Notes |
 |---|---|---|
-| **Blogs** | `/blog` and `/blog/<slug>` | Continuous editor, live preview, categories, authors |
+| **Blogs** | `/blogs` and `/blogs/<slug>` | Continuous editor, live preview, categories, authors |
 | **Events & News** | `/events` | Same editor, with a date, a location and tags |
 | **Careers** | the Careers section on `/` | Role, department, type, location, blurb |
 | **Media** | shared by all three | Drag-and-drop uploads, plus the site's own artwork |
@@ -263,7 +263,7 @@ Permalink, Content, Excerpt), and the **settings rail** on the right.
 
 **Main column**
 
-- **Title** — the headline on the card, the `/blog` index and the browser tab.
+- **Title** — the headline on the card, the `/blogs` index and the browser tab.
   Accepts Arabic (`dir="auto"`, so the box follows the text).
 - **Permalink** — the URL slug. It follows the title until you edit it by hand,
   after which it stops following, so a post never ships with a slug from an
@@ -279,7 +279,7 @@ Permalink, Content, Excerpt), and the **settings rail** on the right.
 |---|---|
 | **Publish** | Status, publish date (stored sortable, shown long-form), **Feature this post**, **View live post**, **Move to trash**. |
 | **Cover image** | Drives the card, the article hero and the social image. Set / Replace / Remove. |
-| **About the Taxonomy** | Which language sites the post is listed on. **Placement, not translation** — ticking English lists it on `/blog` whatever language it is written in. Both save buttons stay disabled until one is ticked, because a post on no site is not a post. |
+| **About the Taxonomy** | Which language sites the post is listed on. **Placement, not translation** — ticking English lists it on `/blogs` whatever language it is written in. Both save buttons stay disabled until one is ticked, because a post on no site is not a post. |
 | **Categories** | Type to filter, tick as many as apply, or type a new name and choose **Create "…"**. A category created here is saved immediately and offered on every other post straight away. The **first** one selected is the primary — the one shown wherever there is room for only one badge. |
 | **Author** | Picked from the list managed in Settings. A post holds a *reference*, so correcting a name or photo updates every article that author wrote. |
 | **SEO** | Meta title and description, with character counts. Both fall back to the title and excerpt when blank. |
@@ -437,7 +437,7 @@ together; there is no second implementation to keep in step.
 - **Drafts are invisible.** A draft URL 404s and the post appears in neither the
   index nor the sitemap.
 - **Only one post can be featured.** Featuring one un-features the previous,
-  because `/blog` promotes exactly one.
+  because `/blogs` promotes exactly one.
 - **Events and news** derive past/upcoming from the date, so an event moves
   itself into the archive.
 - **Careers** render as the cards in the Careers section on the homepage, and
@@ -604,7 +604,7 @@ URL, so it is per person: one editor can work in Arabic while another works in
 English, on the same posts. Switching does not move you off the page you are on.
 
 **Blog articles themselves are not translated.** A post written in the panel
-appears on both `/blog` and `/ar/blog` in whatever language it was written in;
+appears on both `/blogs` and `/ar/blogs` in whatever language it was written in;
 only the surrounding chrome changes. The **About the Taxonomy** checkboxes
 decide which language sites list it, which is a placement decision, not a claim
 about what language it is in.

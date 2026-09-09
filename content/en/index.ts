@@ -103,12 +103,12 @@ const ui = {
       featuredAlt: "The TribuCare team",
     },
     blog: {
-      eyebrow: "Insights & News",
+      eyebrow: "Blogs and Insights",
       headlineLead: "Latest Clinical &",
       headlineAccent: "Beauty Tech Insights",
       intro:
         "Stay informed with dermatological whitepapers, formulation science breakdowns, and market intelligence from TribuCare's specialists.",
-      cta: "Explore TribuCare Blog & Insights",
+      cta: "Explore Blogs and Insights",
       stepperLabel: "Latest insights",
     },
     newsletter: {
@@ -132,11 +132,11 @@ const ui = {
   },
 
   blog: {
-    metaTitle: "Insights & News",
+    metaTitle: "Blogs and Insights",
     metaDescription:
       "Clinical insights, formulation breakthroughs, device innovations and market intelligence from TribuCare's medical advisory team.",
-    ogTitle: "TribuCare Insights — Dermatology, Skincare & Beauty Tech",
-    eyebrow: "TribuCare Insights",
+    ogTitle: "Blogs and Insights — Dermatology, Skincare & Beauty Tech",
+    eyebrow: "Blogs and Insights",
     headlineLead: "Advancing Dermatology,",
     headlineAccent: "Skincare & Beauty Tech",
     intro:
@@ -145,8 +145,8 @@ const ui = {
     searchLabel: "Search articles and topics",
     searchPlaceholder: "Search articles & topics...",
     filterLabel: "Filter articles by category",
-    featuredBadge: "Featured Article",
-    readArticle: "Read Article",
+    featuredBadge: "Featured Blog",
+    readArticle: "Read Blog",
     latestArticles: "Latest Articles",
     showingOne: "Showing 1 article",
     showingMany: "Showing {count} articles",

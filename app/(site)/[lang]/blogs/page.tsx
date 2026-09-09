@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await currentLocale();
   return pageMetadata({
     locale,
-    path: "/blog",
+    path: "/blogs",
     title: ui.blog.metaTitle,
     description: ui.blog.metaDescription,
     ogTitle: ui.blog.ogTitle,

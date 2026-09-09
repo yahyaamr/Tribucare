@@ -6,21 +6,21 @@ import { revalidatePath } from "next/cache";
  *
  * The blog pages are ISR-cached, so without this a published edit would sit
  * invisible until the cache aged out. All of them are listed rather than just
- * the article itself: an edit that shows on /blog but not on the homepage rail
+ * the article itself: an edit that shows on /blogs but not on the homepage rail
  * is the kind of inconsistency nobody reports and everybody notices.
  *
- * `/blog/[slug]` is passed with the `"page"` type because it is a dynamic
+ * `/blogs/[slug]` is passed with the `"page"` type because it is a dynamic
  * segment — `revalidatePath` requires the second argument for those and does
- * nothing at all without it. The literal `/blog/<slug>` is passed as well so
+ * nothing at all without it. The literal `/blogs/<slug>` is passed as well so
  * the specific article refreshes even if the pattern form misses.
  */
 export function revalidateBlog(...slugs: (string | undefined)[]) {
   revalidatePath("/");
-  revalidatePath("/blog");
+  revalidatePath("/blogs");
   revalidatePath("/sitemap.xml");
-  revalidatePath("/blog/[slug]", "page");
+  revalidatePath("/blogs/[slug]", "page");
   for (const slug of slugs) {
-    if (slug) revalidatePath(`/blog/${slug}`);
+    if (slug) revalidatePath(`/blogs/${slug}`);
   }
 }
 

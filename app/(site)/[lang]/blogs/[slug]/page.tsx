@@ -50,7 +50,7 @@ export async function generateMetadata({
   return {
     ...pageMetadata({
       locale,
-      path: `/blog/${post.slug}`,
+      path: `/blogs/${post.slug}`,
       locales: post.locales,
       title,
       description,
@@ -94,15 +94,15 @@ export default async function BlogPostDetailPage({
       <JsonLd
         data={breadcrumbSchema(locale, [
           { name: nav[0].label, path: "/" },
-          { name: ui.blog.metaTitle, path: "/blog" },
-          { name: post.title, path: `/blog/${post.slug}` },
+          { name: ui.blog.metaTitle, path: "/blogs" },
+          { name: post.title, path: `/blogs/${post.slug}` },
         ])}
       />
 
       <Shell>
         <Reveal>
           <Link
-            href={localePath(locale, "/blog")}
+            href={localePath(locale, "/blogs")}
             className="group inline-flex items-center gap-2 rounded-xl border border-brand-200/80 bg-white px-4 py-2 text-xs font-semibold text-brand-800 shadow-sm transition-all hover:bg-brand-50 hover:shadow"
           >
             <ArrowLeft
@@ -123,7 +123,7 @@ export default async function BlogPostDetailPage({
           <Reveal>
             <div className="mt-16 border-t border-brand-100 pt-8">
               <Link
-                href={localePath(locale, "/blog")}
+                href={localePath(locale, "/blogs")}
                 className="group inline-flex items-center gap-2 rounded-xl bg-brand-700 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-brand-800"
               >
                 <ArrowLeft
@@ -147,7 +147,7 @@ export default async function BlogPostDetailPage({
                   </h2>
                 </div>
                 <Link
-                  href={localePath(locale, "/blog")}
+                  href={localePath(locale, "/blogs")}
                   className="group hidden shrink-0 items-center gap-1.5 text-sm font-semibold text-brand-700 transition-colors hover:text-brand-800 sm:inline-flex"
                 >
                   {ui.blog.viewAll}
@@ -173,7 +173,7 @@ export default async function BlogPostDetailPage({
                       {related.categories[0]}
                     </p>
                     <h3 className="mt-2 line-clamp-2 font-display text-lg font-semibold text-ink transition-colors duration-300 group-hover:text-brand-700">
-                      <Link href={localePath(locale, `/blog/${related.slug}`)}>
+                      <Link href={localePath(locale, `/blogs/${related.slug}`)}>
                         <span
                           className="absolute inset-0 z-10"
                           aria-hidden="true"

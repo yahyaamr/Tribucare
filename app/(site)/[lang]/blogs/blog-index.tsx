@@ -139,7 +139,7 @@ export function BlogIndex({
               />
               <span className="absolute top-4 start-4 inline-flex items-center gap-1.5 rounded-xl bg-signal-500 px-3.5 py-1 text-xs font-semibold text-brand-950 shadow-md">
                 <Sparkles className="size-3.5" aria-hidden="true" />
-                Featured Article
+                {ui.featuredBadge}
               </span>
             </div>
 
@@ -164,7 +164,7 @@ export function BlogIndex({
               </div>
 
               <h2 className="mt-4 font-display text-2xl font-semibold text-ink transition-colors duration-300 group-hover:text-brand-700 sm:text-3xl">
-                <Link href={localePath(locale, `/blog/${featuredPost.slug}`)}>
+                <Link href={localePath(locale, `/blogs/${featuredPost.slug}`)}>
                   <span className="absolute inset-0 z-10" aria-hidden="true" />
                   {featuredPost.title}
                 </Link>
@@ -208,7 +208,7 @@ export function BlogIndex({
                   aria-hidden="true"
                   className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-colors duration-300 group-hover:bg-brand-800"
                 >
-                  Read Article
+                  {ui.readArticle}
                   <ArrowRight className="size-4" />
                 </span>
               </div>

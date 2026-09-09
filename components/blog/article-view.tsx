@@ -30,7 +30,7 @@ function MaybeReveal({
 /**
  * A whole article, from the category badge down to the last block.
  *
- * Extracted out of `app/blog/[slug]/page.tsx` unchanged so the editor's
+ * Extracted out of `app/(site)/[lang]/blogs/[slug]/page.tsx` unchanged so the editor's
  * preview and the published page render through one component. That is the
  * point of it: a preview built from its own markup would drift from the real
  * article the first time either was touched, and the SEO team would stop

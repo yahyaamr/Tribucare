@@ -79,7 +79,7 @@ export async function BlogSection() {
 
         <Reveal delay={200} className="mt-14 text-center">
           <Link
-            href={localePath(locale, "/blog")}
+            href={localePath(locale, "/blogs")}
             className="group inline-flex items-center gap-2.5 rounded-xl bg-brand-800 px-7 py-3.5 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:bg-brand-900 hover:shadow-lg"
           >
             {ui.sections.blog.cta}

@@ -7,7 +7,7 @@ import { localePath, type Locale } from "@/lib/i18n/config";
 import type { ResolvedPost } from "@/lib/cms/types";
 
 /**
- * The article card, shared by the homepage section and the /blog index.
+ * The article card, shared by the homepage section and the /blogs index.
  *
  * Both previously carried their own near-identical copy of this markup, which
  * had already drifted apart (different image heights, ring weights and hover
@@ -67,7 +67,7 @@ export function PostCard({
           </div>
 
           <h3 className="mt-3 line-clamp-2 font-display text-lg leading-snug font-semibold text-ink transition-colors duration-300 group-hover:text-brand-700">
-            <Link href={localePath(locale, `/blog/${post.slug}`)}>
+            <Link href={localePath(locale, `/blogs/${post.slug}`)}>
               {/* Stretches the link across the whole card, so the title stays
                   the single accessible name rather than adding a second
                   "Read …" link to the tab order for the same destination. */}

@@ -29,7 +29,7 @@ export const nav = [
   { label: "Our Expertise", href: "/#expertise", icon: "layers" },
   { label: "Core Values", href: "/#core-values", icon: "gem" },
   { label: "Events & News", href: "/events", icon: "calendar" },
-  { label: "Blog", href: "/blog", icon: "newspaper" },
+  { label: "Blogs and Insights", href: "/blogs", icon: "newspaper" },
 ] as const;
 
 export const hero = {
@@ -750,24 +750,62 @@ export const contact: {
   email: string;
   phone: string;
   address: string;
-  /** Only add entries with real, verified URLs. */
-  social: { label: string; href: string }[];
+  /**
+   * Only add entries with real, verified URLs.
+   *
+   * These three were supplied directly by TribuCare rather than taken from the
+   * company-profile deck, which carries no contact slide — so they are the one
+   * exception to the sourcing rule at the top of this file, and the reason it
+   * is noted here rather than left to be rediscovered.
+   *
+   * Stored as absolute URLs, canonicalised: the tracking and redirect junk the
+   * links arrive with (`?feedView=all`, `?_rdc=1&_rdr#`, the `web.` Facebook
+   * host) is stripped, because it is per-session state from whoever copied the
+   * address out of their browser and means nothing to a visitor.
+   *
+   * Labels are brand names, so they stay Latin in both locales — see the
+   * do-not-translate list in AGENTS.md. There is no `contact` override in
+   * content/ar/, which is what makes that happen. They are not rendered as
+   * text: the footer draws the mark and uses the label as the link's
+   * accessible name.
+   *
+   * `icon` maps to a component in `components/brand/social-marks.tsx`, the same
+   * key-to-component indirection `nav` and `coreValues` use — lucide has no
+   * brand icons, so those three marks are drawn there rather than imported.
+   */
+  social: { label: string; href: string; icon: string }[];
 } = {
   email: "",
   phone: "",
   address: "",
-  social: [],
+  social: [
+    {
+      label: "LinkedIn",
+      href: "https://www.linkedin.com/company/tribu-care/",
+      icon: "linkedin",
+    },
+    {
+      label: "Facebook",
+      href: "https://www.facebook.com/medvaldermatology",
+      icon: "facebook",
+    },
+    {
+      label: "Instagram",
+      href: "https://www.instagram.com/tribucare.eg/",
+      icon: "instagram",
+    },
+  ],
 };
 
 export const footerNav = [
   {
     title: "Company",
     links: [
-      { label: "About", href: "/#about" },
+      { label: "About", href: "/about" },
       { label: "Our Expertise", href: "/#expertise" },
       { label: "Events & News", href: "/events" },
-      { label: "Insights & Blog", href: "/blog" },
-      { label: "Partnerships", href: "/#partner" },
+      { label: "Blogs and Insights", href: "/blogs" },
+      { label: "Partnerships", href: "/partner" },
     ],
   },
   {
@@ -784,7 +822,6 @@ export const footerNav = [
       { label: "Professional Dermatology", href: "/dermatology" },
       { label: "Home-Use Beauty Devices", href: "/mlay" },
       { label: "Medicated Skincare", href: "/altesse-soin" },
-      { label: "Medical Training", href: "/#professionals" },
     ],
   },
 ] as const;

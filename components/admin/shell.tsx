@@ -105,7 +105,7 @@ export function AdminShell({
             label={locale === "ar" ? "Switch to English" : "التبديل إلى العربية"}
           />
           <Link
-            href="/blog"
+            href="/blogs"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-brand-200 transition-colors hover:bg-white/10 hover:text-white"
