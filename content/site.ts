@@ -917,8 +917,9 @@ export const about = {
    *
    * The other two pages set one figure against a shield that towers over it.
    * Here the team leads and the mark sits behind them, so the two are exported
-   * at a different relative scale — the team larger, the shield smaller — onto
-   * a landscape 1533×978 box of their own. Both layers come from that one box,
+   * at a different relative scale — the team larger, the shield smaller, and
+   * the shield dropped 45px so it tucks behind the group rather than crowning
+   * it — onto a landscape 1993×1175 box of their own. Both come from that box,
    * which is what makes `object-contain` resolve them to the same size and
    * origin; re-export either alone and the mark slides off the group.
    *
@@ -932,13 +933,13 @@ export const about = {
    * a registered pair goes stale, the two stop lining up.
    */
   media: {
-    backdrop: { src: "/brand/about-mark.webp" },
+    backdrop: { src: "/brand/about-hero-mark.webp" },
     figure: {
-      src: "/brand/about-team.webp",
+      src: "/brand/about-hero-team.webp",
       alt: "The TribuCare team standing together in professional and clinical dress.",
     },
-    width: 1533,
-    height: 978,
+    width: 1993,
+    height: 1175,
   },
 
   story: {
