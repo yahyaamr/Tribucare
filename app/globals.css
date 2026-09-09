@@ -325,50 +325,74 @@
    opaque gradient in the ground colour would blank those out in a visible
    rectangle. Masking fades the cards and leaves the background untouched.
 
-   The three insets have to move together or the rail misbehaves:
-     - `padding-inline` keeps the resting first and last card clear of the soft
-       edge instead of sitting under it,
-     - `margin-inline` gives that padding straight back, so a rail inside
+   The insets have to move with the fades or the rail misbehaves:
+     - `padding-inline-*` keeps the resting first and last card clear of the
+       soft edge instead of sitting under it,
+     - `margin-inline` gives the leading padding straight back, so a rail inside
        <Shell> still starts level with the content above it,
      - `scroll-padding-inline` stops scroll-snap treating the padding as slack
        and immediately scrolling the first card back under the fade.
 
    `--rail-fade` tracks Shell's own gutter at each breakpoint. That keeps the
    rail flush with the section's edges rather than overflowing the viewport,
-   which a fixed inset would do on phones. */
+   which a fixed inset would do on phones.
+
+   `--rail-trail` is the trailing fade, and it is deliberately about three times
+   the leading one. The two edges are not doing the same job: the leading edge
+   only softens a card sliding back into space the reader has already been
+   through, while the trailing edge carries the section's only signal that the
+   row continues past the viewport. A fade the width of the gutter reads as a
+   rounded corner; one this wide reads as more cards.
+
+   The trailing padding matches `--rail-trail` rather than `--rail-fade`, which
+   is what keeps that signal honest: at the end of the scroll the last card
+   still rests fully opaque and the whole ramp falls on empty ground, so the
+   fade visibly goes away exactly when there is nothing left to reach. Widening
+   the mask alone would leave the final card permanently half-dissolved and the
+   rail would always claim more.
+
+   The mask is a physical `to right`, and it is no longer symmetric, so it needs
+   an explicit RTL counterpart — see the `[dir="rtl"]` block at the end of this
+   file. Only `--rail-mask` is redefined there; the insets are logical already. */
 @utility rail-fade {
   --rail-fade: 1.25rem;
+  --rail-trail: 5rem;
 
   @media (width >= 40rem) {
     --rail-fade: 2rem;
+    --rail-trail: 7rem;
   }
 
   @media (width >= 64rem) {
     --rail-fade: 3rem;
+    --rail-trail: 9.5rem;
   }
 
   @media (width >= 80rem) {
     --rail-fade: 4rem;
+    --rail-trail: 12rem;
   }
 
   margin-inline: calc(var(--rail-fade) * -1);
-  padding-inline: var(--rail-fade);
+  padding-inline-start: var(--rail-fade);
+  padding-inline-end: var(--rail-trail);
   scroll-padding-inline: var(--rail-fade);
 
-  -webkit-mask-image: linear-gradient(
+  /* The midpoint stop sits a little above where a straight line would put it,
+     so the shade starts as a whisper and deepens. Over a ramp this wide a
+     purely linear alpha has a visible edge where it leaves full opacity, which
+     puts a seam across the card it is meant to dissolve. */
+  --rail-mask: linear-gradient(
     to right,
     transparent 0,
     #000 var(--rail-fade),
-    #000 calc(100% - var(--rail-fade)),
+    #000 calc(100% - var(--rail-trail)),
+    rgb(0 0 0 / 0.55) calc(100% - var(--rail-trail) * 0.42),
     transparent 100%
   );
-  mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 var(--rail-fade),
-    #000 calc(100% - var(--rail-fade)),
-    transparent 100%
-  );
+
+  -webkit-mask-image: var(--rail-mask);
+  mask-image: var(--rail-mask);
 }
 
 /* Scrollable column with a scrollbar that belongs to the design rather than
@@ -850,6 +874,23 @@ html.lenis body {
 }
 [dir="rtl"] .seal-arc-bottom {
   font-size: 9.5px;
+}
+
+/* The rail's edge fades are asymmetric — a wide trailing shade that says "more
+   cards this way", a narrow leading one — and `mask-image` has no logical
+   direction, so the pair has to be mirrored by hand. Everything else about the
+   rail is already logical: `padding-inline-end` puts the matching space on the
+   correct side on its own. Redefining just the custom property keeps the two
+   stop lists from drifting apart into two different fades. */
+[dir="rtl"] .rail-fade {
+  --rail-mask: linear-gradient(
+    to left,
+    transparent 0,
+    #000 var(--rail-fade),
+    #000 calc(100% - var(--rail-trail)),
+    rgb(0 0 0 / 0.55) calc(100% - var(--rail-trail) * 0.42),
+    transparent 100%
+  );
 }
 
 /* Arrows and chevrons point the way the language reads. Lucide stamps a class
