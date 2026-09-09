@@ -918,8 +918,8 @@ export const about = {
    * The other two pages set one figure against a shield that towers over it.
    * Here the team leads and the mark sits behind them, so the two are exported
    * at a different relative scale — the team larger, the shield smaller, and
-   * the shield dropped 45px so it tucks behind the group rather than crowning
-   * it — onto a landscape 1993×1175 box of their own. Both come from that box,
+   * the shield dropped so it tucks behind the group rather than crowning it —
+   * onto a landscape 1993×1055 box of their own. Both come from that box,
    * which is what makes `object-contain` resolve them to the same size and
    * origin; re-export either alone and the mark slides off the group.
    *
@@ -927,19 +927,25 @@ export const about = {
    * homepage and the Partner page, and rescaling it for this one would move
    * the figure in both.
    *
-   * Renaming a layer is how a re-export ships. `next/image` caches by URL, as
-   * does every CDN and browser in front of it, so overwriting a file that has
-   * already been served leaves the old pixels in place — and when only one of
-   * a registered pair goes stale, the two stop lining up.
+   * The hash in each filename is what makes a re-export actually ship.
+   * `next/image` caches by URL, as does every CDN and browser in front of it,
+   * so overwriting a path that has already been served leaves the old pixels
+   * in place — and when only one half of a registered pair goes stale, the two
+   * stop lining up, which is a broken composite rather than an old one. A
+   * query string would say the same thing more cheaply, but `next/image`
+   * refuses one on a local path unless `images.localPatterns` is configured,
+   * and adding that blocks every *other* local image on the site unless it is
+   * listed too. So the URL changes when the bytes do: re-export, take the new
+   * name, and no cache anywhere can serve the previous pair.
    */
   media: {
-    backdrop: { src: "/brand/about-hero-mark.webp" },
+    backdrop: { src: "/brand/about-hero-mark.d939e64d.webp" },
     figure: {
-      src: "/brand/about-hero-team.webp",
+      src: "/brand/about-hero-team.f2e2606f.webp",
       alt: "The TribuCare team standing together in professional and clinical dress.",
     },
     width: 1993,
-    height: 1175,
+    height: 1055,
   },
 
   story: {

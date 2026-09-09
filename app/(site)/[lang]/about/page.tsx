@@ -56,7 +56,7 @@ export default async function AboutPage() {
 
   return (
     <>
-      <div className="relative bg-gradient-to-b from-brand-50/60 via-white to-brand-50/40 pt-28 pb-20">
+      <div className="relative bg-gradient-to-b from-brand-50/60 via-white to-brand-50/40 pt-28 pb-10">
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
@@ -106,15 +106,15 @@ export default async function AboutPage() {
               team rather than pasted flat against it. The team stays out of
               the Rise — it is the anchor the shield settles against.
 
-              Both layers share the one 1993×1175 crop box, so `object-contain`
+              Both layers share the one 1993×1055 crop box, so `object-contain`
               resolves them to the same size and origin. That is the whole
               reason they line up; it is not a coincidence of aspect ratios.
 
               Landscape, so it runs the width of the column rather than being
               boxed to a portrait width the way the other two composites are. */}
-          <div className="relative mt-12 min-h-[19rem] sm:min-h-[28rem] lg:mt-16 lg:min-h-[44rem]">
-            <Parallax speed={0.06} className="absolute inset-y-0 -inset-x-[8%]">
-              <Rise distance={80} className="absolute inset-0">
+          <div className="relative mt-8 min-h-[16rem] sm:min-h-[24rem] lg:mt-10 lg:min-h-[39rem]">
+            <Parallax speed={0.03} className="absolute inset-y-0 -inset-x-[8%]">
+              <Rise distance={30} className="absolute inset-0">
                 <Image
                   src={about.media.backdrop.src}
                   alt=""
