@@ -4,10 +4,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
-import { Rail } from "@/components/site/rail";
-import { CardStepper } from "@/components/site/card-stepper";
 import { WaveField } from "@/components/brand/wave-field";
-import { EventCard } from "@/components/events/event-card";
 import { CollectionCard } from "@/components/brand/collection-card";
 import { ChannelCard } from "@/components/distribution/channel-card";
 import { BrandPlate } from "@/components/brand/brand-plate";
@@ -191,80 +188,6 @@ export default async function AltesseSoinPage() {
               </Reveal>
             ))}
           </ul>
-        </Shell>
-      </section>
-
-      {/* ---- Where we show up / Moments --------------------------------- */}
-      <section className="ground-deep relative isolate overflow-hidden py-24 md:py-32">
-        <WaveField
-          tone="dark"
-          lines={22}
-          className="absolute left-0 top-1/4 h-[70%] w-[200%] opacity-25"
-        />
-
-        <Shell className="relative">
-          <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
-            <Reveal className="lg:col-span-7">
-              <Eyebrow tone="light">{altesse.moments.eyebrow}</Eyebrow>
-              <h2 className="mt-6 font-display text-[clamp(2.125rem,4.6vw,3.5rem)] font-semibold leading-[1.03] tracking-[-0.025em] text-balance text-white">
-                {altesse.moments.headlineLead}{" "}
-                <span className="text-brand-300">{altesse.moments.headlineAccent}</span>
-              </h2>
-            </Reveal>
-            <Reveal className="lg:col-span-5" delay={100} from="right">
-              <p className="text-[1.0625rem] leading-relaxed text-brand-100/80">
-                {altesse.moments.intro}
-              </p>
-            </Reveal>
-          </div>
-
-          <div className="mt-16">
-            <Reveal className="max-lg:hidden">
-              <div className="flex justify-end border-t border-white/10 pt-8">
-                <p className="text-[0.8125rem] text-brand-100/50">
-                  {ui.sections.railHint}
-                </p>
-              </div>
-            </Reveal>
-
-            {/* Below lg the rail becomes a stepped carousel — a vertical swipe
-                on a phone never drags the row sideways. */}
-            <CardStepper
-              aria-label={altesse.moments.eyebrow}
-              tone="dark"
-              className="lg:hidden"
-            >
-              {altesse.moments.items.map((item) => (
-                <EventCard
-                  key={item.title}
-                  event={item}
-                  labels={ui.events}
-                  sizes="100vw"
-                />
-              ))}
-            </CardStepper>
-
-            <Rail
-              aria-label={altesse.moments.eyebrow}
-              className="mt-8 gap-5 pb-4 max-lg:hidden"
-            >
-              {altesse.moments.items.map((item, i) => (
-                <Reveal
-                  as="li"
-                  key={item.title}
-                  delay={Math.min(i, 4) * 70}
-                  from="scale"
-                  className="rail-item w-[19rem] sm:w-[21rem]"
-                >
-                  <EventCard
-                    event={item}
-                    labels={ui.events}
-                    sizes="(max-width: 640px) 80vw, 21rem"
-                  />
-                </Reveal>
-              ))}
-            </Rail>
-          </div>
         </Shell>
       </section>
 

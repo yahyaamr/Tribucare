@@ -113,56 +113,6 @@ export const altesse = {
       "Every Altesse Soin routine is designed as a synergistic 3-step ritual (Cleanse, Treat, Hydrate) that strengthens the moisture barrier while addressing specific concerns like sensitivity, dullness, and dehydration.",
   },
 
-  moments: {
-    eyebrow: "Clinical & Community Presence",
-    headlineLead: "Where Altesse Soin",
-    headlineAccent: "connects with skin professionals.",
-    intro:
-      "From clinical symposium presentations to doctor workshops and consumer masterclasses, see how Altesse Soin empowers healthy skin across Egypt.",
-    items: [
-      {
-        icon: "presentation",
-        status: "upcoming",
-        type: "Medical Congress",
-        title: "Cairo Derma Congress",
-        image: "/brand/cairo-derma-booth.webp",
-        date: "Annual Symposium",
-        location: "Cairo (InterContinental Citystars)",
-        body: "Presenting clinical barrier restoration data for Centella Asiatica and Madecassoside protocols in post-laser recovery.",
-      },
-      {
-        icon: "microscope",
-        status: "upcoming",
-        type: "Scientific Panel",
-        title: "Sharm Derma Scientific Meeting",
-        image: "/brand/community-workshop.webp",
-        date: "Specialized Workshop",
-        location: "Alexandria (Four Seasons)",
-        body: "Dermatologist panel discussion on climate-adapted non-greasy formulations for Mediterranean and arid climates.",
-      },
-      {
-        icon: "store",
-        status: "upcoming",
-        type: "Official Store",
-        title: "Official Online Boutique",
-        image: "/brand/retail-network.webp",
-        date: "24/7 Online Access",
-        location: "Nationwide Doorstep Delivery",
-        body: "Fast, temperature-controlled delivery across all Egyptian governorates directly from our central medical warehouse.",
-      },
-      {
-        icon: "sparkles",
-        status: "upcoming",
-        type: "Industry Insight",
-        title: "MENA Beauty & Derma Trends",
-        image: "/brand/mena-trends.webp",
-        date: "Annual Review",
-        location: "Egypt & Regional Markets",
-        body: "Showcasing local clinical formulation excellence and consumer adoption of minimalist 3-step daily regimens.",
-      },
-    ],
-  },
-
   /**
    * Distribution. Mirrors `mlay.distribution` in content/mlay.ts exactly in
    * shape — the two sections share <ChannelCard> — with the channels rewritten
