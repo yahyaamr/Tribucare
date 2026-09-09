@@ -33,6 +33,20 @@ Metadata, structured data, sitemap and the go-live checklist:
 The SEO team publishes blogs, events & news and career roles from a
 password-protected CMS — no code, no redeploy.
 
+The article editor is one continuous writing surface, not a stack of block
+forms. It takes **bold, italic, underline, strikethrough and links**, and a
+finished article **pasted from Word or Google Docs keeps its structure** —
+headings, bulleted and numbered lists, quotes, images and the emphasis inside
+them. What it deliberately drops is the source document's fonts, sizes,
+colours and spacing: a pasted heading arrives as *this site's* heading, which
+is what stops a pasted article looking like a foreign object on the page. Full
+undo and redo (⌘Z / ⇧⌘Z) covers the whole draft, not just the body.
+
+Each post carries **one content language**, and that choice — not the panel's
+own language — decides which site lists it and which way the writing surface
+runs. Writing an Arabic article no longer means flipping the whole panel into
+Arabic.
+
 **It is not at `/admin`.** That path returns the site's 404. The panel is served
 from the secret segment named by `ADMIN_PATH`, and the URL should be treated as
 a credential. Four things are set up once in Vercel:

@@ -99,7 +99,10 @@ components/
   brand/                logo, brand-plate, wave-field, lanyard (3D)
   ui/                   shadcn primitives — button only. Retuned via CSS vars.
   blog/ news/ events/   post-card (canonical), news-card, event-card, views
+                        article-body.tsx — the ONE renderer for a Block[]
   admin/                the panel's UI
+                        rich-field.tsx — one contenteditable row + caret maths
+                        use-draft-history.ts — undo/redo over the whole draft
 content/
   site.ts dermatology.ts mlay.ts altesse.ts collections.ts
                         ALL marketing copy. `as const`.
@@ -116,6 +119,9 @@ lib/
   i18n/admin-strings.ts the panel's OWN strings, EN + AR — not content/
   cms/                  store, posts, news, roles, authors, categories,
                         news-tags, media, revalidate
+  cms/rich-text.ts      the closed inline whitelist — sanitize on paste, on
+                        save and again on render. Nothing widens it quietly.
+  cms/paste-html.ts     a pasted document → Block[]. Browser-only (DOMParser).
   cms/gate.ts           where the panel is mounted (ADMIN_PATH). Server only.
   cms/auth.ts           password check, signed cookie, 60-minute idle window
   cms/rate-limit.ts     login lockout, backed by Upstash over its REST API
@@ -173,17 +179,73 @@ page. So:
 - **An article is an ordered `Block[]`, and that is a contract.**
   `components/blog/article-body.tsx` is the single renderer for both the
   published page and the editor's preview, so a change to what a block means
-  changes every article already written. A block holds a *plain string*, emitted
-  as a text node — which is why the editor offers no bold, italic or inline
-  link: there is nowhere to store a mark. Adding them means either losing the
-  formatting on save or teaching the published page to render HTML, and the
-  second one puts a hole in the design system big enough for an article to look
-  foreign. `components/admin/doc-editor.tsx` is a writing surface over that
-  array and nothing more; replacing it must leave the array untouched.
+  changes every article already written. `components/admin/doc-editor.tsx` is a
+  writing surface over that array and nothing more; replacing it must leave the
+  array untouched.
+- **A block's text is an inline fragment, and the whitelist is closed.**
+  `lib/cms/rich-text.ts` owns it: `strong em u s code sup sub a[href] br`, and
+  nothing else. It is applied on paste, on save (`savePost` / `saveNews`) and
+  *again at render time*, so a record seeded from a file, hand-edited in
+  storage or written by an older build still cannot put a script on the page.
+  Plain text is a valid fragment, which is why every record written before this
+  existed is already correct.
+
+  The list is closed at the **inline** level on purpose. Nothing in it can carry
+  a class, an id, a style attribute, a colour, a size or a font — that is what
+  keeps a pasted `h2` rendering as *the site's* `h2`. Widening it to any
+  block-level or styling tag is the hole in the design system this whole
+  arrangement exists to prevent, so it is a decision to bring to the user, not
+  one to make while implementing something else.
+- **Pasting is structure in, styling out.** `lib/cms/paste-html.ts` reads the
+  clipboard's `text/html` flavour and maps it onto blocks — headings,
+  paragraphs, bulleted and numbered lists, quotes, images and the marks above.
+  Everything the source document said about *appearance* is dropped and
+  re-derived from the design system. It is browser-only (`DOMParser`), so never
+  import it from a server component. Emphasis that Word and Google Docs express
+  in CSS (`style="font-weight:700"`) is promoted to real tags first, and the
+  self-cancelling `<b style="font-weight:normal">` both wrap a selection in is
+  unwrapped — miss either and a pasted article loses all its bold, or gains it
+  everywhere.
+- **Editor rows are `contenteditable`, and the rule is: never write to one
+  while the writer is typing into it.** Re-setting `innerHTML` collapses the
+  selection to the start of the node, so a controlled field moves the caret to
+  the top of the line on every keystroke. `components/admin/rich-field.tsx`
+  remembers the value it last emitted and ignores that value coming back; the
+  caret helpers (split a half-bold line, measure an offset through markup) live
+  there too, so the editor addresses a line by a character offset and never has
+  to know what runs it is made of.
+- **Undo/redo is the editor's, not the browser's**
+  (`components/admin/use-draft-history.ts`). Every field is React-controlled and
+  the rows are written from state, so a native undo rewinds the *element* while
+  React still holds the old value and the next keystroke renders the undone text
+  straight back — the native one is refused inside the rows. Typing coalesces
+  into one entry per burst. An asynchronous edit — an image upload writes a
+  placeholder, then the finished URL — must `amend` the entry it opened rather
+  than pushing a second one, or a single undo lands on the placeholder: an empty
+  frame nobody typed their way into.
+- **A post or news item has exactly one content language**, chosen by the
+  radios in the editor's *Content language* panel — a placement decision, not a
+  claim about what the words are in. Records written before this carry both
+  locales; they read as their first and are narrowed the next time one is
+  saved.
+- **The panel's language and the content's language are two different
+  questions.** The panel's is a cookie and decides what "Permanently delete"
+  says. The content's decides which way the words being typed run. The editor
+  therefore sets `dir` on the *content* — the block area, the title, excerpt,
+  SEO fields, alt text, and the preview — and never on the screen: the action
+  bar, the two-column split, the settings rail and the toolbars stay with the
+  panel's language, because that is the language their labels are in.
+- **A category belongs to one language site** (`lib/cms/categories.ts`), and
+  the picker offers only the current one. The stored list upgrades itself on
+  read; a category carried by a post inherits that post's language, which is a
+  fact rather than an inference, and script is read only where nothing else can
+  answer — a legacy list, or a legacy post still naming both languages. A name
+  may be taken once across both, so Settings can move a category between them
+  rather than forcing a delete and re-create.
 - Panel strings go in `lib/i18n/admin-strings.ts`, never in `content/`. That
-  file is software chrome — "Move to trash" does not belong beside the homepage
-  headline. Both locales are one typed object, so a missing Arabic key is a
-  build error.
+  file is software chrome — "Permanently delete" does not belong beside the
+  homepage headline. Both locales are one typed object, so a missing Arabic key
+  is a build error.
 
 ## Design tokens — use these, never raw hex
 
@@ -228,6 +290,13 @@ Defined in `app/globals.css`:
 - `icon-disc` / `icon-disc-dark` — the single icon language. Circular plate,
   `brand-50` bg on light, translucent teal on dark. Never squircles, never
   square icon tiles.
+- `rich-text` / `rich-text-dark` — the **only** place an article's inline marks
+  are styled: link colour and underline, the `code` plate, `sup`/`sub` size.
+  `-dark` is the same set on `ground-deep` (the pull-quote), where the two
+  colours move to the light accents that ground already uses. Every value
+  resolves to an existing token, which is what makes a link inside a pasted
+  article read as a TribuCare link. Nothing here sets a size, family or colour
+  for ordinary text — the block's own class owns those.
 - `stack-card` — sticky layered card stack (see Expertise).
 - `.notch-fillet-*` — the header's concave joins. Don't reimplement.
 
@@ -463,3 +532,12 @@ Add to that only when the change earns it:
   rather than failing.
 - **Anything visual on a page that has an Arabic version:** check it in both
   directions. A logical-property miss is invisible in English by definition.
+- **Re-exported an image that has already shipped:** give the new file a new
+  URL. `next/image` caches by URL, as does every CDN and browser in front of
+  it, so overwriting a path serves the old pixels — and where two layers are
+  registered against one crop box (the Mission, Partner and About composites),
+  one going stale breaks the composite rather than merely dating it. The About
+  pair carries a content hash in its filename for this reason. A `?v=` would
+  say the same thing, but `next/image` refuses a query string on a local path
+  unless `images.localPatterns` is configured, and configuring it blocks every
+  *other* local image on the site unless each is listed too.

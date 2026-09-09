@@ -257,6 +257,7 @@ Permalink, Content, Excerpt), and the **settings rail** on the right.
 | **← Posts** | Back to the list. Warns if you have unsaved changes. |
 | **Status pill** | Draft or Published. |
 | **Unsaved changes** | Appears the moment you type. Nothing autosaves. |
+| **Undo / Redo** | ⌘Z and ⇧⌘Z (Ctrl+Z / Ctrl+Y on Windows), or the two arrows. Covers the *whole* draft — title, categories, cover, body — not just the article. Greyed out when there is nothing to undo. |
 | **Edit / Preview** | A tab pair, not a separate screen. Preview renders `components/blog/article-view.tsx` — the exact component the published page uses — against the draft in memory. It cannot drift from the real article, because it *is* the real article. |
 | **Save draft** | Saves without publishing. Disabled until a language is ticked. |
 | **Publish / Update** | Saves and makes it live. The label changes once the post is published. |
@@ -264,10 +265,11 @@ Permalink, Content, Excerpt), and the **settings rail** on the right.
 **Main column**
 
 - **Title** — the headline on the card, the `/blogs` index and the browser tab.
-  Accepts Arabic (`dir="auto"`, so the box follows the text).
+  Runs right-to-left when the post's **Content language** is Arabic.
 - **Permalink** — the URL slug. It follows the title until you edit it by hand,
   after which it stops following, so a post never ships with a slug from an
-  abandoned first headline.
+  abandoned first headline. Letters, numbers, hyphens and underscores; anything
+  else becomes a hyphen, and the field tidies itself when you click away.
 - **Content** — the writing surface. [Full detail below.](#5-the-editor-in-detail)
 - **Excerpt** — the card, index and search/social description. It sits *after*
   the article deliberately: it summarises what you just wrote, and asking for it
@@ -277,10 +279,10 @@ Permalink, Content, Excerpt), and the **settings rail** on the right.
 
 | Panel | What it holds |
 |---|---|
-| **Publish** | Status, publish date (stored sortable, shown long-form), **Feature this post**, **View live post**, **Move to trash**. |
+| **Publish** | Status, publish date (stored sortable, shown long-form), **Feature this post**, **View live post**, **Permanently delete**. Featuring is opt-in: a new post is never featured until you tick it, and ticking it un-features whatever held the slot. |
 | **Cover image** | Drives the card, the article hero and the social image. Set / Replace / Remove. |
-| **About the Taxonomy** | Which language sites the post is listed on. **Placement, not translation** — ticking English lists it on `/blogs` whatever language it is written in. Both save buttons stay disabled until one is ticked, because a post on no site is not a post. |
-| **Categories** | Type to filter, tick as many as apply, or type a new name and choose **Create "…"**. A category created here is saved immediately and offered on every other post straight away. The **first** one selected is the primary — the one shown wherever there is room for only one badge. |
+| **Content language** | Which language site the post is listed on — **one**, chosen with a radio. **Placement, not translation**: choosing English lists it on `/blogs` whatever language it is written in. It also decides which way the editor writes: pick العربية and the content fields and the preview flip to right-to-left, while the panel around them stays in whatever language *you* set. Both save buttons stay disabled until one is chosen, because a post on no site is not a post. |
+| **Categories** | Only the categories belonging to the post's **Content language** are offered — an Arabic post cannot be filed under an English shelf. Type to filter, tick as many as apply, or type a new name and choose **Create "…"**, which creates it in that language. Switching Content language drops any categories from the other one (⌘Z brings them back). The **first** one selected is the primary — the one shown wherever there is room for only one badge. |
 | **Author** | Picked from the list managed in Settings. A post holds a *reference*, so correcting a name or photo updates every article that author wrote. |
 | **SEO** | Meta title and description, with character counts. Both fall back to the title and excerpt when blank. |
 | **Reading time** | Blank means "compute it from the word count". |
@@ -303,9 +305,16 @@ a vector cover image.
 
 `/settings` holds the lists the editors draw from.
 
-**Categories** — add, rename, delete. Renaming rewrites every post carrying the
-old name in the same operation, so the blog can never show two filter tabs for
-what is one category.
+**Categories** — add, rename, delete, and **move between language sites**.
+Every category belongs to either the English or the Arabic blog, shown as a
+chip on its row; clicking that chip moves it across, which leaves the posts
+alone (the name has not changed — only which editor is offered it). The Add
+form has its own language toggle. A name may be taken only once across both:
+two identical rows here would rename and delete differently with nothing to
+tell them apart.
+
+Renaming rewrites every post carrying the old name in the same operation, so
+the blog can never show two filter tabs for what is one category.
 
 Deleting is two-step. The first click reports what the category is attached to,
 flagging posts for which it is the *only* category as "will have no category".
@@ -340,10 +349,18 @@ Writers do not think in blocks; they think in a document.
 | **Delete** at the end of a line | Pulls the next paragraph up. |
 | **↑ / ↓** at the first/last line | Moves the caret into the block above or below, including out of a list. |
 
-**Enter never inserts a newline.** A block stores a plain string and the
-published page renders it as a single text node, so a soft line break would show
-in the editor and vanish on the live site. Making Enter always start a new
-paragraph is what keeps the editor honest about what will actually render.
+**Enter never inserts a newline.** The published page renders a block as one
+line, so a soft line break would show in the editor and vanish on the live
+site. Making Enter always start a new paragraph is what keeps the editor honest
+about what will actually render. Pressing it in the middle of a bolded phrase
+leaves both halves bold.
+
+**Undo and redo are the editor's own** — ⌘Z / ⇧⌘Z, or the arrows in the action
+bar. The browser's cannot be used: every field is React-controlled, so a native
+undo rewinds the box while the editor still holds the old text and your next
+keystroke brings it straight back. A burst of typing is one step, so ⌘Z takes
+back a phrase rather than a letter, and an image insert is a single step —
+undoing it removes the picture and its frame together.
 
 ### Shortcuts
 
@@ -353,6 +370,7 @@ Typed at the very start of an empty or plain paragraph:
 |---|---|
 | `## ` (or `# `, `### `) | A section heading |
 | `- ` or `* ` | A bulleted list |
+| `1. ` | A numbered list |
 | `> ` | A pull quote |
 
 Inside a list, **Enter** makes the next bullet and **Backspace** on an empty
@@ -361,20 +379,47 @@ finished without touching the mouse.
 
 ### The toolbar
 
-**Heading · List · Quote · Key takeaways · Image.** Each inserts after the block
-your caret is in — unless that block is an empty paragraph, in which case it
-replaces it, so reaching for the toolbar mid-draft never leaves a blank line
-behind. **Image** opens the media library.
+Two groups, separated by a hairline.
+
+**Formatting** — **Bold · Italic · Underline · Strikethrough · Link · Clear
+formatting.** They act on whatever is selected; ⌘B and ⌘I work as usual. Link
+asks for a URL and an empty answer removes the link. There is deliberately no
+colour, size or font control — see [below](#what-the-editor-still-will-not-do).
+
+**Blocks** — **Heading · List · Quote · Key takeaways · Image.** Each inserts
+after the block your caret is in — unless that block is an empty paragraph, in
+which case it replaces it, so reaching for the toolbar mid-draft never leaves a
+blank line behind. **Image** opens the media library.
 
 Lists, quotes, takeaway panels and images each show a small delete control on
 hover; text is removed with Backspace like ordinary writing.
 
-### Pasting
+### Pasting a finished article
 
-- **Several paragraphs** (separated by blank lines) arrive as separate
-  paragraphs, not one wall of text. Pasting a drafted article from a document
-  keeps its structure.
-- **An image** is uploaded and inserted where the caret is.
+Paste from Word, Google Docs, another CMS or a web page and the **structure
+comes with it**. What survives:
+
+| | |
+|---|---|
+| Headings | Every level lands on the article's section heading — the page already has one `h1`, its title |
+| Paragraphs | Line wrapping in the source is collapsed; one paragraph stays one paragraph |
+| Bulleted and numbered lists | Nested lists flatten to one level, which is the only list treatment the site has |
+| Block quotes | Become the dark pull-quote |
+| Images | Re-uploaded into your own media library, so they keep working if the source deletes them |
+| **Bold, italic, underline, strikethrough and links** | Including the ones Word and Google Docs express as invisible styling rather than as real tags |
+
+What does **not** survive, on purpose: fonts, text sizes, colours, alignment
+and spacing. A pasted heading arrives as *your* heading at *your* type scale.
+Carrying the source document's styling across is exactly how a pasted article
+ends up looking like a foreign object on the page.
+
+Tables are the one thing with no home — the article template has no table
+treatment — so they are left out and the editor tells you how many, rather than
+flattening them into paragraphs and letting you find out later.
+
+Plain text still works the way it always did: paragraphs separated by blank
+lines arrive as separate paragraphs. An image on the clipboard is uploaded and
+inserted where the caret is.
 
 ### Pasted images are compressed for you
 
@@ -390,18 +435,22 @@ The upload cap is 300 KB and a screenshot is routinely several megabytes, so:
 Choosing from the media library is unaffected: that path still refuses anything
 over the cap outright.
 
-### What the editor cannot do, and why
+### What the editor still will not do
 
-**There is no bold, italic or inline link.** A block stores a plain string, and
-`components/blog/article-body.tsx` renders it as a React text node — there is
-nowhere to put a mark. Adding them would mean either dropping the formatting on
-save or teaching the published page to render HTML, which would put a hole in
-the design system big enough for an article to look foreign.
+**No colour, size or font control, and no free-form HTML.** The marks it does
+offer — bold, italic, underline, strikethrough, code, superscript, subscript
+and links — are a closed list held in `lib/cms/rich-text.ts`, and nothing in
+that list can carry a colour, a size, a font, a class or a style attribute.
 
-There is likewise no free-form HTML. Every block maps onto a treatment the site
-already has, so an article written a year from now still looks like the rest of
-TribuCare. **The writer chooses *what* a passage is; the design system decides
-how it looks.**
+That is the whole trade, and it is worth being explicit about: **the writer
+chooses *what* a passage is; the design system decides how it looks.** An
+article written a year from now, or pasted in from anywhere, still looks like
+the rest of TribuCare — because the only thing it is allowed to bring with it
+is its structure and its emphasis.
+
+Anything outside the list is stripped silently rather than stored, on the way
+in *and* again on the way out, so a record edited straight in storage cannot
+smuggle markup onto the published page either.
 
 ### What is stored
 
@@ -414,10 +463,15 @@ replacing it changed nothing about the published page.
 | `lead` | The opening paragraph, one size up |
 | `heading` | A section `h2` |
 | `paragraph` | Body copy |
-| `list` | Simple bullets |
+| `list` | Simple bullets, or numbers when the list is ordered |
 | `quote` | The dark teal pull-quote panel |
 | `takeaways` | The mint "Key Takeaways" panel |
 | `image` | Full-width figure with an optional caption |
+
+A block's text is a small **inline HTML fragment** rather than a bare string —
+that is where the bold, italic and links live. Plain text is a valid fragment,
+so every article written before this still reads correctly and needs no
+migration.
 
 `components/blog/article-body.tsx` is the **single renderer** for both the
 published page and the editor's preview. Change a treatment there and both move
@@ -436,8 +490,10 @@ together; there is no second implementation to keep in step.
   live within seconds.
 - **Drafts are invisible.** A draft URL 404s and the post appears in neither the
   index nor the sitemap.
-- **Only one post can be featured.** Featuring one un-features the previous,
-  because `/blogs` promotes exactly one.
+- **Featuring is opt-in.** `/blogs` shows the featured hero only when a post is
+  actually ticked — publishing a new post no longer promotes it by default.
+  Featuring one un-features the previous, because the index promotes exactly
+  one.
 - **Events and news** derive past/upcoming from the date, so an event moves
   itself into the archive.
 - **Careers** render as the cards in the Careers section on the homepage, and
@@ -527,11 +583,14 @@ lib/cms/
   posts.ts        Blog CRUD, seeding, validation
   news.ts         Events & news CRUD
   roles.ts        Career roles CRUD
-  categories.ts   Category list, rename, delete-with-usage-report
+  categories.ts   Category list per language, rename, move, delete-with-report
   news-tags.ts    The same, for the events & news tag list
   authors.ts      Author list; posts reference these by id
   media.ts        Uploads, plus the site's own artwork (listSiteMedia)
   compress.ts     Browser-side shrinking for pasted images
+  rich-text.ts    The closed inline whitelist. Sanitises on paste, on save and
+                  again on render — the one place formatting is defined
+  paste-html.ts   A pasted document → Block[]. Browser-only (uses DOMParser)
   auth.ts         Password check, signed session cookie, idle window
   gate.ts         Where the panel is mounted (ADMIN_PATH)
   rate-limit.ts   Login lockout, backed by Upstash
@@ -551,6 +610,8 @@ components/admin/
   base-path.tsx     useAdminBase() / useAdminApi() — the secret path, client-side
   tab-session.tsx   Ends the session when the tab that opened it is gone
   doc-editor.tsx    The continuous writing surface
+  rich-field.tsx    One editable row, plus the caret maths behind it
+  use-draft-history.ts  Undo/redo over the whole draft
   media-picker.tsx  The library, as a page and as a dialog
   post-editor.tsx news-editor.tsx role-editor.tsx
   posts-table.tsx news-table.tsx roles-table.tsx
@@ -559,6 +620,19 @@ components/admin/
 
 ### Rules for anyone changing the panel
 
+- **`lib/cms/rich-text.ts` is the only definition of what formatting exists.**
+  Widening that list is a design-system decision, not an implementation detail:
+  anything able to carry a colour, a size or a class lets a pasted article
+  bring its own look onto the page. Sanitising happens on the way in *and* on
+  the way out, so removing either pass is a security change as well as a
+  cosmetic one.
+- **Never write to a `contenteditable` row while it has focus.** Re-setting
+  `innerHTML` sends the caret to the start of the line. `rich-field.tsx`
+  remembers what it last emitted and ignores that value coming back — keep that
+  behaviour if you touch it.
+- **An async edit amends its history entry, it does not push a new one.** An
+  image upload writes a placeholder and then the real URL; two entries means
+  one undo lands on an empty frame.
 - **Never hardcode `/admin` or `/api/admin` in a link or fetch.** Use
   `useAdminBase()` and `useAdminApi()` in client components, `adminBase()` in
   server ones. A hardcoded path lands on the 404 the moment `ADMIN_PATH` is set.
@@ -598,16 +672,30 @@ Everything above `store.ts` speaks one interface (`list` / `read` / `put` /
 The public site is bilingual — English at its existing URLs, Arabic under
 `/ar/…` — and the panel has a language of its own.
 
-**In the panel**, the globe in the admin bar and the **Language** panel in
-Settings switch the interface between English and Arabic. It is a cookie, not a
-URL, so it is per person: one editor can work in Arabic while another works in
-English, on the same posts. Switching does not move you off the page you are on.
+These are **two separate settings**, and keeping them apart is the point.
 
-**Blog articles themselves are not translated.** A post written in the panel
-appears on both `/blogs` and `/ar/blogs` in whatever language it was written in;
-only the surrounding chrome changes. The **About the Taxonomy** checkboxes
-decide which language sites list it, which is a placement decision, not a claim
-about what language it is in.
+**The panel's language** — the globe in the admin bar and the **Language**
+panel in Settings — switches the interface between English and Arabic. It is a
+cookie, not a URL, so it is per person: one editor can work in Arabic while
+another works in English, on the same posts. Switching does not move you off
+the page you are on. It decides what the buttons say, and nothing else.
+
+**A post's language** is the **Content language** radio in the editor. It
+decides two things: which site lists the post, and which way the writing
+surface runs. Choose العربية and the content fields, the article body and the
+preview flip to right-to-left — while the sidebar, action bar and toolbars stay
+in whatever language you set for yourself. You no longer have to put the whole
+panel into Arabic to write one Arabic article.
+
+**Blog articles themselves are not translated.** A post appears on the site it
+is listed for, in whatever language it was written in; only the surrounding
+chrome changes. Content language is a *placement* decision, not a claim about
+what the words are in — an Arabic article listed under English shows on
+`/blogs`, in Arabic.
+
+Categories follow the same split: each belongs to one language site, and the
+editor only offers the ones matching the post's Content language. Settings
+shows each category's language and can move one across.
 
 ### Where the site's own translations live
 
