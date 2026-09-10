@@ -26,7 +26,7 @@ const MARK = {
  *  only one is ever visible. Both carry this identical `sizes` list so the
  *  browser resolves the same srcset candidate and fetches the file once. */
 const MARK_SIZES =
-  "(max-width: 1023px) 112vw, (max-width: 1439px) 68vw, (max-width: 1919px) 60vw, 45vw";
+  "(max-width: 767px) 112vw, (max-width: 1023px) 70vw, (max-width: 1439px) 68vw, (max-width: 1919px) 60vw, 45vw";
 
 export async function Hero() {
   const { hero, verticals } = await content();
@@ -126,8 +126,14 @@ export async function Hero() {
           </div>
         </div>
 
-        {/* Below lg the mark can't sit beside the copy, so it runs in flow at
-            full width and the cards are pulled up to overlap it there too. */}
+        {/* Below lg the mark can't sit beside the copy, so it runs in flow and
+            the cards are pulled up to overlap it there too.
+
+            It bleeds past both gutters on a phone, where 112% of a 390px
+            viewport is still only a 437px mark. The same rule on a tablet held
+            upright makes it 934px — wider than the screen and most of its
+            height — so from `md` it is centred at 70%, which puts it back at
+            roughly the share of the screen it takes on a phone. */}
         <div className="relative mt-10 -me-5 -ms-5 sm:-me-8 sm:-ms-8 lg:hidden">
           <Image
             src={MARK.src}
@@ -143,7 +149,7 @@ export async function Hero() {
             sizes={MARK_SIZES}
             // Shallower blur radius than the desktop mark carries: this one
             // runs at 112vw, and drop-shadow cost scales with radius × area.
-            className="ms-[-6%] w-[112%] max-w-none select-none drop-shadow-[0_16px_28px_rgb(2_20_20/0.45)] rtl:-scale-x-100"
+            className="ms-[-6%] w-[112%] max-w-none select-none drop-shadow-[0_16px_28px_rgb(2_20_20/0.45)] md:ms-[15%] md:w-[70%] rtl:-scale-x-100"
           />
         </div>
 
