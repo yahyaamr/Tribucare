@@ -40,6 +40,8 @@ const ui = {
   languageSwitch: "Switch to Arabic",
   openMenu: "Open menu",
   closeMenu: "Close menu",
+  openSubmenu: "Open the Our Expertise menu",
+  closeSubmenu: "Close the Our Expertise menu",
   partnerCta: "Partner With Us",
   homeAria: "TribuCare — home",
   primaryNav: "Primary",

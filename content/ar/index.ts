@@ -45,6 +45,8 @@ const ui = {
   languageSwitch: "التبديل إلى الإنجليزية",
   openMenu: "فتح القائمة",
   closeMenu: "إغلاق القائمة",
+  openSubmenu: "فتح قائمة مجالات خبرتنا",
+  closeSubmenu: "إغلاق قائمة مجالات خبرتنا",
   partnerCta: "كن شريكًا لنا",
   homeAria: "تريبوكير — الرئيسية",
   primaryNav: "التنقّل الرئيسي",

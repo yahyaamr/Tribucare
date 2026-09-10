@@ -7,13 +7,17 @@ import { useLenis } from "lenis/react";
 import {
   Building2,
   Calendar,
+  ChevronDown,
+  Droplet,
   Gem,
   Handshake,
   Home,
   Layers,
   Menu,
   Newspaper,
+  Stethoscope,
   X,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -47,7 +51,9 @@ function sectionIdsOf(items: ContentData["nav"]) {
   ];
 }
 
-/** `icon` keys in `nav`, resolved to components. */
+/** `icon` keys in `nav` and in a nav item's `menu`, resolved to components.
+ *  The last three are the hero's marks for the three verticals, so an entry in
+ *  the drop-down carries the same glyph the first screen gives its vertical. */
 const ICONS: Record<string, LucideIcon> = {
   home: Home,
   layers: Layers,
@@ -56,7 +62,39 @@ const ICONS: Record<string, LucideIcon> = {
   handshake: Handshake,
   calendar: Calendar,
   building: Building2,
+  stethoscope: Stethoscope,
+  zap: Zap,
+  droplet: Droplet,
 };
+
+type NavItem = ContentData["nav"][number];
+/** The one nav item that opens a drop-down on desktop. */
+type MenuItem = Extract<NavItem, { menu: unknown }>;
+
+function hasMenu(item: NavItem): item is MenuItem {
+  return "menu" in item;
+}
+
+/* --------------------------------------------------------------------------
+   Panel motion.
+   Shared by the mobile menu and the desktop drop-down, so the header stretches
+   the same way whichever of the two opens it.
+   -------------------------------------------------------------------------- */
+/** The stretch. A 0fr→1fr grid track is the only thing animating: it changes
+ *  the panel's height, which sizes the wrapper, which the shape layer fills.
+ *  One transition drives the whole thing, so the surface and its contents can
+ *  never disagree about the height. Callers add their own display class. */
+const STRETCH =
+  "overflow-hidden transition-[grid-template-rows] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)]";
+/** Each item follows the surface down rather than racing it. */
+const CASCADE =
+  "transition-[opacity,transform] duration-[460ms] ease-[cubic-bezier(0.22,1,0.36,1)]";
+/** The first item waits out the opening third of the stretch, then they
+ *  cascade. On close the delays are dropped so they clear together and the bar
+ *  is never seen shrinking through live text. */
+function cascadeDelay(open: boolean, i: number) {
+  return { transitionDelay: open ? `${140 + i * 55}ms` : "0ms" };
+}
 
 /* --------------------------------------------------------------------------
    Header geometry.
@@ -91,7 +129,8 @@ const ICONS: Record<string, LucideIcon> = {
  * keeps the pair adding up and the extra air split evenly.
  *
  * `BAR_MIN` is a FLOOR rather than a height, because the bar stretches: with
- * the mobile menu open the surface grows to cover the links, and the shape
+ * the mobile menu or the desktop drop-down open the surface grows to cover
+ * the links, and the shape
  * layer resolves its height from the content instead of being told it. The
  * floor is what holds the closed header at exactly the size it has always been.
  *
@@ -125,9 +164,18 @@ export function SiteNav({
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  // The same drop-down inside the mobile menu. Its own flag rather than
+  // `menuOpen`: the two panels are never on screen together, and a tablet
+  // rotated from landscape to portrait should not arrive with a sub-list
+  // already unfolded because the desktop one had been.
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const menuItem = nav.find(hasMenu);
   const rawPathname = usePathname();
   const lenis = useLenis();
 
@@ -191,6 +239,41 @@ export function SiteNav({
       document.removeEventListener("keydown", onKey);
     };
   }, [open, lenis]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        menuTriggerRef.current?.focus();
+      }
+    };
+
+    // Unlike the mobile menu this does not lock the page, so there is no
+    // backdrop to catch a stray click — a press anywhere outside the panel and
+    // its trigger closes it instead. The trigger is excluded so its own click
+    // toggles rather than closing here and reopening a moment later.
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (
+        menuRef.current?.contains(target) ||
+        menuTriggerRef.current?.contains(target)
+      ) {
+        return;
+      }
+      setMenuOpen(false);
+    };
+
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointerDown);
+    menuRef.current?.querySelector<HTMLAnchorElement>("a")?.focus();
+
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [menuOpen]);
 
   return (
     <header className="fixed inset-x-0 top-0 z-50">
@@ -287,6 +370,82 @@ export function SiteNav({
                           pathname.startsWith(`${item.href}/`);
                   const Icon = ICONS[item.icon];
 
+                  if (hasMenu(item)) {
+                    // The same pill, split: the link half still goes where the
+                    // item always went, and the chevron half opens the
+                    // drop-down. `group` moves up to the row so hovering or
+                    // focusing either half slides the label out, and the pill
+                    // holds its hover tint for as long as the menu is open so
+                    // the panel visibly hangs from it.
+                    const expanded = isActive || menuOpen;
+                    return (
+                      <li
+                        key={item.href}
+                        className={cn(
+                          "group flex items-center rounded-lg text-[0.9rem] font-medium transition-colors duration-300",
+                          isActive
+                            ? "bg-brand-900 text-white shadow-[0_6px_14px_-8px_rgb(7_42_42/0.65)]"
+                            : menuOpen
+                              ? "bg-brand-50 text-brand-700"
+                              : "text-ink-soft hover:bg-brand-50 hover:text-brand-700 focus-within:bg-brand-50 focus-within:text-brand-700",
+                        )}
+                      >
+                        <a
+                          href={href(item.href)}
+                          onClick={() => setMenuOpen(false)}
+                          aria-label={item.label}
+                          aria-current={isActive ? "location" : undefined}
+                          className="flex items-center rounded-s-lg py-2.5 ps-3.5 pe-1.5"
+                        >
+                          <Icon
+                            aria-hidden="true"
+                            className={cn(
+                              "size-[1.125rem] shrink-0 transition-colors duration-300",
+                              isActive && "text-white/70",
+                            )}
+                          />
+                          <span
+                            aria-hidden="true"
+                            className={cn(
+                              "grid transition-[grid-template-columns] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+                              expanded
+                                ? "grid-cols-[1fr]"
+                                : "grid-cols-[0fr] group-hover:grid-cols-[1fr] group-focus-within:grid-cols-[1fr]",
+                            )}
+                          >
+                            <span className="overflow-hidden">
+                              <span className="block ps-2 whitespace-nowrap">
+                                {item.label}
+                              </span>
+                            </span>
+                          </span>
+                        </a>
+                        <button
+                          ref={menuTriggerRef}
+                          type="button"
+                          onClick={() => setMenuOpen((v) => !v)}
+                          aria-expanded={menuOpen}
+                          aria-controls="expertise-menu"
+                          aria-label={
+                            menuOpen ? ui.closeSubmenu : ui.openSubmenu
+                          }
+                          // Stretches to the pill's full height so the whole
+                          // end cap is the target, not just the 16px glyph.
+                          className="grid self-stretch place-items-center rounded-e-lg ps-1 pe-3"
+                        >
+                          <ChevronDown
+                            aria-hidden="true"
+                            className={cn(
+                              "size-4 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+                              isActive && "text-white/70",
+                              menuOpen && "rotate-180",
+                            )}
+                          />
+                        </button>
+                      </li>
+                    );
+                  }
+
                   return (
                     <li key={item.href}>
                       <a
@@ -360,7 +519,12 @@ export function SiteNav({
               <button
                 ref={triggerRef}
                 type="button"
-                onClick={() => setOpen((v) => !v)}
+                onClick={() => {
+                  setOpen((v) => !v);
+                  // Reopening the menu shows the flat list, not wherever the
+                  // last visit left the sub-list.
+                  setMobileMenuOpen(false);
+                }}
                 aria-expanded={open}
                 aria-controls="mobile-nav"
                 aria-label={open ? ui.closeMenu : ui.openMenu}
@@ -396,16 +560,90 @@ export function SiteNav({
             </div>
           </div>
 
+          {/* ---- Desktop drop-down ---------------------------------------
+              The mobile panel's mechanism, on the desktop bar: the header
+              itself grows to show the three verticals' pages, rather than a
+              card arriving under it. Same stretch, same cascade — see the
+              panel-motion constants above — so opening this and opening the
+              mobile menu are one movement.
+
+              `inert` keeps the collapsed panel out of the tab order without
+              `hidden`, which cannot be transitioned. */}
+          {menuItem && (
+            <div
+              id="expertise-menu"
+              ref={menuRef}
+              inert={!menuOpen}
+              className={cn(
+                STRETCH,
+                "hidden lg:grid",
+                INSET,
+                menuOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+              )}
+            >
+              <div className="min-h-0">
+                {/* Padding matches the bar's own, so the entries stand on the
+                    same gutter the logo does. */}
+                <div className={cn(BAR_PAD, "pt-1 pb-5")}>
+                  <nav aria-label={menuItem.label}>
+                    <ul className="grid grid-cols-3 gap-2">
+                      {menuItem.menu.map((entry, i) => {
+                        const EntryIcon = ICONS[entry.icon];
+
+                        return (
+                          <li
+                            key={entry.href}
+                            className={cn(
+                              CASCADE,
+                              menuOpen
+                                ? "translate-y-0 opacity-100"
+                                : "translate-y-2 opacity-0",
+                            )}
+                            style={cascadeDelay(menuOpen, i)}
+                          >
+                            {/* Mission & Vision's `icon-disc` plate with the
+                                article card's title hover — the two treatments
+                                the site already uses for an icon beside a
+                                heading and a heading that is a link. */}
+                            <a
+                              href={href(entry.href)}
+                              onClick={() => setMenuOpen(false)}
+                              className="group flex items-center gap-4 rounded-xl p-3.5 transition-colors duration-300 hover:bg-brand-50 focus-visible:bg-brand-50"
+                            >
+                              <span className="icon-disc size-11 shrink-0 group-hover:scale-110 group-hover:bg-brand-100">
+                                {EntryIcon && (
+                                  <EntryIcon
+                                    className="size-5"
+                                    strokeWidth={1.6}
+                                    aria-hidden="true"
+                                  />
+                                )}
+                              </span>
+                              <span className="min-w-0">
+                                <span className="block font-display text-[0.95rem] leading-snug font-semibold text-ink transition-colors duration-300 group-hover:text-brand-700">
+                                  {entry.label}
+                                </span>
+                                <span className="mt-0.5 block text-[0.8125rem] leading-snug text-ink-soft">
+                                  {entry.detail}
+                                </span>
+                              </span>
+                            </a>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </nav>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* ---- Mobile panel --------------------------------------------
               Deliberately NOT a card. It sits inside the content layer with no
               ground, no rounding and no shadow of its own, so what the eye
               follows is the bar behind it growing — the header becoming a
               taller header rather than a second surface arriving under it.
-
-              The 0fr→1fr grid track is the only thing animating: it changes
-              this element's height, which sizes the wrapper, which the shape
-              layer fills. One transition drives the whole stretch, so the
-              surface and its contents can never disagree about the height.
+              The stretch and cascade are the shared constants above.
 
               `inert` keeps the collapsed panel out of the tab order without
               `hidden`, which cannot be transitioned. */}
@@ -414,7 +652,8 @@ export function SiteNav({
             ref={panelRef}
             inert={!open}
             className={cn(
-              "grid overflow-hidden transition-[grid-template-rows] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden",
+              STRETCH,
+              "grid lg:hidden",
               INSET,
               open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
             )}
@@ -432,23 +671,134 @@ export function SiteNav({
                       // rather than the place it goes.
                       const Icon = ICONS[item.icon];
 
+                      if (hasMenu(item)) {
+                        // The desktop drop-down, folded into the list: the row
+                        // keeps its link and gains a chevron, and the three
+                        // entries unfold beneath it on the same stretch and
+                        // cascade the panel itself opened with. The nested
+                        // track sizes this row, which sizes the panel, which
+                        // the shape layer fills — so the bar grows a second
+                        // time, the same way it grew the first.
+                        const unfolded = open && mobileMenuOpen;
+                        return (
+                          <li
+                            key={item.href}
+                            className={cn(
+                              CASCADE,
+                              open
+                                ? "translate-y-0 opacity-100"
+                                : "translate-y-2 opacity-0",
+                            )}
+                            style={cascadeDelay(open, i)}
+                          >
+                            <div className="flex items-center border-b border-brand-50">
+                              <a
+                                href={href(item.href)}
+                                onClick={() => setOpen(false)}
+                                className="flex flex-1 items-center gap-4 py-3.5 font-display text-xl font-medium text-ink transition-colors hover:text-brand-600"
+                              >
+                                <Icon
+                                  aria-hidden="true"
+                                  className="size-5 shrink-0 text-signal-500"
+                                />
+                                {item.label}
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => setMobileMenuOpen((v) => !v)}
+                                aria-expanded={unfolded}
+                                aria-controls="mobile-expertise-menu"
+                                aria-label={
+                                  unfolded ? ui.closeSubmenu : ui.openSubmenu
+                                }
+                                // The menu trigger's own size, so the two
+                                // chevron and X targets in this panel match.
+                                className="-me-1 grid size-9 shrink-0 place-items-center rounded-lg text-brand-800 transition-colors hover:bg-brand-50"
+                              >
+                                <ChevronDown
+                                  aria-hidden="true"
+                                  className={cn(
+                                    "size-5 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+                                    unfolded && "rotate-180",
+                                  )}
+                                />
+                              </button>
+                            </div>
+                            <div
+                              id="mobile-expertise-menu"
+                              inert={!unfolded}
+                              className={cn(
+                                STRETCH,
+                                "grid",
+                                unfolded
+                                  ? "grid-rows-[1fr]"
+                                  : "grid-rows-[0fr]",
+                              )}
+                            >
+                              <div className="min-h-0">
+                                {/* Indented to the label's own start — the
+                                    parent icon plus its gap — so the entries
+                                    read as belonging to the word above them. */}
+                                <ul className="flex flex-col border-b border-brand-50 py-2 ps-9">
+                                  {item.menu.map((entry, j) => {
+                                    const EntryIcon = ICONS[entry.icon];
+
+                                    return (
+                                      <li
+                                        key={entry.href}
+                                        className={cn(
+                                          CASCADE,
+                                          unfolded
+                                            ? "translate-y-0 opacity-100"
+                                            : "translate-y-2 opacity-0",
+                                        )}
+                                        style={cascadeDelay(unfolded, j)}
+                                      >
+                                        {/* The desktop panel's entry, one for
+                                            one — see it above. */}
+                                        <a
+                                          href={href(entry.href)}
+                                          onClick={() => setOpen(false)}
+                                          className="group -ms-2 flex items-center gap-4 rounded-xl p-2 transition-colors duration-300 hover:bg-brand-50 focus-visible:bg-brand-50"
+                                        >
+                                          <span className="icon-disc size-11 shrink-0 group-hover:scale-110 group-hover:bg-brand-100">
+                                            {EntryIcon && (
+                                              <EntryIcon
+                                                className="size-5"
+                                                strokeWidth={1.6}
+                                                aria-hidden="true"
+                                              />
+                                            )}
+                                          </span>
+                                          <span className="min-w-0">
+                                            <span className="block font-display text-[0.95rem] leading-snug font-semibold text-ink transition-colors duration-300 group-hover:text-brand-700">
+                                              {entry.label}
+                                            </span>
+                                            <span className="mt-0.5 block text-[0.8125rem] leading-snug text-ink-soft">
+                                              {entry.detail}
+                                            </span>
+                                          </span>
+                                        </a>
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              </div>
+                            </div>
+                          </li>
+                        );
+                      }
+
                       return (
                         <li
                           key={item.href}
-                          // Each link follows the surface down rather than
-                          // racing it: the first waits out the opening third of
-                          // the stretch, then they cascade. On close the delays
-                          // are dropped so they clear together and the bar is
-                          // never seen shrinking through live text.
                           className={cn(
-                            "transition-[opacity,transform] duration-[460ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                            CASCADE,
                             open
                               ? "translate-y-0 opacity-100"
                               : "translate-y-2 opacity-0",
                           )}
-                          style={{
-                            transitionDelay: open ? `${140 + i * 55}ms` : "0ms",
-                          }}
+                          style={cascadeDelay(open, i)}
                         >
                           <a
                             href={href(item.href)}
@@ -474,16 +824,13 @@ export function SiteNav({
                     href={href("/partner")}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "mt-5 flex w-full items-center justify-center rounded-lg bg-brand-700 px-6 py-3.5 font-semibold text-white transition-[opacity,transform] duration-[460ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                      CASCADE,
+                      "mt-5 flex w-full items-center justify-center rounded-lg bg-brand-700 px-6 py-3.5 font-semibold text-white",
                       open
                         ? "translate-y-0 opacity-100"
                         : "translate-y-2 opacity-0",
                     )}
-                    style={{
-                      transitionDelay: open
-                        ? `${140 + nav.length * 55}ms`
-                        : "0ms",
-                    }}
+                    style={cascadeDelay(open, nav.length)}
                   >
                     {ui.partnerCta}
                   </Link>

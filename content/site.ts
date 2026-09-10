@@ -26,7 +26,39 @@ export const company = {
 export const nav = [
   { label: "Home", href: "/", icon: "home" },
   { label: "About", href: "/about", icon: "building" },
-  { label: "Our Expertise", href: "/#expertise", icon: "layers" },
+  {
+    label: "Our Expertise",
+    href: "/#expertise",
+    icon: "layers",
+    /**
+     * The desktop pill carries a drop-down straight to the three verticals'
+     * own pages. Nothing here is new wording: each `label` is the footer's
+     * "Our Brands" name, and each `detail` comes from that vertical in
+     * `verticals` below — its label for the two brands, and for dermatology,
+     * whose name already *is* the vertical, its audience line instead. `icon`
+     * keys resolve in the header the same way the item's own does.
+     */
+    menu: [
+      {
+        label: "Dermatology Solutions",
+        detail: "Dermatologists · Clinics · Aesthetic centres",
+        href: "/dermatology",
+        icon: "stethoscope",
+      },
+      {
+        label: "MLAY",
+        detail: "Home-Use Beauty Devices",
+        href: "/mlay",
+        icon: "zap",
+      },
+      {
+        label: "Altesse Soin",
+        detail: "Medicated Skincare Products",
+        href: "/altesse-soin",
+        icon: "droplet",
+      },
+    ],
+  },
   { label: "Core Values", href: "/#core-values", icon: "gem" },
   { label: "Events & News", href: "/events", icon: "calendar" },
   { label: "Blogs and Insights", href: "/blogs", icon: "newspaper" },
@@ -119,7 +151,7 @@ export const verticals = [
     body: "As the exclusive agent in Egypt for globally recognised German, Italian and Korean brands, we deliver top-tier therapeutic and aesthetic technologies to dermatologists, clinics and aesthetic centres.",
     audience: "Dermatologists · Clinics · Aesthetic centres",
     brands: ["Zimmer Medical", "Rejuran", "beaumed", "IDS", "AGEX Beauty", "BV Laser"],
-    cta: { label: "Professional solutions", href: "/dermatology" },
+    cta: { label: "Dermatology solutions", href: "/dermatology" },
     image: {
       src: "/brand/derma-solutions.webp",
       alt: "A clinic laser system alongside a Rejuran polynucleotide box and syringe, with a South Korean flag and a smiling model.",
@@ -811,7 +843,7 @@ export const footerNav = [
   {
     title: "Our Brands",
     links: [
-      { label: "Professional Solutions", href: "/dermatology" },
+      { label: "Dermatology Solutions", href: "/dermatology" },
       { label: "MLAY", href: "/mlay" },
       { label: "Altesse Soin", href: "/altesse-soin" },
     ],
