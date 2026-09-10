@@ -41,6 +41,7 @@ export function Footer({
   // the locale-stripped path or the footer would double up on the Arabic home.
   const pathname = splitLocale(rawPathname ?? "/").path;
   const hasContact = Boolean(contact.email || contact.phone || contact.address);
+  const [creditBefore, creditAfter] = ui.credit.split("{studio}");
 
   // The layout renders a Footer after every page, but `<Partner />` embeds one
   // of its own — the white card rises out of that section, which is why it sits
@@ -156,9 +157,13 @@ export function Footer({
               )}
             </div>
 
+            {/* Two columns at every width, a phone included. Stacked, the
+                groups ran the footer past a full screen on a phone; side by
+                side they take half the height, and no label here is long
+                enough to need the width. */}
             <nav
               aria-label="Footer"
-              className="grid gap-10 sm:grid-cols-3 lg:col-span-7 lg:col-start-6"
+              className="grid grid-cols-2 gap-x-6 gap-y-10 sm:gap-10 lg:col-span-7 lg:col-start-6"
             >
               {footerNav.map((column) => (
                 <div key={column.title}>
@@ -181,14 +186,29 @@ export function Footer({
           </div>
 
           <div className="mt-16 flex flex-col gap-4 border-t border-brand-100 pt-8 text-[0.8125rem] text-ink-faint md:flex-row md:items-center md:justify-between">
-            <p>
-              {ui.copyright
-                .replace("{year}", String(new Date().getFullYear()))
-                .replace("{name}", company.name)}
-            </p>
-            <p className="max-w-xl md:text-end">
-{ui.trademarks}
-            </p>
+            <div className="space-y-1">
+              <p>
+                {ui.copyright
+                  .replace("{year}", String(new Date().getFullYear()))
+                  .replace("{name}", company.name)}
+              </p>
+              {/* The sentence is a template so the link can land wherever the
+                  language puts the name; the two halves around `{studio}` are
+                  rendered as text with the link between them. */}
+              <p>
+                {creditBefore}
+                <a
+                  href={ui.creditHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-ink-soft transition-colors hover:text-brand-700"
+                >
+                  {ui.creditStudio}
+                </a>
+                {creditAfter}
+              </p>
+            </div>
+            <p className="max-w-xl md:text-end">{ui.trademarks}</p>
           </div>
         </div>
       </div>

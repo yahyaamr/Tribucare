@@ -22,7 +22,6 @@ export const company = {
 
 export const nav = [
   { label: "الرئيسية" },
-  { label: "من نحن" },
   {
     label: "مجالات خبرتنا",
     // Brand names stay Latin; the details are the verticals' own labels below.
@@ -35,6 +34,7 @@ export const nav = [
   { label: "قيمنا الأساسية" },
   { label: "الفعاليات والأخبار" },
   { label: "المدونة والمقالات" },
+  { label: "من نحن" },
 ];
 
 export const hero = {
@@ -43,7 +43,7 @@ export const hero = {
   headlineAccent: "ندعم الرعاية.",
   subhead:
     "تربط تريبوكير التقنيات العالمية الموثوقة وحلول طب الجلد المتخصصة وأجهزة التجميل ومستحضرات العناية بالبشرة المطوَّرة إكلينيكيًا بالمستهلكين والمتخصصين في مصر ومنطقة الشرق الأوسط وشمال أفريقيا.",
-  primaryCta: { label: "تعرّف على علاماتنا" },
+  primaryCta: { label: "كن شريكًا لنا" },
   secondaryCta: { label: "عن تريبوكير" },
 };
 
@@ -443,7 +443,7 @@ export const partner = {
     "الموزّعون",
   ],
   primaryCta: { label: "كن شريكًا لنا" },
-  secondaryCta: { label: "تعرّف على علاماتنا" },
+  secondaryCta: { label: "عن تريبوكير" },
   // Only the alt text is translated; the image paths and the crop dimensions
   // inherit from English, which is what keeps the two layers registering.
   media: {
@@ -461,6 +461,7 @@ export const footerNav = [
       { label: "مجالات خبرتنا" },
       { label: "الفعاليات والأخبار" },
       { label: "المدونة والمقالات" },
+      { label: "الأسئلة الشائعة" },
       { label: "الشراكات" },
     ],
   },
@@ -470,14 +471,6 @@ export const footerNav = [
       { label: "حلول طب الجلد" },
       { label: "MLAY" },
       { label: "Altesse Soin" },
-    ],
-  },
-  {
-    title: "مجالات الخبرة",
-    links: [
-      { label: "طب الجلد المتخصص" },
-      { label: "أجهزة التجميل المنزلية" },
-      { label: "مستحضرات العناية الطبية" },
     ],
   },
 ];

@@ -5,17 +5,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLenis } from "lenis/react";
 import {
-  Building2,
+  Atom,
   Calendar,
   ChevronDown,
   Droplet,
   Gem,
   Handshake,
   Home,
-  Layers,
   Menu,
-  Newspaper,
+  ScrollText,
   Stethoscope,
+  Users,
   X,
   Zap,
   type LucideIcon,
@@ -56,12 +56,12 @@ function sectionIdsOf(items: ContentData["nav"]) {
  *  the drop-down carries the same glyph the first screen gives its vertical. */
 const ICONS: Record<string, LucideIcon> = {
   home: Home,
-  layers: Layers,
+  atom: Atom,
   gem: Gem,
-  newspaper: Newspaper,
+  "scroll-text": ScrollText,
   handshake: Handshake,
   calendar: Calendar,
-  building: Building2,
+  users: Users,
   stethoscope: Stethoscope,
   zap: Zap,
   droplet: Droplet,

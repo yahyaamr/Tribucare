@@ -19,17 +19,18 @@ export const company = {
  * `icon` keys map to lucide components in the header, same as `coreValues`.
  * The header collapses inactive links to the icon alone, and the mobile menu
  * sets the same mark beside each label, so every one has to carry the meaning
- * of its label on its own: the three stacked verticals for expertise, a gem for
- * the values the company holds to, and the handshake this site already uses
- * wherever it talks about partnership.
+ * of its label on its own: an atom for expertise — the science the three
+ * verticals share, and a mark none of their own icons (stethoscope, zap,
+ * droplet) in its drop-down repeat — a gem for the values the company holds
+ * to, and the handshake this site already uses wherever it talks about
+ * partnership.
  */
 export const nav = [
   { label: "Home", href: "/", icon: "home" },
-  { label: "About", href: "/about", icon: "building" },
   {
     label: "Our Expertise",
     href: "/#expertise",
-    icon: "layers",
+    icon: "atom",
     /**
      * The desktop pill carries a drop-down straight to the three verticals'
      * own pages. Nothing here is new wording: each `label` is the footer's
@@ -61,7 +62,8 @@ export const nav = [
   },
   { label: "Core Values", href: "/#core-values", icon: "gem" },
   { label: "Events & News", href: "/events", icon: "calendar" },
-  { label: "Blogs and Insights", href: "/blogs", icon: "newspaper" },
+  { label: "Blogs and Insights", href: "/blogs", icon: "scroll-text" },
+  { label: "About", href: "/about", icon: "users" },
 ] as const;
 
 export const hero = {
@@ -70,8 +72,8 @@ export const hero = {
   headlineAccent: "Empowering care.",
   subhead:
     "TribuCare connects trusted global technologies, professional dermatology solutions, beauty devices and clinically inspired skincare with consumers and professionals across Egypt and the MENA region.",
-  primaryCta: { label: "Explore Our Brands", href: "#brands" },
-  secondaryCta: { label: "About TribuCare", href: "#about" },
+  primaryCta: { label: "Partner With Us", href: "/partner" },
+  secondaryCta: { label: "About TribuCare", href: "/about" },
 } as const;
 
 /**
@@ -641,7 +643,7 @@ export const partner = {
     "Distributors",
   ],
   primaryCta: { label: "Partner With Us", href: "/partner" },
-  secondaryCta: { label: "Explore Our Brands", href: "#brands" },
+  secondaryCta: { label: "About TribuCare", href: "/about" },
   /**
    * The /partner hero's visual. Not used by the homepage's Partner section,
    * which is centred type on a dark ground and carries no figure.
@@ -837,6 +839,7 @@ export const footerNav = [
       { label: "Our Expertise", href: "/#expertise" },
       { label: "Events & News", href: "/events" },
       { label: "Blogs and Insights", href: "/blogs" },
+      { label: "FAQ", href: "/#faq" },
       { label: "Partnerships", href: "/partner" },
     ],
   },
@@ -846,14 +849,6 @@ export const footerNav = [
       { label: "Dermatology Solutions", href: "/dermatology" },
       { label: "MLAY", href: "/mlay" },
       { label: "Altesse Soin", href: "/altesse-soin" },
-    ],
-  },
-  {
-    title: "Expertise",
-    links: [
-      { label: "Professional Dermatology", href: "/dermatology" },
-      { label: "Home-Use Beauty Devices", href: "/mlay" },
-      { label: "Medicated Skincare", href: "/altesse-soin" },
     ],
   },
 ] as const;

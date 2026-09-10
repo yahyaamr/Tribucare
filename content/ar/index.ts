@@ -124,6 +124,7 @@ const ui = {
     operatingUnder: "شركة للرعاية الصحية والتجميل تعمل ضمن {parent}.",
     copyright: "© {year} {name}. جميع الحقوق محفوظة.",
     trademarks: "جميع أسماء وعلامات الشركاء التجارية مملوكة لأصحابها.",
+    credit: "تصميم وتطوير {studio}.",
   },
 
   blog: {

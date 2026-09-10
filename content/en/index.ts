@@ -131,6 +131,16 @@ const ui = {
     copyright: "© {year} {name}. All rights reserved.",
     trademarks:
       "All partner brand names and marks are the property of their respective owners.",
+    /**
+     * The studio credit. `{studio}` is replaced with a link whose text is
+     * `creditStudio` and whose target is `creditHref`; the sentence is a
+     * template so Arabic can put the name where its grammar needs it. The
+     * name is a brand and stays Latin in both languages, and the URL is not
+     * copy, so neither is restated in the Arabic file.
+     */
+    credit: "Designed and developed by {studio}.",
+    creditStudio: "Web and Value",
+    creditHref: "https://webandvalue.com",
   },
 
   blog: {
