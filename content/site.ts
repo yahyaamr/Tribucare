@@ -968,7 +968,7 @@ export const about = {
   media: {
     backdrop: { src: "/brand/about-hero-mark.d939e64d.webp" },
     figure: {
-      src: "/brand/about-hero-team.f2e2606f.webp",
+      src: "/brand/about-hero-team.c997bee6.webp",
       alt: "The TribuCare team standing together in professional and clinical dress.",
     },
     width: 1993,
