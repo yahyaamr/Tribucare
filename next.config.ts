@@ -34,6 +34,20 @@ const nextConfig: NextConfig = {
   // anyone probing the site and helps nobody.
   poweredByHeader: false,
 
+  /**
+   * Origins allowed to talk to the dev server besides `localhost`.
+   *
+   * Next blocks cross-origin requests to dev-only assets and endpoints, so
+   * opening the site from a phone or tablet on the same wifi — by the Mac's LAN
+   * address rather than localhost — loads the HTML and then fails on HMR and
+   * the dev bundles. Listing the machine's LAN IP here is what makes testing on
+   * a real device work. Development only; it has no effect on a build.
+   *
+   * If the router hands the Mac a different address, add that one too:
+   * `ipconfig getifaddr en0`.
+   */
+  allowedDevOrigins: ["192.168.2.158"],
+
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
