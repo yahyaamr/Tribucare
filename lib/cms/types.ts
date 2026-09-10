@@ -191,8 +191,6 @@ export interface NewsItem {
    * kinds of item to choose between when writing one.
    */
   location: string;
-  /** Exactly one item leads the index, the same way one post leads /blog. */
-  featured: boolean;
   blocks: Block[];
   seo: {
     metaTitle: string;

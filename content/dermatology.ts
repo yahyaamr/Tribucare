@@ -162,8 +162,8 @@ export const products: Product[] = [
     image: "/brand/dermatology/ids-tridi.webp",
     imageAlt: "IDS TRIDI 3-Wave Diode Laser Workstation",
     gallery: [
-      "/brand/tridi_catalog_p1.png",
-      "/brand/tridi_catalog_p2.png",
+      "/brand/dermatology/tridi-catalog-p1.webp",
+      "/brand/dermatology/tridi-catalog-p2.webp",
     ],
     video: "",
     videoPoster: "",

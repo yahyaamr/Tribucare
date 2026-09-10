@@ -15,13 +15,13 @@ import {
   Pencil,
   Redo2,
   Send,
-  Star,
   Trash2,
   TriangleAlert,
   Undo2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { historyIntent, useDraftHistory } from "./use-draft-history";
+import { LeaveDialog, useLeaveGuard } from "./leave-guard";
 import { LOCALES, LOCALE_LABELS, type Locale } from "@/lib/i18n/config";
 import { formatPostDate, slugify, slugifyDraft } from "@/lib/cms/format";
 import type { NewsItem } from "@/lib/cms/types";
@@ -173,13 +173,10 @@ export function NewsEditor({
   }, [stepBack, stepForward]);
 
   // Nothing here autosaves, so leaving with unsaved work has to be a
-  // deliberate choice rather than an accident.
-  useEffect(() => {
-    if (!dirty) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+  // deliberate choice rather than an accident. The guard holds any in-panel
+  // link until the dialog at the bottom has had its answer; a saved draft
+  // lets every link through untouched. See leave-guard.tsx.
+  const leaveGuard = useLeaveGuard(dirty);
 
   const previewItem = useMemo<NewsItem>(
     () => ({
@@ -189,7 +186,10 @@ export function NewsEditor({
     [post],
   );
 
-  async function save(status: "draft" | "published") {
+  /** Resolves true once the record is stored, false if the save was refused —
+   *  the leave dialog goes on the first and stays put on the second so the
+   *  errors it surfaced are actually seen. */
+  async function save(status: "draft" | "published"): Promise<boolean> {
     setSaving(status === "published" ? "publish" : "draft");
     setErrors({});
     setNotice("");
@@ -219,7 +219,7 @@ export function NewsEditor({
         setNotice(body?.error ?? "Could not save. Check your connection.");
       }
       setSaving(null);
-      return;
+      return false;
     }
 
     const saved = body.item as NewsItem;
@@ -236,6 +236,7 @@ export function NewsEditor({
       router.replace(`${base}/news/${saved.id}`);
     }
     router.refresh();
+    return true;
   }
 
   async function remove() {
@@ -580,24 +581,10 @@ export function NewsEditor({
                 </p>
               </div>
 
-              <label className="flex cursor-pointer items-start gap-2.5">
-                <input
-                  type="checkbox"
-                  checked={post.featured}
-                  onChange={(e) => update({ featured: e.target.checked })}
-                  className="mt-0.5 size-4 shrink-0 rounded border-brand-300 accent-brand-700"
-                />
-                <span className="text-sm">
-                  <span className="flex items-center gap-1.5 font-medium text-ink">
-                    <Star className="size-3.5 text-signal-500" aria-hidden="true" />
-                    Feature this item
-                  </span>
-                  <span className="mt-0.5 block text-xs text-ink-faint">
-                    Pins it to the top of /news. Only one item can be featured —
-                    this replaces any current one.
-                  </span>
-                </span>
-              </label>
+              {/* No "feature this item" here, unlike a post. /events leads
+                  with the next upcoming event, or failing that the newest
+                  item, on its own — see events-index.tsx — so there is
+                  nothing for a checkbox to decide. */}
 
               {/* Buttons, and stacked. These were inline links, which `space-y`
                   cannot separate — so the two ran together on one line and the
@@ -798,6 +785,20 @@ export function NewsEditor({
         onPick={(item) => {
           update({ image: item.url });
           setCoverOpen(false);
+        }}
+      />
+
+      <LeaveDialog
+        open={leaveGuard.pending !== null}
+        saving={saving !== null}
+        onStay={leaveGuard.stay}
+        onLeave={leaveGuard.leave}
+        // Saved under its current status, so "save" never quietly unpublishes
+        // a live post or publishes a draft on the way out.
+        onSaveAndLeave={async () => {
+          const ok = await save(post.status);
+          if (ok) leaveGuard.leave();
+          else leaveGuard.stay();
         }}
       />
     </>

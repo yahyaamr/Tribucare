@@ -32,10 +32,11 @@
  * it and the app: the public CDN, which the SDK's `useCache: false` does not
  * bypass for a public store (it only applies to private ones), and Next's own
  * fetch cache. Reads here go straight to the object with a cache-busting
- * query and `cache: "no-store"`, and every write is also kept in memory for
- * `RECENT_MS`, so the panel reads back what it just saved rather than what a
- * cache remembers. Without this an editor saved, reloaded, saw the old value,
- * and saved again — up to ten times, by their count.
+ * query (see `read` for why it is *not* also `cache: "no-store"`), and every
+ * write is also kept in memory for `RECENT_MS`, so the panel reads back what it
+ * just saved rather than what a cache remembers. Without this an editor saved,
+ * reloaded, saw the old value, and saved again — up to ten times, by their
+ * count.
  */
 
 import { promises as fs } from "node:fs";
@@ -228,10 +229,18 @@ function blobStore(): CmsStore {
 
       let response: Response;
       try {
-        // Straight to the object, past both the CDN and Next's fetch cache.
-        response = await fetch(`${base}/${pathname}?nc=${Date.now()}`, {
-          cache: "no-store",
-        });
+        // Straight to the object, past the Blob CDN: the timestamp makes every
+        // URL new, so no edge or fetch cache can hand back a stale copy.
+        //
+        // Deliberately NOT `cache: "no-store"`. That option forces any route
+        // that reads the store to render on every request — which is what
+        // silently turned the public pages' `revalidate = 3600` into per-visit
+        // renders with `Cache-Control: no-store`. With Next's default mode the
+        // fetch still runs on every request wherever the route is dynamic
+        // anyway (the panel and its API read cookies), and runs once per
+        // regeneration where it is not (the site), which is the ISR the pages
+        // declare and `revalidate.ts` refreshes on publish.
+        response = await fetch(`${base}/${pathname}?nc=${Date.now()}`);
       } catch (error) {
         throw toUnavailable(error);
       }

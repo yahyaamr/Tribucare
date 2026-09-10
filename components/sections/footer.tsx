@@ -197,11 +197,16 @@ export function Footer({
                   rendered as text with the link between them. */}
               <p>
                 {creditBefore}
+                {/* Underlined, unlike the column links: this one sits inside
+                    a sentence, and colour alone is not enough to tell it from
+                    the words around it (WCAG 1.4.1 — the `link-in-text-block`
+                    audit). The `rich-text` utility does the same for links in
+                    an article. */}
                 <a
                   href={ui.creditHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-ink-soft transition-colors hover:text-brand-700"
+                  className="text-ink-soft underline decoration-brand-300 underline-offset-2 transition-colors hover:text-brand-700 hover:decoration-brand-700"
                 >
                   {ui.creditStudio}
                 </a>

@@ -18,8 +18,13 @@ import { ProductVideo } from "@/components/dermatology/product-video";
 import { HeroSlideshow } from "@/components/dermatology/hero-slideshow";
 import { BrandPlate } from "@/components/brand/brand-plate";
 import { content, currentLocale } from "@/content/server";
+import { getPublishedNewsFor, toEventCard } from "@/lib/cms/news";
 import { localePath } from "@/lib/i18n/config";
 import { pageMetadata } from "@/lib/seo";
+
+/** The events rail below reads the store, so this page is refreshed on publish
+ *  by `revalidateNews`; the window is the backstop. */
+export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   const { ui } = await content();
@@ -48,6 +53,21 @@ const HERO_IMAGE_SIZES = "(max-width: 1024px) 88vw, 54vw";
 export default async function DermatologyPage() {
   const { dermatology, productLines, categoriesFor, events, ui } = await content();
   const locale = await currentLocale();
+  // The same records the homepage carousel and /events show, each card going
+  // to its own page — this rail used to render the static placeholder six
+  // regardless of what the panel held. Those remain the fallback for an
+  // unreachable store, linking to the index since they have no page.
+  const stored = await getPublishedNewsFor(locale);
+  const eventItems =
+    stored.length > 0
+      ? stored.map((item) => ({
+          ...toEventCard(item),
+          href: localePath(locale, `/events/${item.slug}`),
+        }))
+      : events.items.map((item) => ({
+          ...item,
+          href: localePath(locale, events.cta.href),
+        }));
 
   return (
     <>
@@ -409,11 +429,12 @@ export default async function DermatologyPage() {
               tone="dark"
               className="lg:hidden"
             >
-              {events.items.map((event) => (
+              {eventItems.map((event) => (
                 <EventCard
                   key={event.title}
                   event={event}
                   labels={ui.events}
+                  href={event.href}
                   sizes="100vw"
                 />
               ))}
@@ -423,7 +444,7 @@ export default async function DermatologyPage() {
               aria-label={events.eyebrow}
               className="mt-8 gap-5 pb-4 max-lg:hidden"
             >
-              {events.items.map((event, i) => (
+              {eventItems.map((event, i) => (
                 <Reveal
                   as="li"
                   key={event.title}
@@ -434,6 +455,7 @@ export default async function DermatologyPage() {
                   <EventCard
                     event={event}
                     labels={ui.events}
+                    href={event.href}
                     sizes="(max-width: 640px) 80vw, 21rem"
                   />
                 </Reveal>

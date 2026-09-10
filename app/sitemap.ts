@@ -11,6 +11,10 @@ import {
 } from "@/lib/i18n/config";
 import { siteUrl } from "@/lib/site";
 
+/** Lists posts and events from the store, so it is refreshed on publish by
+ *  `lib/cms/revalidate.ts`; the window is the backstop. */
+export const revalidate = 3600;
+
 /**
  * `lastModified` is only emitted where the date is genuinely known — the blog
  * posts carry their own publication date, and the two pages that surface them

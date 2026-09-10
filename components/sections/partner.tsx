@@ -62,7 +62,10 @@ export async function Partner() {
             </div>
           </Reveal>
 
-          <Reveal delay={290}>
+          {/* Desktop only. Below lg the five pills wrap into four rows of
+              chips between the buttons and the footer card, which read as a
+              second, lesser set of buttons on a phone or an upright tablet. */}
+          <Reveal delay={290} className="max-lg:hidden">
             <ul className="mt-14 flex flex-wrap justify-center gap-x-2.5 gap-y-2.5 border-t border-white/10 pt-8">
               {partner.audiences.map((audience) => (
                 <li

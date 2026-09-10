@@ -33,6 +33,10 @@ function parseNews(raw: string): NewsItem | null {
       /** News carried a byline briefly. Read off and discarded rather than
        *  spread through, so it is not written back on the next save. */
       authorId?: string;
+      /** Items could once be pinned to lead the index. /events now leads
+       *  with the next upcoming event, or the newest item, on its own, so
+       *  the flag is likewise read off and dropped. */
+      featured?: boolean;
     };
     // Unroutable and unkeyable, so worse than absent — same rule as posts.
     if (!value?.id || !value?.slug) return null;
@@ -43,9 +47,10 @@ function parseNews(raw: string): NewsItem | null {
         ? [value.tag]
         : [];
 
-    const { authorId, tag, ...rest } = value;
+    const { authorId, tag, featured, ...rest } = value;
     void authorId;
     void tag;
+    void featured;
 
     // Written before "About the Taxonomy" existed? Then it appeared on both
     // language sites, and it keeps doing so until somebody says otherwise.
@@ -60,7 +65,6 @@ function parseNews(raw: string): NewsItem | null {
       tags: tags.filter((t) => typeof t === "string" && t.trim()),
       blocks: Array.isArray(value.blocks) ? value.blocks : [],
       seo: value.seo ?? { metaTitle: "", metaDescription: "" },
-      featured: Boolean(value.featured),
     };
   } catch {
     return null;
@@ -202,7 +206,6 @@ export function emptyNews(): NewsItem {
     status: "draft",
     date: todayIso(),
     image: "",
-    featured: false,
     blocks: [{ id: newBlockId(), type: "lead", text: "" } as Block],
     seo: { metaTitle: "", metaDescription: "" },
     createdAt: now,
@@ -217,21 +220,6 @@ export async function saveNews(item: NewsItem): Promise<NewsItem> {
     blocks: sanitizeBlocks(item.blocks),
     updatedAt: new Date().toISOString(),
   };
-
-  // Exactly one item leads the index; a second would silently not show.
-  if (next.featured) {
-    const others = (await getAllNews()).filter(
-      (n) => n.id !== next.id && n.featured,
-    );
-    const store = getStore();
-    for (const other of others) {
-      await store.put(
-        newsPath(other.id),
-        JSON.stringify({ ...other, featured: false }, null, 2),
-        "application/json",
-      );
-    }
-  }
 
   await getStore().put(
     newsPath(next.id),

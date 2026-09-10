@@ -9,6 +9,10 @@ import { BlogSection } from "@/components/sections/blog-section";
 import { Faq } from "@/components/sections/faq";
 import { Partner } from "@/components/sections/partner";
 
+/** Refreshed on publish through the helpers in `lib/cms/revalidate.ts` — a
+ *  post, an event or a role all show up here. The window is the backstop. */
+export const revalidate = 3600;
+
 export default function Home() {
   return (
     <>

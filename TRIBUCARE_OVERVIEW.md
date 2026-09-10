@@ -126,33 +126,51 @@ than improvising.
 
 | Route | Purpose |
 |---|---|
-| `/` | Homepage — hero, about/mission-vision, three-vertical expertise section, reach stats, core values rail, events & news, professional network, FAQ, partner CTA |
-| `/dermatology` | Professional dermatology catalogue (12 devices/injectables) |
-| `/dermatology/[slug]` | Individual product page with specs + request form |
+| `/` | Homepage — hero (Partner With Us / About TribuCare), mission & vision, three-vertical expertise, reach stats, core values, events & news carousel, teams, careers, blog rail, FAQ, partnerships close |
+| `/about` | About page — team hero, figures, mission & vision, story and leadership (the last two still marked as drafts) |
+| `/dermatology` | Professional dermatology catalogue (12 devices/injectables), with the live events rail |
+| `/dermatology/[slug]` | Individual product page with specs, gallery + request form |
 | `/mlay` | MLAY home-use beauty device catalogue (15 products) |
 | `/altesse-soin` | Altesse Soin skincare catalogue (23 products, 6 lines) |
 | `/partner` | Partnership pitch, stats, pillars, and a partner enquiry form |
-| `/blog` | Insights & Blog listing |
-| `/blog/[slug]` | Individual blog post |
-| `/news`, `/news/[slug]` | Newsroom — announcements written in the admin panel |
-| `/events` | Events calendar |
+| `/blogs`, `/blogs/[slug]` | Blogs and Insights — written in the admin panel (`/blog` redirects here) |
+| `/events`, `/events/[slug]` | Events & News — written in the admin panel; the next upcoming item leads automatically (`/news` redirects here) |
 | `/ar/…` | Every route above, in Arabic |
-| `/admin` | Password-protected panel for blog posts, news, media, authors, categories |
+| *secret path* | The admin panel — blogs, events & news, careers, media, settings. Not at `/admin`, which returns the site's 404; served from `ADMIN_PATH`. |
+
+**Header:** Home · Our Expertise ▾ · Core Values · Events & News · Blogs and
+Insights · About. *Our Expertise* opens a drop-down straight to the three
+verticals' pages — Dermatology Solutions, MLAY, Altesse Soin — on desktop as
+the header bar stretching, and on phones and tablets as a sub-list inside the
+menu.
+
+**Footer:** brand block and socials, then two link columns (Company incl. FAQ;
+Our Brands), the copyright line and the studio credit ("Designed and developed
+by Web and Value" → webandvalue.com).
 
 ## Blog
 
-7 posts across 4 categories: Beauty Innovation, Clinical Practice,
-Dermatology & Tech, Skincare Science. Topics observed include Rejuran/
-polynucleotide boosters, MENA aesthetic trends, Cica skincare, home beauty
-devices, Zimmer cryotherapy, and medical education.
+Written and published in the admin panel. Seeded with 7 posts across 4
+categories: Beauty Innovation, Clinical Practice, Dermatology & Tech, Skincare
+Science — Rejuran/polynucleotide boosters, MENA aesthetic trends, Cica
+skincare, home beauty devices, Zimmer cryotherapy, medical education. A post
+can be *featured* to lead `/blogs`.
 
-## Events & News (homepage section)
+## Events & News
 
-A calendar of congresses, training days, brand launches and regional
-exhibitions — the section currently ships with clearly flagged **placeholder
-content** pending real listings (training workshops, MENA congress
-appearances, Altesse Soin launches, MLAY flagship openings, clinical
-symposiums, partnership announcements).
+Written and published in the admin panel as one record type (an announcement
+simply has no venue). The same items appear on `/events`, in the homepage
+carousel and on the `/dermatology` rail, each card linking to its page. The
+index leads with the **next upcoming** event, or failing that the newest —
+there is no manual "feature" switch. The store was seeded from the six
+placeholder listings that used to be hard-coded; replace them in the panel.
+
+## Performance
+
+The public pages are statically cached and regenerated when something is
+published (and hourly as a backstop), so a visit is served from the edge and
+back/forward navigation restores instantly. Lighthouse on a mobile profile
+sits in the mid-90s for performance with 100 for best practices and SEO.
 
 ## Design system highlights
 
@@ -190,9 +208,15 @@ pending real values).
 
 ## What's not yet filled in
 
-- **Contact details** (`content/site.ts`): email, phone, address and social
-  links are intentionally empty — the source deck had no contact slide.
-- **Events & News**: all six current entries are explicitly marked
-  `placeholder: true` pending TribuCare's real event calendar.
+- **Contact details** (`content/site.ts`): email, phone and address are
+  intentionally empty — the source deck had no contact slide. The three social
+  links (LinkedIn, Facebook, Instagram) were supplied by TribuCare and are live.
+- **About page**: the story paragraphs and the leadership section are marked
+  as drafts on the page itself until the real copy and people are supplied.
+- **Careers**: the three roles are agreed stand-ins, and the apply URL is
+  empty so no apply button renders yet.
+- **Events & News**: the seeded records are the former placeholders; replace
+  them in the panel. The static six in `content/site.ts` remain only as the
+  fallback for an unreachable store.
 - **FAQ**: placeholder Q&A pending the commercial team's actual most-asked
   questions.

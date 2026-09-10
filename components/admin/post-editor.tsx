@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { historyIntent, useDraftHistory } from "./use-draft-history";
+import { LeaveDialog, useLeaveGuard } from "./leave-guard";
 import { LOCALES, LOCALE_LABELS, type Locale } from "@/lib/i18n/config";
 import {
   computeReadTime,
@@ -181,13 +182,10 @@ export function PostEditor({
   }, [stepBack, stepForward]);
 
   // Nothing here autosaves, so leaving with unsaved work has to be a
-  // deliberate choice rather than an accident.
-  useEffect(() => {
-    if (!dirty) return;
-    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
+  // deliberate choice rather than an accident. The guard holds any in-panel
+  // link until the dialog at the bottom has had its answer; a saved draft
+  // lets every link through untouched. See leave-guard.tsx.
+  const leaveGuard = useLeaveGuard(dirty);
 
   const previewPost = useMemo<ResolvedPost>(
     () => ({
@@ -198,7 +196,10 @@ export function PostEditor({
     [post, authors],
   );
 
-  async function save(status: "draft" | "published") {
+  /** Resolves true once the record is stored, false if the save was refused —
+   *  the leave dialog goes on the first and stays put on the second so the
+   *  errors it surfaced are actually seen. */
+  async function save(status: "draft" | "published"): Promise<boolean> {
     setSaving(status === "published" ? "publish" : "draft");
     setErrors({});
     setNotice("");
@@ -228,7 +229,7 @@ export function PostEditor({
         setNotice(body?.error ?? "Could not save. Check your connection.");
       }
       setSaving(null);
-      return;
+      return false;
     }
 
     const saved = body.post as Post;
@@ -245,6 +246,7 @@ export function PostEditor({
       router.replace(`${base}/posts/${saved.id}`);
     }
     router.refresh();
+    return true;
   }
 
   async function remove() {
@@ -841,6 +843,20 @@ export function PostEditor({
         onPick={(item) => {
           update({ image: item.url });
           setCoverOpen(false);
+        }}
+      />
+
+      <LeaveDialog
+        open={leaveGuard.pending !== null}
+        saving={saving !== null}
+        onStay={leaveGuard.stay}
+        onLeave={leaveGuard.leave}
+        // Saved under its current status, so "save" never quietly unpublishes
+        // a live post or publishes a draft on the way out.
+        onSaveAndLeave={async () => {
+          const ok = await save(post.status);
+          if (ok) leaveGuard.leave();
+          else leaveGuard.stay();
         }}
       />
     </>

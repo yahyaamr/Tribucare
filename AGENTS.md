@@ -80,7 +80,8 @@ app/
   (site)/[lang]/        the public site — ONE route tree serves both languages
     layout.tsx          fonts, metadata, nav, footer, smooth scroll, site JSON-LD
     page.tsx            homepage = ordered list of <Section /> components
-    dermatology/ mlay/ altesse-soin/ partner/ blog/ news/ events/
+    about/ dermatology/ mlay/ altesse-soin/ partner/ blogs/ events/
+    news/               retired — /news and /news/[slug] redirect into /events
     not-found.tsx       branded 404; [...rest]/page.tsx routes unknown paths to it
   (admin)/admin/        the CMS panel — blogs, events & news, careers, media,
                         settings. Own root layout; language is a cookie, not a URL.
@@ -98,11 +99,14 @@ components/
                         json-ld.tsx — the only way to emit structured data
   brand/                logo, brand-plate, wave-field, lanyard (3D)
   ui/                   shadcn primitives — button only. Retuned via CSS vars.
-  blog/ news/ events/   post-card (canonical), news-card, event-card, views
+  blog/ news/ events/   post-card (canonical), event-card, article/news views
                         article-body.tsx — the ONE renderer for a Block[]
+                        event-carousel.tsx — the homepage's one-at-a-time frame
   admin/                the panel's UI
                         rich-field.tsx — one contenteditable row + caret maths
                         use-draft-history.ts — undo/redo over the whole draft
+                        leave-guard.tsx — the unsaved-changes prompt, shared by
+                        both editors
 content/
   site.ts dermatology.ts mlay.ts altesse.ts collections.ts
                         ALL marketing copy. `as const`.
@@ -137,6 +141,13 @@ scripts/
   is imported. New section → new export in `content/site.ts`, and an Arabic
   override for its strings in `content/ar/`. Arrays merge by index, so keep
   the order identical to the English file.
+- **The header's drop-down is content, not markup.** A `nav` item carrying a
+  `menu` array (label, detail, href, icon) gets the split pill and the panel on
+  desktop and the unfolding sub-list in the mobile menu, both from
+  `components/site/nav.tsx`. Icon keys resolve through its `ICONS` map — add
+  the lucide import there, never inline an SVG. The Arabic `nav` override must
+  carry the same item at the same index, with its own `menu` labels; hrefs and
+  icons inherit. Reordering the English nav means reordering the Arabic one.
 - Server components read content with `await content()` from
   `content/server.ts`; client components receive what they need as props.
   Internal links go through `localePath(locale, path)` so both languages stay
@@ -176,6 +187,32 @@ page. So:
 - After any create / update / delete, call `revalidateBlog()` (or its news
   equivalent) from `lib/cms/revalidate.ts`. The public pages are ISR-cached and
   will otherwise keep serving the old copy until the window ages out.
+  Three things keep that true, and each has been broken once:
+  - Every page that reads the store declares `export const revalidate = 3600`
+    (the homepage, `/blogs`, `/events`, `/dermatology`, the article and event
+    pages, the sitemap). It is the backstop; publishing is what refreshes.
+  - **The store's reads are ordinary fetches.** A `cache: "no-store"` fetch
+    forces every route that touches it to render on every request, which
+    silently turned the whole site dynamic and its `Cache-Control` to
+    `no-store` — `revalidate` on the page changes nothing once that happens.
+    The cache-busting `?nc=` query is what keeps the Blob CDN honest instead.
+  - **`revalidatePath` takes the route-file path, never the URL.** `proxy.ts`
+    rewrites `/blogs` onto `/en/blogs`, and cache entries are keyed by the
+    route that rendered them, so `revalidatePath("/blogs")` matches nothing.
+    Use the pattern form — `revalidatePath("/[lang]/blogs/[slug]", "page")` —
+    which clears both languages and every slug in one call.
+- **Events & news lead automatically.** There is no `featured` flag on a news
+  item: `/events` leads with the next upcoming event, or failing that the
+  newest, and the homepage carousel and the `/dermatology` rail show the same
+  store items — each card linking to its own page — with the static six in
+  `content/site.ts` as the fallback for an unreachable store. Posts keep their
+  opt-in `featured`; the two are deliberately different.
+- **Editors guard the way out.** `components/admin/leave-guard.tsx` holds any
+  in-panel link while the draft is dirty and offers save / leave / stay; with
+  nothing unsaved every link works untouched. It depends on the editor's
+  `dirty` flag being honest — every `update()` sets it, every successful save
+  clears it — and on `save()` returning whether it succeeded. A new editor gets
+  the hook and the dialog the same way `post-editor.tsx` does.
 - **An article is an ordered `Block[]`, and that is a contract.**
   `components/blog/article-body.tsx` is the single renderer for both the
   published page and the editor's preview, so a change to what a block means

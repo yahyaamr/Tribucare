@@ -254,12 +254,22 @@ Permalink, Content, Excerpt), and the **settings rail** on the right.
 
 | Control | What it does |
 |---|---|
-| **← Posts** | Back to the list. Warns if you have unsaved changes. |
+| **← Posts** | Back to the list. With unsaved changes it opens the leave dialog below. |
 | **Status pill** | Draft or Published. |
 | **Unsaved changes** | Appears the moment you type. Nothing autosaves. |
 | **Undo / Redo** | ⌘Z and ⇧⌘Z (Ctrl+Z / Ctrl+Y on Windows), or the two arrows. Covers the *whole* draft — title, categories, cover, body — not just the article. Greyed out when there is nothing to undo. |
 | **Edit / Preview** | A tab pair, not a separate screen. Preview renders `components/blog/article-view.tsx` — the exact component the published page uses — against the draft in memory. It cannot drift from the real article, because it *is* the real article. |
 | **Save draft** | Saves without publishing. Disabled until a language is ticked. |
+
+**Leaving with unsaved changes.** While the *Unsaved changes* marker is showing,
+any link out of the editor — the sidebar, the admin bar, **← Posts** — is held
+and a dialog asks what to do: **Save and leave** (saves under the item's current
+status, so a live post stays live and a draft stays a draft, then goes),
+**Leave without saving**, or **Stay**. If the save is refused, the dialog closes
+and the errors are shown where they belong. Once saved, every link works
+without a prompt. Reloading or closing the tab still gets the browser's own
+"leave site?" prompt; the browser's back button is not intercepted. The same
+dialog guards the events & news editor.
 | **Publish / Update** | Saves and makes it live. The label changes once the post is published. |
 
 **Main column**
@@ -279,7 +289,7 @@ Permalink, Content, Excerpt), and the **settings rail** on the right.
 
 | Panel | What it holds |
 |---|---|
-| **Publish** | Status, publish date (stored sortable, shown long-form), **Feature this post**, **View live post**, **Permanently delete**. Featuring is opt-in: a new post is never featured until you tick it, and ticking it un-features whatever held the slot. |
+| **Publish** | Status, publish date (stored sortable, shown long-form), **Feature this post**, **View live post**, **Permanently delete**. Featuring is opt-in: a new post is never featured until you tick it, and ticking it un-features whatever held the slot. Blogs only — an event or news item has no such toggle; see below. |
 | **Cover image** | Drives the card, the article hero and the social image. Set / Replace / Remove. |
 | **Content language** | Which language site the post is listed on — **one**, chosen with a radio. **Placement, not translation**: choosing English lists it on `/blogs` whatever language it is written in. It also decides which way the editor writes: pick العربية and the content fields and the preview flip to right-to-left, while the panel around them stays in whatever language *you* set. Both save buttons stay disabled until one is chosen, because a post on no site is not a post. |
 | **Categories** | Only the categories belonging to the post's **Content language** are offered — an Arabic post cannot be filed under an English shelf. Type to filter, tick as many as apply, or type a new name and choose **Create "…"**, which creates it in that language. Switching Content language drops any categories from the other one (⌘Z brings them back). The **first** one selected is the primary — the one shown wherever there is room for only one badge. |
@@ -485,9 +495,16 @@ together; there is no second implementation to keep in step.
   six articles once hard-coded in `content/blogs.ts` are copied in the first
   time the panel is opened, and that file remains only as the seed. Deleting
   every post does **not** bring them back.
-- **The blog pages are cached and refreshed the moment something is published,
-  updated or deleted** (`lib/cms/revalidate.ts`). No redeploy — publishing is
-  live within seconds.
+- **The public pages are cached and refreshed the moment something is
+  published, updated or deleted** (`lib/cms/revalidate.ts`). The homepage,
+  `/blogs`, `/events`, `/dermatology`, every article and event page and the
+  sitemap are served from a cache and regenerated on publish — no redeploy,
+  live within seconds — with an hourly refresh as the backstop. Because the
+  pages are cached, a visitor's browser can also restore them instantly on
+  back/forward.
+- **Events & news appear in three places** from the one record: the `/events`
+  index, the homepage carousel and the rail on `/dermatology`. Each card links
+  to the item's own page.
 - **Drafts are invisible.** A draft URL 404s and the post appears in neither the
   index nor the sitemap.
 - **Featuring is opt-in.** `/blogs` shows the featured hero only when a post is
@@ -495,7 +512,10 @@ together; there is no second implementation to keep in step.
   Featuring one un-features the previous, because the index promotes exactly
   one.
 - **Events and news** derive past/upcoming from the date, so an event moves
-  itself into the archive.
+  itself into the archive. They have **no Feature toggle**: `/events` leads
+  with the next upcoming event, or failing that the newest item, on its own —
+  publish something and it takes the top slot until something newer or sooner
+  arrives.
 - **Careers** render as the cards in the Careers section on the homepage, and
   the apply button is omitted entirely until an apply URL is set — an empty one
   ships no dead link.
@@ -595,6 +615,8 @@ lib/cms/
   gate.ts         Where the panel is mounted (ADMIN_PATH)
   rate-limit.ts   Login lockout, backed by Upstash
   session.ts      The server-side gate used by pages and API routes
+  revalidate.ts   On-demand refresh of the cached public pages after a write —
+                  route-file paths (/[lang]/…), never the URL in the address bar
   revalidate.ts   Cache refresh on publish
 lib/i18n/
   admin.ts        The panel's language cookie

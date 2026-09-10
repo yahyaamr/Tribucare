@@ -1,8 +1,9 @@
 # TribuCare
 
 The TribuCare marketing site — bilingual (English at the bare URLs, Arabic
-under `/ar`), with a password-protected panel at `/admin` for blogs, events &
-news, careers and media. Next.js 16, React 19, Tailwind 4.
+under `/ar`), with a password-protected panel — served from a secret path, not
+`/admin` — for blogs, events & news, careers and media. Next.js 16, React 19,
+Tailwind 4.
 
 ## Getting started
 
@@ -46,6 +47,11 @@ Each post carries **one content language**, and that choice — not the panel's
 own language — decides which site lists it and which way the writing surface
 runs. Writing an Arabic article no longer means flipping the whole panel into
 Arabic.
+
+Leaving an editor with unsaved changes asks first — save and go, go anyway, or
+stay — and never asks when everything is saved. Events & news need no
+"feature" switch: the next upcoming item leads `/events`, the homepage
+carousel and the `/dermatology` rail on its own.
 
 **It is not at `/admin`.** That path returns the site's 404. The panel is served
 from the secret segment named by `ADMIN_PATH`, and the URL should be treated as

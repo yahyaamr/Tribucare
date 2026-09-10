@@ -14,7 +14,6 @@ import {
   PlusCircle,
   Search,
   SquarePen,
-  Star,
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -228,12 +227,6 @@ export function NewsTable({ initialNews }: { initialNews: NewsSummary[] }) {
                     >
                       {item.title || "(untitled)"}
                     </Link>
-                    {item.featured && (
-                      <Star
-                        className="size-3.5 shrink-0 fill-signal-500 text-signal-500"
-                        aria-label="Featured"
-                      />
-                    )}
                   </div>
                   <p className="mt-0.5 truncate text-xs text-ink-faint">
                     {item.tags.join(", ") || "Untagged"} ·{" "}

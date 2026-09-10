@@ -12,10 +12,18 @@ export async function Why() {
   const { events, ui } = await content();
   const locale = await currentLocale();
   // The same records the /events page lists, so adding one in the panel shows
-  // up here too. Falls back to the static six only if the store is unreachable,
-  // which keeps the section from collapsing to an empty carousel.
+  // up here too, and each card goes to its own page. Falls back to the static
+  // six only if the store is unreachable, which keeps the section from
+  // collapsing to an empty carousel; those have no page of their own, so the
+  // carousel sends them to the index instead.
   const stored = await getPublishedNewsFor(locale);
-  const items = stored.length > 0 ? stored.map(toEventCard) : events.items;
+  const items =
+    stored.length > 0
+      ? stored.map((item) => ({
+          ...toEventCard(item),
+          href: localePath(locale, `/events/${item.slug}`),
+        }))
+      : events.items;
 
   return (
     <section

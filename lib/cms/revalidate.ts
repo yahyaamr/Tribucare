@@ -1,59 +1,63 @@
 import { revalidatePath } from "next/cache";
+import { LOCALES } from "@/lib/i18n/config";
 
 /**
- * Refreshes every surface that renders posts, after any create, update or
- * delete.
+ * On-demand refresh for the public pages, after any create, update or delete.
  *
- * The blog pages are ISR-cached, so without this a published edit would sit
- * invisible until the cache aged out. All of them are listed rather than just
- * the article itself: an edit that shows on /blogs but not on the homepage rail
- * is the kind of inconsistency nobody reports and everybody notices.
+ * The site's pages are ISR-cached (`revalidate = 3600` on each route, and the
+ * store's reads are ordinary fetches — see `store.ts`), so without these a
+ * published edit would sit invisible until the window aged out.
  *
- * `/blogs/[slug]` is passed with the `"page"` type because it is a dynamic
- * segment — `revalidatePath` requires the second argument for those and does
- * nothing at all without it. The literal `/blogs/<slug>` is passed as well so
- * the specific article refreshes even if the pattern form misses.
+ * Every path here is the **route-file path**, not the URL in the address bar.
+ * `proxy.ts` rewrites `/blogs` onto `/en/blogs`, and `revalidatePath` keys its
+ * cache entries by the route that rendered them — so `revalidatePath("/blogs")`
+ * matches nothing, quietly. (The reference spells this out under "Using
+ * revalidatePath with rewrites".) The pattern form, `/[lang]/blogs/[slug]` with
+ * type `"page"`, clears every language and every slug under it in one call;
+ * the literal per-locale paths are passed as well so the specific record
+ * refreshes even if a pattern ever misses.
  */
+
+/** Every page that renders posts: the blog index, the article, and the
+ *  homepage rail. The sitemap lists articles too. */
 export function revalidateBlog(...slugs: (string | undefined)[]) {
-  revalidatePath("/");
-  revalidatePath("/blogs");
+  revalidatePath("/[lang]", "page");
+  revalidatePath("/[lang]/blogs", "page");
+  revalidatePath("/[lang]/blogs/[slug]", "page");
   revalidatePath("/sitemap.xml");
-  revalidatePath("/blogs/[slug]", "page");
   for (const slug of slugs) {
-    if (slug) revalidatePath(`/blogs/${slug}`);
+    if (!slug) continue;
+    for (const locale of LOCALES) revalidatePath(`/${locale}/blogs/${slug}`);
   }
 }
 
 /**
- * Refreshes every surface that renders news, after any create, update or
- * delete.
+ * Every page that renders events & news: the /events index, the item page,
+ * the homepage carousel, the rail on /dermatology — and the retired
+ * /news/[slug], which still resolves a slug to its /events address and so
+ * still depends on the record existing.
  *
  * Kept separate from `revalidateBlog` rather than folded into it: a news edit
  * has no business busting the blog's cache, and the two lists of paths are the
- * evidence that the two content types do not touch. `/news/[slug]` needs the
- * `"page"` type because it is a dynamic segment, and the literal path is passed
- * too so the specific item refreshes even if the pattern form misses.
+ * evidence that the two content types do not touch.
  */
 export function revalidateNews(...slugs: (string | undefined)[]) {
-  revalidatePath("/news");
+  revalidatePath("/[lang]", "page");
+  revalidatePath("/[lang]/dermatology", "page");
+  revalidatePath("/[lang]/events", "page");
+  revalidatePath("/[lang]/events/[slug]", "page");
+  revalidatePath("/[lang]/news/[slug]", "page");
   revalidatePath("/sitemap.xml");
-  revalidatePath("/news/[slug]", "page");
   for (const slug of slugs) {
-    if (slug) revalidatePath(`/news/${slug}`);
+    if (!slug) continue;
+    for (const locale of LOCALES) {
+      revalidatePath(`/${locale}/events/${slug}`);
+    }
   }
 }
 
-/**
- * Refreshes the homepage after a role edit.
- *
- * The careers cards live in one section of one page, so this list is short —
- * but it names both languages explicitly. The homepage is `app/(site)/[lang]`,
- * a dynamic segment, so the pattern form is what actually clears it; the two
- * literals are passed as well for the same reason the blog passes its slug,
- * because the pattern form quietly does nothing if the segment does not match.
- */
+/** The careers cards live in one section of the homepage. */
 export function revalidateCareers() {
   revalidatePath("/[lang]", "page");
-  revalidatePath("/");
-  revalidatePath("/ar");
+  for (const locale of LOCALES) revalidatePath(`/${locale}`);
 }

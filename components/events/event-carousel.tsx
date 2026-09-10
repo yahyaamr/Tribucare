@@ -27,8 +27,10 @@ export function EventCarousel({
   labels,
 }: {
   labels: ContentData["ui"]["events"];
-  items: readonly Event[];
-  /** Passed straight to the card, so the whole card is a link. */
+  /** An item may carry its own `href` — a stored event's own page. */
+  items: readonly (Event & { href?: string })[];
+  /** Where a card without an `href` of its own goes: the events index. Passed
+   *  straight to the card, so the whole card is a link either way. */
   href?: string;
 }) {
   const [index, setIndex] = useState(0);
@@ -86,7 +88,7 @@ export function EventCarousel({
           <EventCard
             labels={labels}
             event={items[index]}
-            href={href}
+            href={items[index].href ?? href}
             sizes="(max-width: 1024px) 100vw, 30rem"
           />
         </div>
