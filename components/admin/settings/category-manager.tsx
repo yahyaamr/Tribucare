@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { fill, useAdminStrings } from "@/components/admin/strings";
 import type { Category, CategoryUsage } from "@/lib/cms/categories";
 import { LOCALES, LOCALE_LABELS, type Locale } from "@/lib/i18n/config";
 
@@ -38,6 +39,8 @@ import { LOCALES, LOCALE_LABELS, type Locale } from "@/lib/i18n/config";
 export function CategoryManager({ initial }: { initial: Category[] }) {
   const api = useAdminApi();
   const router = useRouter();
+  const t = useAdminStrings();
+  const st = t.settings;
   const [categories, setCategories] = useState(initial);
   const [adding, setAdding] = useState("");
   const [addingLocale, setAddingLocale] = useState<Locale>(LOCALES[0]);
@@ -75,7 +78,7 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
       category,
     );
 
-    if (!ok) return setError(body?.error ?? "Could not move that category.");
+    if (!ok) return setError(body?.error ?? st.moveFailed);
     setCategories(body.categories);
     router.refresh();
   }
@@ -94,7 +97,7 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
       "add",
     );
 
-    if (!ok) return setError(body?.error ?? "Could not add that category.");
+    if (!ok) return setError(body?.error ?? st.addFailed);
     setCategories(body.categories);
     setAdding("");
     router.refresh();
@@ -113,7 +116,7 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
       editing.from,
     );
 
-    if (!ok) return setError(body?.error ?? "Could not rename that category.");
+    if (!ok) return setError(body?.error ?? st.renameFailed);
     setCategories(body.categories);
     setEditing(null);
     router.refresh();
@@ -139,7 +142,7 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
       setConfirming({ name, usage: body.usage });
       return;
     }
-    setError(body?.error ?? "Could not delete that category.");
+    setError(body?.error ?? st.deleteFailed);
   }
 
   /** Second click: do it, stripping the category from the affected posts. */
@@ -162,11 +165,10 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
     <section className="card-surface overflow-hidden">
       <div className="border-b border-brand-100 bg-brand-50/50 px-5 py-3.5">
         <h2 className="font-display text-base font-semibold text-ink">
-          Blog categories
+          {st.categoriesTitle}
         </h2>
         <p className="mt-0.5 text-xs text-ink-soft">
-          These are the filter tabs on the blog. Renaming one updates every post
-          using it.
+          {st.categoriesIntro}
         </p>
       </div>
 
@@ -211,7 +213,7 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
                     ) : (
                       <Check className="size-4" aria-hidden="true" />
                     )}
-                    <span className="sr-only">Save</span>
+                    <span className="sr-only">{t.common.save}</span>
                   </button>
                   <button
                     type="button"
@@ -219,7 +221,7 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
                     className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-50"
                   >
                     <X className="size-4" aria-hidden="true" />
-                    <span className="sr-only">Cancel</span>
+                    <span className="sr-only">{t.common.cancel}</span>
                   </button>
                 </>
               ) : (
@@ -252,7 +254,9 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
                       className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-100 hover:text-brand-800"
                     >
                       <Pencil className="size-3.5" aria-hidden="true" />
-                      <span className="sr-only">Rename {category}</span>
+                      <span className="sr-only">
+                        {fill(st.renameNamed, { name: category })}
+                      </span>
                     </button>
                     <button
                       type="button"
@@ -266,7 +270,9 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
                       ) : (
                         <Trash2 className="size-3.5" aria-hidden="true" />
                       )}
-                      <span className="sr-only">Delete {category}</span>
+                      <span className="sr-only">
+                        {fill(st.deleteNamed, { name: category })}
+                      </span>
                     </button>
                   </div>
                 </>
@@ -304,7 +310,7 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
           value={adding}
           dir={addingLocale === "ar" ? "rtl" : "ltr"}
           onChange={(e) => setAdding(e.target.value)}
-          placeholder="New category name"
+          placeholder={st.newCategoryName}
           className="flex-1 rounded-xl border border-brand-200/80 bg-white px-3.5 py-2 text-sm text-ink shadow-sm transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none"
         />
         <button
@@ -317,48 +323,34 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
           ) : (
             <Plus className="size-4" aria-hidden="true" />
           )}
-          Add
+          {t.common.add}
         </button>
       </form>
 
       {confirming && (
         <DeleteWarning
-          title={`Delete “${confirming.name}”?`}
+          title={fill(st.confirmDeleteTitle, { name: confirming.name })}
           busy={busy === confirming.name}
           onCancel={() => setConfirming(null)}
           onConfirm={confirmDelete}
           lead={
-            <>
-              It is used by{" "}
-              <strong className="font-semibold">
-                {confirming.usage.posts.length} post
-                {confirming.usage.posts.length === 1 ? "" : "s"}
-              </strong>
-              . Deleting removes it from{" "}
-              {confirming.usage.posts.length === 1 ? "that post" : "them"} — the{" "}
-              {confirming.usage.posts.length === 1 ? "post itself is" : "posts themselves are"}{" "}
-              not deleted.
-            </>
+            confirming.usage.posts.length === 1
+              ? st.usedByOnePost
+              : fill(st.usedByPosts, { n: confirming.usage.posts.length })
           }
           warning={
-            confirming.usage.orphanCount > 0 ? (
-              <>
-                <strong className="font-semibold">
-                  {confirming.usage.orphanCount} post
-                  {confirming.usage.orphanCount === 1 ? "" : "s"} will be left
-                  with no category at all
-                </strong>{" "}
-                — marked below. Uncategorised posts still appear under &ldquo;All
-                Articles&rdquo;, but under no filter tab.
-              </>
-            ) : null
+            confirming.usage.orphanCount === 0
+              ? null
+              : confirming.usage.orphanCount === 1
+                ? st.orphanOnePost
+                : fill(st.orphanPosts, { n: confirming.usage.orphanCount })
           }
           rows={confirming.usage.posts.map((post) => ({
             id: post.id,
             title: post.title,
             status: post.status,
             flagged: post.onlyCategory,
-            flagLabel: "will have no category",
+            flagLabel: st.flagNoCategory,
           }))}
         />
       )}
@@ -396,11 +388,12 @@ export function DeleteWarning({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const t = useAdminStrings();
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
       <button
         type="button"
-        aria-label="Cancel"
+        aria-label={t.common.cancel}
         onClick={onCancel}
         className="absolute inset-0 bg-brand-950/60 backdrop-blur-sm"
       />
@@ -441,7 +434,7 @@ export function DeleteWarning({
               </span>
               {row.status === "draft" && (
                 <span className="shrink-0 text-[0.625rem] font-semibold tracking-wide text-ink-faint uppercase">
-                  Draft
+                  {t.status.draft}
                 </span>
               )}
               {row.flagged && (
@@ -459,7 +452,7 @@ export function DeleteWarning({
             onClick={onCancel}
             className="rounded-xl border border-brand-200 px-4 py-2 text-sm font-semibold text-ink-soft transition-colors hover:bg-brand-50"
           >
-            Cancel
+            {t.common.cancel}
           </button>
           <button
             type="button"
@@ -468,7 +461,7 @@ export function DeleteWarning({
             className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-60"
           >
             {busy && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
-            Delete anyway
+            {t.settings.deleteAnyway}
           </button>
         </div>
       </div>

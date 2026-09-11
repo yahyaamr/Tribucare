@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { useAdminStrings } from "@/components/admin/strings";
 
 /**
  * Stops a writer walking out of an editor with unsaved work — and only then.
@@ -108,6 +109,10 @@ export function LeaveDialog({
   onLeave: () => void;
   onStay: () => void;
 }) {
+  const strings = useAdminStrings();
+  const t = strings.leaveGuard;
+  const common = strings.common;
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -128,7 +133,7 @@ export function LeaveDialog({
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
       <button
         type="button"
-        aria-label="Stay on this page"
+        aria-label={t.stayAria}
         onClick={onStay}
         className="absolute inset-0 bg-brand-950/60 backdrop-blur-sm"
       />
@@ -142,11 +147,10 @@ export function LeaveDialog({
           id="leave-dialog-title"
           className="font-display text-lg font-semibold text-ink"
         >
-          Unsaved changes
+          {t.title}
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          You have changes that have not been saved. Save them before you go,
-          or leave and lose them.
+          {t.body}
         </p>
 
         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -156,7 +160,7 @@ export function LeaveDialog({
             disabled={saving}
             className="rounded-xl px-4 py-2 text-sm font-semibold text-ink-soft transition-colors hover:bg-brand-50 disabled:opacity-60"
           >
-            Stay
+            {t.stay}
           </button>
           <button
             type="button"
@@ -164,7 +168,7 @@ export function LeaveDialog({
             disabled={saving}
             className="rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-60"
           >
-            Leave without saving
+            {t.leave}
           </button>
           <button
             type="button"
@@ -175,7 +179,7 @@ export function LeaveDialog({
             {saving && (
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
             )}
-            {saving ? "Saving…" : "Save and leave"}
+            {saving ? common.saving : t.saveAndLeave}
           </button>
         </div>
       </div>

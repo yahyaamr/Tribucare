@@ -3,6 +3,8 @@ import { getPostById } from "@/lib/cms/posts";
 import { getCategories } from "@/lib/cms/categories";
 import { getAuthors } from "@/lib/cms/authors";
 import { PostEditor } from "@/components/admin/post-editor";
+import { adminLocale } from "@/lib/i18n/admin";
+import { adminStrings } from "@/lib/i18n/admin-strings";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +13,8 @@ type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props) {
   const post = await getPostById((await params).id);
-  return { title: post?.title || "Edit post" };
+  const t = adminStrings(await adminLocale());
+  return { title: post?.title || t.common.untitled };
 }
 
 export default async function EditPostPage({ params }: Props) {

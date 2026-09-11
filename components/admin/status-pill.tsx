@@ -1,24 +1,32 @@
+"use client";
+
 import { cn } from "@/lib/utils";
 import type { PostStatus } from "@/lib/cms/types";
 import type { AdminStrings } from "@/lib/i18n/admin-strings";
+import { useAdminStrings } from "@/components/admin/strings";
 
-/** Draft vs published, in the two states the panel ever needs. Kept as its own
- *  component because the list, the dashboard and the editor all show it. */
+/**
+ * Draft vs published, in the two states the panel ever needs. Kept as its own
+ * component because the list, the dashboard and the editor all show it.
+ *
+ * It reads the panel's language from context rather than taking it as a prop:
+ * the pill appears on nearly every screen, including inside server-rendered
+ * lists, and threading a label pair through each of them was what left it
+ * reading "PUBLISHED" on an Arabic panel. `labels` is still accepted so a
+ * caller that already holds the bundle can pass it.
+ */
 export function StatusPill({
   status,
   labels,
   className,
 }: {
   status: PostStatus;
-  /** Optional so the many call sites inside the English-only editor need no
-   *  change; the shell and list pass the reader's own. */
   labels?: AdminStrings["status"];
   className?: string;
 }) {
-  const text =
-    status === "published"
-      ? (labels?.published ?? "Published")
-      : (labels?.draft ?? "Draft");
+  const t = useAdminStrings();
+  const resolved = labels ?? t.status;
+  const text = status === "published" ? resolved.published : resolved.draft;
   return (
     <span
       className={cn(

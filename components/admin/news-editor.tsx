@@ -28,6 +28,7 @@ import type { NewsItem } from "@/lib/cms/types";
 import { DocEditor } from "./doc-editor";
 import { MediaPickerDialog } from "./media-picker";
 import { StatusPill } from "./status-pill";
+import { fill, useAdminStrings } from "@/components/admin/strings";
 import { NewsTagSelect } from "./news-tag-select";
 import { NewsView } from "@/components/news/news-view";
 import { getContent } from "@/content";
@@ -97,6 +98,7 @@ export function NewsEditor({
   isNew: boolean;
 }) {
   const router = useRouter();
+  const t = useAdminStrings();
   const base = useAdminBase();
   const api = useAdminApi();
   // Undo/redo covers the whole draft, not just the article body — see
@@ -216,7 +218,7 @@ export function NewsEditor({
         setErrors(body.errors);
         setNotice("");
       } else {
-        setNotice(body?.error ?? "Could not save. Check your connection.");
+        setNotice(body?.error ?? t.editor.saveFailed);
       }
       setSaving(null);
       return false;
@@ -227,7 +229,9 @@ export function NewsEditor({
     setDirty(false);
     setSaving(null);
     setNotice(
-      status === "published" ? "Published — it is live now." : "Draft saved.",
+      status === "published"
+        ? t.editor.publishedNotice
+        : t.editor.draftSavedNotice,
     );
 
     if (isNew) {
@@ -241,9 +245,7 @@ export function NewsEditor({
 
   async function remove() {
     if (
-      !window.confirm(
-        "Delete this item? It disappears from the website immediately and cannot be undone.",
-      )
+      !window.confirm(t.newsEditor.confirmDelete)
     ) {
       return;
     }
@@ -278,7 +280,7 @@ export function NewsEditor({
 
   const noLocale = post.locales.length === 0;
   const noLocaleReason = noLocale
-    ? "Pick a language under Content language first."
+    ? t.editor.pickLanguageFirst
     : undefined;
 
   return (
@@ -291,13 +293,13 @@ export function NewsEditor({
             className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft transition-colors hover:text-brand-700"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
-            Events &amp; News
+            {t.news.title}
           </Link>
 
           <StatusPill status={post.status} />
           {dirty && (
             <span className="text-xs font-medium text-signal-600">
-              Unsaved changes
+              {t.common.unsavedChanges}
             </span>
           )}
 
@@ -307,21 +309,21 @@ export function NewsEditor({
                 type="button"
                 onClick={stepBack}
                 disabled={!canUndo}
-                title="Undo (⌘Z / Ctrl+Z)"
+                title={t.editor.undoTitle}
                 className={HISTORY_BUTTON}
               >
                 <Undo2 className="size-4" aria-hidden="true" />
-                <span className="sr-only">Undo</span>
+                <span className="sr-only">{t.editor.undo}</span>
               </button>
               <button
                 type="button"
                 onClick={stepForward}
                 disabled={!canRedo}
-                title="Redo (⇧⌘Z / Ctrl+Y)"
+                title={t.editor.redoTitle}
                 className={HISTORY_BUTTON}
               >
                 <Redo2 className="size-4" aria-hidden="true" />
-                <span className="sr-only">Redo</span>
+                <span className="sr-only">{t.editor.redo}</span>
               </button>
             </div>
 
@@ -344,7 +346,7 @@ export function NewsEditor({
                   ) : (
                     <Eye className="size-3.5" aria-hidden="true" />
                   )}
-                  {key === "edit" ? "Edit" : "Preview"}
+                  {key === "edit" ? t.editor.editTab : t.editor.previewTab}
                 </button>
               ))}
             </div>
@@ -356,7 +358,7 @@ export function NewsEditor({
               title={noLocaleReason}
               className="rounded-xl border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-ink-soft transition-colors hover:bg-brand-50 disabled:opacity-60"
             >
-              {saving === "draft" ? "Saving…" : "Save draft"}
+              {saving === "draft" ? t.common.saving : t.editor.saveDraft}
             </button>
 
             <button
@@ -371,7 +373,7 @@ export function NewsEditor({
               ) : (
                 <Send className="size-4" aria-hidden="true" />
               )}
-              {post.status === "published" ? "Update" : "Publish"}
+              {post.status === "published" ? t.editor.update : t.editor.publish}
             </button>
           </div>
         </div>
@@ -406,7 +408,7 @@ export function NewsEditor({
           <div className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
             <p className="mb-8 inline-flex items-center gap-2 rounded-xl border border-brand-200 bg-white px-3.5 py-2 text-xs font-medium text-ink-soft">
               <Eye className="size-3.5" aria-hidden="true" />
-              Preview — exactly how this news item will render on the site.
+              {t.newsEditor.previewNote}
             </p>
             {/* The preview is the item itself, so it turns with the item —
                 the notice above it is panel chrome and does not. */}
@@ -426,11 +428,10 @@ export function NewsEditor({
           <div className="min-w-0">
             <div>
               <label htmlFor="news-title" className={LABEL}>
-                Title
+                {t.editor.title}
               </label>
               <p className="mt-1 mb-2 text-xs text-ink-faint">
-                The announcement headline — shown on the card, the /news index
-                and the browser tab.
+                {t.newsEditor.titleHelp}
               </p>
               {/* Direction comes from the Content language, not from the
                   panel's: the panel's is a cookie and cannot answer for the
@@ -448,18 +449,17 @@ export function NewsEditor({
                       : { title, slug: slugify(title) },
                   );
                 }}
-                placeholder="Add title"
+                placeholder={t.editor.titlePlaceholder}
                 className={FIELD}
               />
             </div>
 
             <div className="mt-6">
               <label htmlFor="news-slug" className={LABEL}>
-                Permalink
+                {t.editor.permalink}
               </label>
               <p className="mt-1 mb-2 text-xs text-ink-faint">
-                The item&rsquo;s web address. Follows the title until you edit
-                it here.
+                {t.newsEditor.permalinkHelp}
               </p>
               <div className="flex items-center gap-2">
                 <span
@@ -486,17 +486,16 @@ export function NewsEditor({
                     const tidy = slugify(post.slug);
                     if (tidy !== post.slug) update({ slug: tidy });
                   }}
-                  placeholder="url-slug"
+                  placeholder={t.editor.slugPlaceholder}
                   className={cn(FIELD, "font-mono")}
                 />
               </div>
             </div>
 
             <div className="mt-8">
-              <h2 className={LABEL}>Content</h2>
+              <h2 className={LABEL}>{t.editor.content}</h2>
               <p className="mt-1 mb-3 text-xs text-ink-faint">
-                Write the item straight through. Enter starts a new paragraph,
-                and you can paste an image in where you want it.
+                {t.newsEditor.contentHelp}
               </p>
               <DocEditor
                 blocks={post.blocks}
@@ -510,11 +509,10 @@ export function NewsEditor({
                 twice — once as a guess, once for real. */}
             <div className="mt-8">
               <label htmlFor="news-excerpt" className={LABEL}>
-                Summary
+                {t.newsEditor.summary}
               </label>
               <p className="mt-1 mb-2 text-xs text-ink-faint">
-                Shown on the news card, the /news index, and as the search and
-                social description.
+                {t.newsEditor.summaryHelp}
               </p>
               <textarea
                 id="news-excerpt"
@@ -522,7 +520,7 @@ export function NewsEditor({
                 rows={3}
                 value={post.excerpt}
                 onChange={(e) => update({ excerpt: e.target.value })}
-                placeholder="A two-line summary of the news…"
+                placeholder={t.newsEditor.summaryPlaceholder}
                 className={cn(FIELD, "resize-y leading-relaxed")}
               />
             </div>
@@ -539,15 +537,15 @@ export function NewsEditor({
                scrollbar and the cards' shadows their room back. */
             className="scroll-subtle space-y-4 lg:sticky lg:top-32 lg:-mx-2 lg:max-h-[calc(100vh-9rem)] lg:self-start lg:overflow-x-clip lg:overflow-y-auto lg:px-2"
           >
-            <Panel title="Publish">
+            <Panel title={t.editor.publishPanel}>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-ink-soft">Status</span>
+                <span className="text-ink-soft">{t.editor.statusLabel}</span>
                 <StatusPill status={post.status} />
               </div>
 
               <div>
                 <label htmlFor="news-date" className={LABEL}>
-                  News date
+                  {t.newsEditor.newsDate}
                 </label>
                 <input
                   id="news-date"
@@ -557,14 +555,15 @@ export function NewsEditor({
                   className={cn(FIELD, "mt-1.5")}
                 />
                 <p className="mt-1 text-xs text-ink-faint">
-                  Shows as {formatPostDate(post.date)}. This is what the news
-                  page sorts on.
+                  {fill(t.newsEditor.showsAs, {
+                    date: formatPostDate(post.date),
+                  })}
                 </p>
               </div>
 
               <div>
                 <label htmlFor="news-location" className={LABEL}>
-                  Location
+                  {t.newsEditor.location}
                 </label>
                 <input
                   id="news-location"
@@ -572,12 +571,11 @@ export function NewsEditor({
                   dir={contentDir}
                   value={post.location}
                   onChange={(e) => update({ location: e.target.value })}
-                  placeholder="Cairo, Egypt"
+                  placeholder={t.newsEditor.locationPlaceholder}
                   className={cn(FIELD, "mt-1.5")}
                 />
                 <p className="mt-1 text-xs text-ink-faint">
-                  Shown on the card beside the date. Leave empty for an
-                  announcement that has no venue.
+                  {t.newsEditor.locationHelp}
                 </p>
               </div>
 
@@ -601,7 +599,7 @@ export function NewsEditor({
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-800"
                     >
                       <Eye className="size-4" aria-hidden="true" />
-                      View live item
+                      {t.newsEditor.viewLive}
                     </Link>
                   )}
 
@@ -612,14 +610,14 @@ export function NewsEditor({
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-100 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
                     >
                       <Trash2 className="size-4" aria-hidden="true" />
-                      Permanently delete
+                      {t.editor.permanentlyDelete}
                     </button>
                   )}
                 </div>
               )}
             </Panel>
 
-            <Panel title="Cover image">
+            <Panel title={t.editor.coverImage}>
               {post.image ? (
                 <>
                   <div className="relative h-32 w-full overflow-hidden rounded-xl border border-brand-100 bg-brand-50">
@@ -637,14 +635,14 @@ export function NewsEditor({
                       onClick={() => setCoverOpen(true)}
                       className="flex-1 rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-semibold text-ink-soft transition-colors hover:bg-brand-50"
                     >
-                      Replace
+                      {t.common.replace}
                     </button>
                     <button
                       type="button"
                       onClick={() => update({ image: "" })}
                       className="rounded-lg px-3 py-1.5 text-xs font-semibold text-ink-faint transition-colors hover:text-red-600"
                     >
-                      Remove
+                      {t.common.remove}
                     </button>
                   </div>
                 </>
@@ -655,7 +653,7 @@ export function NewsEditor({
                   className="flex w-full flex-col items-center gap-1.5 rounded-xl border-2 border-dashed border-brand-200 py-6 text-xs font-semibold text-brand-700 transition-colors hover:border-brand-400 hover:bg-brand-50"
                 >
                   <ImagePlus className="size-5" aria-hidden="true" />
-                  Set cover image
+                  {t.editor.setCoverImage}
                 </button>
               )}
             </Panel>
@@ -663,10 +661,9 @@ export function NewsEditor({
             {/* Placement, not translation: choosing English puts the item on
                 the English news page whatever language it is written in. The
                 blog's panel, verbatim — if you change one, change the other. */}
-            <Panel title="Content language">
+            <Panel title={t.editor.contentLanguage}>
               <p className="text-xs text-ink-faint">
-                Which language site this item appears on. Choosing a language
-                does not translate it — it decides where it is listed.
+                {t.editor.contentLanguageHelp}
               </p>
 
               <div className="space-y-2">
@@ -705,13 +702,12 @@ export function NewsEditor({
                     className="mt-0.5 size-3.5 shrink-0"
                     aria-hidden="true"
                   />
-                  Pick a language — the item cannot be saved while it would
-                  appear nowhere.
+                  {t.newsEditor.pickLanguageWarning}
                 </p>
               )}
             </Panel>
 
-            <Panel title="Categories">
+            <Panel title={t.editor.categories}>
               <NewsTagSelect
                 selected={post.tags}
                 available={tags}
@@ -719,22 +715,31 @@ export function NewsEditor({
                 onTagsChange={setTags}
               />
               <p className="text-xs text-ink-faint">
-                News categories are their own list, managed in{" "}
-                <Link
-                  href={`${base}/settings`}
-                  className="font-semibold text-brand-700 hover:text-brand-800"
-                >
-                  Settings
-                </Link>
-                . They are separate from the blog&rsquo;s categories and only
-                affect the news page.
+                {/* Split on the placeholder, not concatenated around the
+                    link: Arabic puts "Settings" somewhere English does not. */}
+                {t.newsEditor.tagsManaged
+                  .split("{settings}")
+                  .flatMap((part, i) =>
+                    i === 0
+                      ? [part]
+                      : [
+                          <Link
+                            key="settings"
+                            href={`${base}/settings`}
+                            className="font-semibold text-brand-700 hover:text-brand-800"
+                          >
+                            {t.nav.settings}
+                          </Link>,
+                          part,
+                        ],
+                  )}
               </p>
             </Panel>
 
-            <Panel title="SEO">
+            <Panel title={t.editor.seo}>
               <div>
                 <label htmlFor="seo-title" className={LABEL}>
-                  Meta title
+                  {t.editor.metaTitle}
                 </label>
                 <input
                   id="seo-title"
@@ -743,17 +748,18 @@ export function NewsEditor({
                   onChange={(e) =>
                     update({ seo: { ...post.seo, metaTitle: e.target.value } })
                   }
-                  placeholder={post.title || "Defaults to the news title"}
+                  placeholder={post.title || t.newsEditor.metaTitleDefault}
                   className={cn(FIELD, "mt-1.5")}
                 />
                 <p className="mt-1 text-xs text-ink-faint">
-                  {(post.seo.metaTitle || post.title).length} characters · aim
-                  for under 60
+                  {fill(t.editor.charsUnder60, {
+                    n: (post.seo.metaTitle || post.title).length,
+                  })}
                 </p>
               </div>
               <div>
                 <label htmlFor="seo-description" className={LABEL}>
-                  Meta description
+                  {t.editor.metaDescription}
                 </label>
                 <textarea
                   id="seo-description"
@@ -765,12 +771,15 @@ export function NewsEditor({
                       seo: { ...post.seo, metaDescription: e.target.value },
                     })
                   }
-                  placeholder={post.excerpt || "Defaults to the summary"}
+                  placeholder={
+                    post.excerpt || t.newsEditor.metaDescriptionDefault
+                  }
                   className={cn(FIELD, "mt-1.5 resize-y leading-relaxed")}
                 />
                 <p className="mt-1 text-xs text-ink-faint">
-                  {(post.seo.metaDescription || post.excerpt).length} characters
-                  · aim for 120–160
+                  {fill(t.editor.chars120to160, {
+                    n: (post.seo.metaDescription || post.excerpt).length,
+                  })}
                 </p>
               </div>
             </Panel>

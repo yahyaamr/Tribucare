@@ -1,6 +1,7 @@
 "use client";
 
 import { useAdminApi } from "@/components/admin/base-path";
+import { fill, useAdminStrings } from "@/components/admin/strings";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -38,6 +39,8 @@ import { DeleteWarning } from "./category-manager";
 export function NewsTagManager({ initial }: { initial: string[] }) {
   const api = useAdminApi();
   const router = useRouter();
+  const t = useAdminStrings();
+  const st = t.settings;
   const [tags, setTags] = useState(initial);
   const [adding, setAdding] = useState("");
   const [editing, setEditing] = useState<{ from: string; to: string } | null>(
@@ -77,7 +80,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
       "add",
     );
 
-    if (!ok) return setError(body?.error ?? "Could not add that category.");
+    if (!ok) return setError(body?.error ?? st.addFailed);
     setTags(body.tags);
     setAdding("");
     router.refresh();
@@ -96,7 +99,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
       editing.from,
     );
 
-    if (!ok) return setError(body?.error ?? "Could not rename that category.");
+    if (!ok) return setError(body?.error ?? st.renameFailed);
     setTags(body.tags);
     setEditing(null);
     router.refresh();
@@ -122,7 +125,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
       setConfirming({ name, usage: body.usage });
       return;
     }
-    setError(body?.error ?? "Could not delete that category.");
+    setError(body?.error ?? st.deleteFailed);
   }
 
   /** Second click: do it, stripping the tag from the affected items. */
@@ -145,12 +148,10 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
     <section className="card-surface overflow-hidden">
       <div className="border-b border-brand-100 bg-brand-50/50 px-5 py-3.5">
         <h2 className="font-display text-base font-semibold text-ink">
-          Events &amp; News categories
+          {st.newsTagsTitle}
         </h2>
         <p className="mt-0.5 text-xs text-ink-soft">
-          The filter tabs on the Events &amp; News page. Renaming one updates
-          every item using it. A separate list from the blog&rsquo;s above —
-          adding one here never adds it to the blog, and the reverse.
+          {st.newsTagsIntro}
         </p>
       </div>
 
@@ -165,8 +166,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
 
       {tags.length === 0 ? (
         <p className="px-5 py-6 text-center text-sm text-ink-faint">
-          No news tags yet. Add one below, or create tags as you write from the
-          news editor.
+          {st.newsTagsEmpty}
         </p>
       ) : (
         <ul className="divide-y divide-brand-50">
@@ -207,7 +207,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
                       ) : (
                         <Check className="size-4" aria-hidden="true" />
                       )}
-                      <span className="sr-only">Save</span>
+                      <span className="sr-only">{t.common.save}</span>
                     </button>
                     <button
                       type="button"
@@ -215,7 +215,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
                       className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-50"
                     >
                       <X className="size-4" aria-hidden="true" />
-                      <span className="sr-only">Cancel</span>
+                      <span className="sr-only">{t.common.cancel}</span>
                     </button>
                   </>
                 ) : (
@@ -235,7 +235,9 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
                         className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-100 hover:text-brand-800"
                       >
                         <Pencil className="size-3.5" aria-hidden="true" />
-                        <span className="sr-only">Rename {tag}</span>
+                        <span className="sr-only">
+                          {fill(st.renameNamed, { name: tag })}
+                        </span>
                       </button>
                       <button
                         type="button"
@@ -252,7 +254,9 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
                         ) : (
                           <Trash2 className="size-3.5" aria-hidden="true" />
                         )}
-                        <span className="sr-only">Delete {tag}</span>
+                        <span className="sr-only">
+                          {fill(st.deleteNamed, { name: tag })}
+                        </span>
                       </button>
                     </div>
                   </>
@@ -270,7 +274,7 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
         <input
           value={adding}
           onChange={(e) => setAdding(e.target.value)}
-          placeholder="New category name"
+          placeholder={st.newCategoryName}
           className="flex-1 rounded-xl border border-brand-200/80 bg-white px-3.5 py-2 text-sm text-ink shadow-sm transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none"
         />
         <button
@@ -283,50 +287,34 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
           ) : (
             <Plus className="size-4" aria-hidden="true" />
           )}
-          Add
+          {t.common.add}
         </button>
       </form>
 
       {confirming && (
         <DeleteWarning
-          title={`Delete “${confirming.name}”?`}
+          title={fill(st.confirmDeleteTitle, { name: confirming.name })}
           busy={busy === confirming.name}
           onCancel={() => setConfirming(null)}
           onConfirm={confirmDelete}
           lead={
-            <>
-              It is used by{" "}
-              <strong className="font-semibold">
-                {confirming.usage.items.length} news item
-                {confirming.usage.items.length === 1 ? "" : "s"}
-              </strong>
-              . Deleting removes it from{" "}
-              {confirming.usage.items.length === 1 ? "that item" : "them"} — the{" "}
-              {confirming.usage.items.length === 1
-                ? "item itself is"
-                : "items themselves are"}{" "}
-              not deleted.
-            </>
+            confirming.usage.items.length === 1
+              ? st.usedByOneItem
+              : fill(st.usedByItems, { n: confirming.usage.items.length })
           }
           warning={
-            confirming.usage.orphanCount > 0 ? (
-              <>
-                <strong className="font-semibold">
-                  {confirming.usage.orphanCount} item
-                  {confirming.usage.orphanCount === 1 ? "" : "s"} will be left
-                  with no tag at all
-                </strong>{" "}
-                — marked below. Untagged items still appear under &ldquo;All
-                News&rdquo;, but under no filter tab.
-              </>
-            ) : null
+            confirming.usage.orphanCount === 0
+              ? null
+              : confirming.usage.orphanCount === 1
+                ? st.orphanOneItem
+                : fill(st.orphanItems, { n: confirming.usage.orphanCount })
           }
           rows={confirming.usage.items.map((item) => ({
             id: item.id,
             title: item.title,
             status: item.status,
             flagged: item.onlyTag,
-            flagLabel: "will have no category",
+            flagLabel: st.flagNoCategory,
           }))}
         />
       )}

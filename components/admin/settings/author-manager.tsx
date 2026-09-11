@@ -1,6 +1,7 @@
 "use client";
 
 import { useAdminApi } from "@/components/admin/base-path";
+import { fill, useAdminStrings } from "@/components/admin/strings";
 
 import { useState } from "react";
 import Image from "next/image";
@@ -55,36 +56,37 @@ function Fields({
   onChange: (next: Draft) => void;
   onPick: () => void;
 }) {
+  const t = useAdminStrings();
   return (
     <div className="flex-1 space-y-2">
       <input
         autoFocus
         value={value.name}
         onChange={(e) => onChange({ ...value, name: e.target.value })}
-        placeholder="Full name"
+        placeholder={t.settings.fullName}
         className={FIELD}
       />
       <input
         value={value.role}
         onChange={(e) => onChange({ ...value, role: e.target.value })}
-        placeholder="Role, e.g. Medical Advisory Lead"
+        placeholder={t.settings.authorRole}
         className={FIELD}
       />
       <div className="flex gap-2">
         <input
           value={value.avatar}
           onChange={(e) => onChange({ ...value, avatar: e.target.value })}
-          placeholder="Photo URL (optional)"
+          placeholder={t.settings.photoUrl}
           className={FIELD}
         />
         <button
           type="button"
           onClick={onPick}
-          title="Choose from the media library"
+          title={t.settings.chooseFromLibrary}
           className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-brand-200 px-3 text-xs font-semibold text-ink-soft transition-colors hover:bg-brand-50"
         >
           <ImagePlus className="size-3.5" aria-hidden="true" />
-          Choose
+          {t.common.choose}
         </button>
       </div>
     </div>
@@ -103,6 +105,8 @@ function Fields({
 export function AuthorManager({ initial }: { initial: Author[] }) {
   const api = useAdminApi();
   const router = useRouter();
+  const t = useAdminStrings();
+  const st = t.settings;
   const [authors, setAuthors] = useState(initial);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -138,7 +142,7 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
       "new",
     );
 
-    if (!ok) return setError(body?.error ?? "Could not add that author.");
+    if (!ok) return setError(body?.error ?? st.addAuthorFailed);
     setAuthors(body.authors);
     setDraft(null);
     router.refresh();
@@ -155,7 +159,7 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
       id,
     );
 
-    if (!ok) return setError(body?.error ?? "Could not save that author.");
+    if (!ok) return setError(body?.error ?? st.saveAuthorFailed);
     setAuthors(body.authors);
     setEditingId(null);
     router.refresh();
@@ -178,7 +182,7 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
       setConfirming({ author, posts: body.posts });
       return;
     }
-    setError(body?.error ?? "Could not delete that author.");
+    setError(body?.error ?? st.deleteAuthorFailed);
   }
 
   async function confirmDelete() {
@@ -199,10 +203,11 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
   return (
     <section className="card-surface overflow-hidden">
       <div className="border-b border-brand-100 bg-brand-50/50 px-5 py-3.5">
-        <h2 className="font-display text-base font-semibold text-ink">Authors</h2>
+        <h2 className="font-display text-base font-semibold text-ink">
+          {st.authorsTitle}
+        </h2>
         <p className="mt-0.5 text-xs text-ink-soft">
-          Bylines are managed here, not on each post. Correcting a name or photo
-          updates every article that author wrote.
+          {st.authorsIntro}
         </p>
       </div>
 
@@ -215,7 +220,7 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
       <ul className="divide-y divide-brand-50">
         {authors.length === 0 && (
           <li className="px-5 py-8 text-center text-sm text-ink-faint">
-            No authors yet.
+            {st.authorsEmpty}
           </li>
         )}
 
@@ -241,7 +246,7 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
                     ) : (
                       <Check className="size-4" aria-hidden="true" />
                     )}
-                    <span className="sr-only">Save</span>
+                    <span className="sr-only">{t.common.save}</span>
                   </button>
                   <button
                     type="button"
@@ -249,7 +254,7 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
                     className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-50"
                   >
                     <X className="size-4" aria-hidden="true" />
-                    <span className="sr-only">Cancel</span>
+                    <span className="sr-only">{t.common.cancel}</span>
                   </button>
                 </div>
               </div>
@@ -280,7 +285,9 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
                     className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-100 hover:text-brand-800"
                   >
                     <Pencil className="size-3.5" aria-hidden="true" />
-                    <span className="sr-only">Edit {author.name}</span>
+                    <span className="sr-only">
+                      {fill(t.common.editNamed, { title: author.name })}
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -293,7 +300,9 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
                     ) : (
                       <Trash2 className="size-3.5" aria-hidden="true" />
                     )}
-                    <span className="sr-only">Delete {author.name}</span>
+                    <span className="sr-only">
+                      {fill(st.deleteNamed, { name: author.name })}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -322,7 +331,7 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
                 ) : (
                   <Check className="size-4" aria-hidden="true" />
                 )}
-                <span className="sr-only">Add author</span>
+                <span className="sr-only">{st.addAuthor}</span>
               </button>
               <button
                 type="button"
@@ -330,7 +339,7 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
                 className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-50"
               >
                 <X className="size-4" aria-hidden="true" />
-                <span className="sr-only">Cancel</span>
+                <span className="sr-only">{t.common.cancel}</span>
               </button>
             </div>
           </form>
@@ -341,7 +350,7 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
             className="inline-flex items-center gap-1.5 rounded-xl bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-800"
           >
             <Plus className="size-4" aria-hidden="true" />
-            Add author
+            {st.addAuthor}
           </button>
         )}
       </div>
@@ -359,37 +368,26 @@ export function AuthorManager({ initial }: { initial: Author[] }) {
 
       {confirming && (
         <DeleteWarning
-          title={`Delete “${confirming.author.name}”?`}
+          title={fill(st.confirmDeleteTitle, { name: confirming.author.name })}
           busy={busy === confirming.author.id}
           onCancel={() => setConfirming(null)}
           onConfirm={confirmDelete}
           lead={
-            <>
-              They are credited on{" "}
-              <strong className="font-semibold">
-                {confirming.posts.length} post
-                {confirming.posts.length === 1 ? "" : "s"}
-              </strong>
-              . The {confirming.posts.length === 1 ? "post is" : "posts are"} not
-              deleted.
-            </>
+            confirming.posts.length === 1
+              ? st.authorCreditedOnOne
+              : fill(st.authorCreditedOn, { n: confirming.posts.length })
           }
           warning={
-            <>
-              <strong className="font-semibold">
-                {confirming.posts.length === 1 ? "This post" : "These posts"} will
-                be left with no byline
-              </strong>{" "}
-              — the author name, role and photo stop showing on the article and
-              its cards. Assign a new author afterwards to restore them.
-            </>
+            confirming.posts.length === 1
+              ? st.authorLosesBylineOne
+              : st.authorLosesBylineMany
           }
           rows={confirming.posts.map((post) => ({
             id: post.id,
             title: post.title,
             status: post.status,
             flagged: true,
-            flagLabel: "loses its byline",
+            flagLabel: st.flagLosesByline,
           }))}
         />
       )}

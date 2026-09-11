@@ -6,6 +6,8 @@ import {
   ROLE_ICON_MAP,
 } from "@/components/careers/role-icons";
 import type { Role } from "@/lib/cms/types";
+import { adminLocale } from "@/lib/i18n/admin";
+import { adminStrings } from "@/lib/i18n/admin-strings";
 
 /**
  * The roles list.
@@ -19,17 +21,19 @@ import type { Role } from "@/lib/cms/types";
  * A server component: with nothing to filter and nothing to delete there is no
  * state to hold, and the rows are links.
  */
-export function RolesTable({ roles }: { roles: Role[] }) {
+export async function RolesTable({ roles }: { roles: Role[] }) {
   const base = adminBase();
+  const strings = adminStrings(await adminLocale());
+  const t = strings.careers;
+  const editLabel = strings.common.edit;
   return (
     <>
       <div>
         <h1 className="font-display text-2xl font-semibold text-ink">
-          Careers
+          {t.title}
         </h1>
         <p className="mt-1 text-sm text-ink-soft">
-          The role cards in the careers section of the homepage. Each card is
-          edited in English and Arabic together.
+          {t.intro}
         </p>
       </div>
 
@@ -51,7 +55,7 @@ export function RolesTable({ roles }: { roles: Role[] }) {
                     href={`${base}/careers/${role.id}`}
                     className="font-display text-[0.9375rem] font-semibold text-ink transition-colors hover:text-brand-700"
                   >
-                    {role.title.en || "Untitled role"}
+                    {role.title.en || t.untitledRole}
                   </Link>
                   <p className="mt-0.5 truncate text-xs text-ink-faint">
                     {[role.type.en, role.department.en, role.location.en]
@@ -66,7 +70,7 @@ export function RolesTable({ roles }: { roles: Role[] }) {
                     lang="ar"
                     className="mt-0.5 truncate text-xs text-ink-faint"
                   >
-                    {role.title.ar || "لم تُضَف الترجمة العربية بعد"}
+                    {role.title.ar || t.noArabicYet}
                   </p>
                 </div>
 
@@ -75,7 +79,7 @@ export function RolesTable({ roles }: { roles: Role[] }) {
                   className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-ink-soft transition-colors hover:bg-brand-50 hover:text-brand-700"
                 >
                   <SquarePen className="size-3.5" aria-hidden="true" />
-                  Edit
+                  {editLabel}
                 </Link>
               </li>
             );

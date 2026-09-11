@@ -2,13 +2,20 @@
 
 import { useAdminApi, useAdminBase } from "@/components/admin/base-path";
 import { TAB_MARKER } from "@/components/admin/tab-session";
+import type { AdminStrings } from "@/lib/i18n/admin-strings";
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { KeyRound, Loader2 } from "lucide-react";
 import { TribuLogo } from "@/components/brand/logo";
 
-export function LoginForm({ configured }: { configured: boolean }) {
+export function LoginForm({
+  configured,
+  t,
+}: {
+  configured: boolean;
+  t: AdminStrings["login"];
+}) {
   const base = useAdminBase();
   const api = useAdminApi();
   const router = useRouter();
@@ -35,7 +42,7 @@ export function LoginForm({ configured }: { configured: boolean }) {
 
     if (!response?.ok) {
       const body = await response?.json().catch(() => null);
-      setError(body?.error ?? "Could not sign in. Check your connection.");
+      setError(body?.error ?? t.failed);
       setBusy(false);
       return;
     }
@@ -60,17 +67,24 @@ export function LoginForm({ configured }: { configured: boolean }) {
 
       <div className="card-surface mt-8 p-7">
         <h1 className="font-display text-xl font-semibold text-ink">
-          Blog admin
+          {t.title}
         </h1>
         <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">
-          Enter the team password to manage TribuCare articles.
+          {t.intro}
         </p>
 
         {!configured ? (
           <p className="mt-6 rounded-xl border border-signal-500/40 bg-signal-500/10 p-4 text-sm leading-relaxed text-ink">
-            No admin password has been set yet. Add an{" "}
-            <code className="font-mono text-xs">ADMIN_PASSWORD</code>{" "}
-            environment variable in Vercel and redeploy, then sign in here.
+            {t.notConfigured.split("{env}").flatMap((part: string, i: number) =>
+              i === 0
+                ? [part]
+                : [
+                    <code key="env" className="font-mono text-xs">
+                      ADMIN_PASSWORD
+                    </code>,
+                    part,
+                  ],
+            )}
           </p>
         ) : (
           <form onSubmit={submit} className="mt-6">
@@ -78,7 +92,7 @@ export function LoginForm({ configured }: { configured: boolean }) {
               htmlFor="admin-password"
               className="text-xs font-semibold tracking-wide text-ink uppercase"
             >
-              Password
+              {t.password}
             </label>
             <div className="relative mt-2">
               <KeyRound
@@ -94,7 +108,7 @@ export function LoginForm({ configured }: { configured: boolean }) {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-xl border border-brand-200/80 bg-white py-2.5 pe-4 ps-10 text-sm text-ink shadow-sm transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none"
-                placeholder="••••••••••"
+                placeholder={t.passwordPlaceholder}
               />
             </div>
 
@@ -110,15 +124,14 @@ export function LoginForm({ configured }: { configured: boolean }) {
               className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-700 px-6 py-3 text-sm font-semibold text-white shadow-md transition-colors duration-300 hover:bg-brand-800 disabled:opacity-60"
             >
               {busy && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
-              {busy ? "Signing in…" : "Sign in"}
+              {busy ? t.signingIn : t.signIn}
             </button>
           </form>
         )}
       </div>
 
       <p className="mt-5 text-center text-xs text-brand-200/70">
-        Share this link with your SEO team — they sign in with the same
-        password.
+        {t.shareNote}
       </p>
     </div>
   );

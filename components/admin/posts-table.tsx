@@ -1,6 +1,7 @@
 "use client";
 
 import { useAdminApi, useAdminBase } from "@/components/admin/base-path";
+import { fill, useAdminStrings } from "@/components/admin/strings";
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
@@ -38,6 +39,7 @@ type Filter = "all" | PostStatus;
  */
 export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
   const router = useRouter();
+  const t = useAdminStrings();
   const base = useAdminBase();
   const api = useAdminApi();
   const [posts, setPosts] = useState(initialPosts);
@@ -69,12 +71,8 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
   }, [posts, filter, query]);
 
   async function remove(post: PostSummary) {
-    const label = post.title || "this untitled post";
-    if (
-      !window.confirm(
-        `Delete “${label}”? This removes it from the website immediately and cannot be undone.`,
-      )
-    ) {
+    const label = post.title || t.posts.untitledFallback;
+    if (!window.confirm(fill(t.posts.confirmDelete, { title: label }))) {
       return;
     }
 
@@ -86,7 +84,7 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
     }).catch(() => null);
 
     if (!response?.ok) {
-      setError(`Could not delete “${label}”. Try again.`);
+      setError(fill(t.posts.deleteFailed, { title: label }));
       setDeleting(null);
       return;
     }
@@ -98,31 +96,31 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
   }
 
   const tabs: { key: Filter; label: string }[] = [
-    { key: "all", label: "All" },
-    { key: "published", label: "Published" },
-    { key: "draft", label: "Drafts" },
+    { key: "all", label: t.common.all },
+    { key: "published", label: t.common.published },
+    { key: "draft", label: t.common.drafts },
   ];
 
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-ink">Posts</h1>
-          <p className="mt-1 text-sm text-ink-soft">
-            Create, edit and publish TribuCare articles.
-          </p>
+          <h1 className="font-display text-2xl font-semibold text-ink">
+            {t.posts.title}
+          </h1>
+          <p className="mt-1 text-sm text-ink-soft">{t.posts.intro}</p>
         </div>
         <Link
           href={`${base}/posts/new`}
           className="inline-flex items-center gap-2 rounded-xl bg-brand-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-colors duration-300 hover:bg-brand-800"
         >
           <PlusCircle className="size-4" aria-hidden="true" />
-          Add new post
+          {t.posts.addNew}
         </Link>
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-        <div role="group" aria-label="Filter by status" className="flex gap-1">
+        <div role="group" aria-label={t.common.filterByStatus} className="flex gap-1">
           {tabs.map((tab) => (
             <button
               key={tab.key}
@@ -151,7 +149,7 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
 
         <div className="relative w-full sm:w-72">
           <label htmlFor="admin-post-search" className="sr-only">
-            Search posts
+            {t.posts.searchLabel}
           </label>
           <Search
             className="absolute top-1/2 start-3.5 size-4 -translate-y-1/2 text-ink-faint"
@@ -162,7 +160,7 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search posts…"
+            placeholder={t.posts.searchPlaceholder}
             className="w-full rounded-xl border border-brand-200/80 bg-white py-2.5 pe-4 ps-10 text-sm text-ink shadow-sm transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none"
           />
         </div>
@@ -183,13 +181,13 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
             />
             <p className="mt-4 font-display text-base font-semibold text-ink">
               {posts.length === 0
-                ? "No posts yet"
-                : "No posts match this filter"}
+                ? t.posts.emptyTitle
+                : t.posts.noMatchTitle}
             </p>
             <p className="mt-1 text-sm text-ink-faint">
               {posts.length === 0
-                ? "Write your first article to get started."
-                : "Try a different status or search term."}
+                ? t.posts.emptyBody
+                : t.common.tryOtherFilter}
             </p>
           </div>
         ) : (
@@ -219,17 +217,18 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
                       href={`${base}/posts/${post.id}`}
                       className="truncate text-sm font-semibold text-ink transition-colors hover:text-brand-700"
                     >
-                      {post.title || "(untitled)"}
+                      {post.title || t.common.untitled}
                     </Link>
                     {post.featured && (
                       <Star
                         className="size-3.5 shrink-0 fill-signal-500 text-signal-500"
-                        aria-label="Featured"
+                        aria-label={t.posts.featured}
                       />
                     )}
                   </div>
                   <p className="mt-0.5 truncate text-xs text-ink-faint">
-                    {post.categories.join(", ") || "Uncategorised"} ·{" "}
+                    {post.categories.join(t.common.listSeparator) ||
+                      t.common.uncategorised} ·{" "}
                     {formatPostDate(post.date)} ·{" "}
                     <span className="font-mono">/{post.slug}</span>
                   </p>
@@ -242,11 +241,13 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
                 <div className="flex shrink-0 items-center gap-0.5 opacity-100 transition-opacity duration-200 lg:opacity-0 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
                   <Link
                     href={`${base}/posts/${post.id}`}
-                    title="Edit"
+                    title={t.common.edit}
                     className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-100 hover:text-brand-800"
                   >
                     <SquarePen className="size-4" aria-hidden="true" />
-                    <span className="sr-only">Edit {post.title}</span>
+                    <span className="sr-only">
+                      {fill(t.common.editNamed, { title: post.title })}
+                    </span>
                   </Link>
                   <Link
                     href={
@@ -256,17 +257,19 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
                     }
                     target={post.status === "published" ? "_blank" : undefined}
                     rel="noreferrer"
-                    title="View"
+                    title={t.common.view}
                     className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-100 hover:text-brand-800"
                   >
                     <Eye className="size-4" aria-hidden="true" />
-                    <span className="sr-only">View {post.title}</span>
+                    <span className="sr-only">
+                      {fill(t.common.viewNamed, { title: post.title })}
+                    </span>
                   </Link>
                   <button
                     type="button"
                     onClick={() => remove(post)}
                     disabled={deleting === post.id}
-                    title="Delete"
+                    title={t.common.delete}
                     className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                   >
                     {deleting === post.id ? (
@@ -274,7 +277,9 @@ export function PostsTable({ initialPosts }: { initialPosts: PostSummary[] }) {
                     ) : (
                       <Trash2 className="size-4" aria-hidden="true" />
                     )}
-                    <span className="sr-only">Delete {post.title}</span>
+                    <span className="sr-only">
+                      {fill(t.common.deleteNamed, { title: post.title })}
+                    </span>
                   </button>
                 </div>
               </li>

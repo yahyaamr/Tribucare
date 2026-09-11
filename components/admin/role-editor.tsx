@@ -1,6 +1,7 @@
 "use client";
 
 import { useAdminApi, useAdminBase } from "@/components/admin/base-path";
+import { useAdminStrings } from "@/components/admin/strings";
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -52,11 +53,11 @@ function Panel({
 
 /** The five card fields, in the order they appear on the card. */
 const FIELDS = [
-  { key: "title", label: "Title", rows: 0 },
-  { key: "type", label: "Employment type", rows: 0 },
-  { key: "department", label: "Department", rows: 0 },
-  { key: "location", label: "Location", rows: 0 },
-  { key: "blurb", label: "Short description", rows: 4 },
+  { key: "title", label: "fieldTitle", rows: 0 },
+  { key: "type", label: "fieldType", rows: 0 },
+  { key: "department", label: "fieldDepartment", rows: 0 },
+  { key: "location", label: "fieldLocation", rows: 0 },
+  { key: "blurb", label: "fieldBlurb", rows: 4 },
 ] as const;
 
 type FieldKey = (typeof FIELDS)[number]["key"];
@@ -65,6 +66,8 @@ export function RoleEditor({ initialRole }: { initialRole: Role }) {
   const api = useAdminApi();
   const base = useAdminBase();
   const router = useRouter();
+  const strings = useAdminStrings();
+  const t = strings.careers;
   const [role, setRole] = useState(initialRole);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -115,7 +118,7 @@ export function RoleEditor({ initialRole }: { initialRole: Role }) {
       if (response?.status === 422 && body?.errors) {
         setErrors(body.errors);
       } else {
-        setNotice(body?.error ?? "Could not save. Check your connection.");
+        setNotice(body?.error ?? t.saveFailed);
       }
       setSaving(false);
       return;
@@ -124,7 +127,7 @@ export function RoleEditor({ initialRole }: { initialRole: Role }) {
     setRole(body.role as Role);
     setDirty(false);
     setSaving(false);
-    setNotice("Saved — the homepage is updated.");
+    setNotice(t.savedNotice);
     router.refresh();
   }
 
@@ -152,12 +155,12 @@ export function RoleEditor({ initialRole }: { initialRole: Role }) {
             className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft transition-colors hover:text-brand-700"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
-            Careers
+            {t.title}
           </Link>
 
           {dirty && (
             <span className="text-xs font-medium text-signal-600">
-              Unsaved changes
+              {strings.common.unsavedChanges}
             </span>
           )}
 
@@ -173,7 +176,7 @@ export function RoleEditor({ initialRole }: { initialRole: Role }) {
               ) : (
                 <Send className="size-4" aria-hidden="true" />
               )}
-              Save changes
+              {t.saveChanges}
             </button>
           </div>
         </div>
@@ -207,14 +210,13 @@ export function RoleEditor({ initialRole }: { initialRole: Role }) {
 
       {/* ---- Work area --------------------------------------------------- */}
       <div className="mx-auto max-w-[100rem] px-5 py-6 sm:px-8">
-        <Panel title="Icon">
+        <Panel title={t.iconPanel}>
           <p className="text-xs text-ink-faint">
-            Pick the icon that fits the role. It sits in the disc at the top of
-            the card, and is the same in both languages.
+            {t.iconHelp}
           </p>
           <div
             role="radiogroup"
-            aria-label="Role icon"
+            aria-label={t.iconGroup}
             className="grid grid-cols-5 gap-2 sm:grid-cols-8"
           >
             {ROLE_ICONS.map(({ key, label, Icon }) => {
@@ -246,11 +248,11 @@ export function RoleEditor({ initialRole }: { initialRole: Role }) {
             translation is one sitting rather than a second visit behind a
             language switch. */}
         <div className="mt-5 grid gap-5 lg:grid-cols-2">
-          <Panel title="English">
+          <Panel title={t.englishPanel}>
             {FIELDS.map(({ key, label, rows }) => (
               <div key={key}>
                 <label className={LABEL} htmlFor={`en-${key}`}>
-                  {label}
+                  {t[label]}
                 </label>
                 {rows ? (
                   <textarea
@@ -273,11 +275,11 @@ export function RoleEditor({ initialRole }: { initialRole: Role }) {
             ))}
           </Panel>
 
-          <Panel title="العربية — Arabic" dir="rtl">
+          <Panel title={t.arabicPanel} dir="rtl">
             {FIELDS.map(({ key, label, rows }) => (
               <div key={key}>
                 <label className={LABEL} htmlFor={`ar-${key}`} dir="ltr">
-                  {label}
+                  {t[label]}
                 </label>
                 {rows ? (
                   <textarea
@@ -303,18 +305,17 @@ export function RoleEditor({ initialRole }: { initialRole: Role }) {
               </div>
             ))}
             <p dir="ltr" className="text-xs text-ink-faint">
-              Leave a field empty and the Arabic site shows the English text for
-              it, so a partly translated role still renders a complete card.
+              {t.fallbackNote}
             </p>
           </Panel>
         </div>
 
         {/* ---- Preview ---------------------------------------------------- */}
         <h2 className="mt-8 font-display text-sm font-semibold tracking-wide text-ink uppercase">
-          Preview
+          {t.previewTitle}
         </h2>
         <p className="mt-1 text-sm text-ink-soft">
-          The real card, exactly as the homepage draws it.
+          {t.previewHelp}
         </p>
         <div className="ground-deep mt-3 grid gap-5 rounded-[1.75rem] p-5 lg:grid-cols-2">
           <div dir="ltr">

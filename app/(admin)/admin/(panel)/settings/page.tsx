@@ -8,7 +8,10 @@ import { AdminLanguageSwitch } from "@/components/admin/admin-language-switch";
 import { adminLocale } from "@/lib/i18n/admin";
 import { adminStrings } from "@/lib/i18n/admin-strings";
 
-export const metadata = { title: "Settings" };
+export async function generateMetadata() {
+  const t = adminStrings(await adminLocale());
+  return { title: t.settings.title };
+}
 export const dynamic = "force-dynamic";
 
 /** A divider naming the section the panels under it belong to. */
@@ -34,13 +37,10 @@ export default async function AdminSettingsPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-5 py-8 sm:px-8">
-      <h1 className="font-display text-2xl font-semibold text-ink">Settings</h1>
-      <p className="mt-1 text-sm text-ink-soft">
-        The lists each section draws from, grouped by the section they belong
-        to. The two category lists are entirely separate — adding one to Events
-        &amp; News never adds it to the blog, and the reverse. Authors belong to
-        the blog: an Events &amp; News item carries no byline.
-      </p>
+      <h1 className="font-display text-2xl font-semibold text-ink">
+        {t.settings.title}
+      </h1>
+      <p className="mt-1 text-sm text-ink-soft">{t.settings.intro}</p>
 
 
       <div className="mt-6 space-y-6">
@@ -65,8 +65,8 @@ export default async function AdminSettingsPage() {
             the only one — the heading above each group is what says which
             section you are editing. */}
         <SectionHeading
-          title="Blog"
-          hint="Lists behind tribucare.org/blog."
+          title={t.settings.blogGroup}
+          hint={t.settings.blogHint}
         />
         <CategoryManager initial={categories} />
         {/* Authors sit under Blog because the blog is the only thing that has
@@ -75,8 +75,8 @@ export default async function AdminSettingsPage() {
         <AuthorManager initial={authors} />
 
         <SectionHeading
-          title="Events & News"
-          hint="Lists behind tribucare.org/events."
+          title={t.settings.newsGroup}
+          hint={t.settings.newsHint}
         />
         <NewsTagManager initial={newsTags} />
       </div>

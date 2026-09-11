@@ -1,6 +1,7 @@
 "use client";
 
 import { useAdminApi } from "@/components/admin/base-path";
+import { fill, useAdminStrings } from "@/components/admin/strings";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
@@ -17,10 +18,7 @@ import type { MediaItem } from "@/lib/cms/types";
  * standalone /admin/media page renders the same component without it and gets
  * a manager instead.
  */
-const GROUPS = [
-  { source: "upload" as const, label: "Uploads" },
-  { source: "site" as const, label: "Already on the site" },
-];
+const GROUP_SOURCES = ["upload", "site"] as const;
 
 /**
  * One image in the library.
@@ -42,6 +40,7 @@ function MediaCard({
   onPick?: (item: MediaItem) => void;
   onRemove?: (item: MediaItem) => void;
 }) {
+  const t = useAdminStrings().media;
   return (
     <li className="group relative">
       <button
@@ -78,11 +77,13 @@ function MediaCard({
         <button
           type="button"
           onClick={() => onRemove(item)}
-          title={`Delete ${item.filename}`}
+          title={fill(t.deleteNamed, { name: item.filename })}
           className="absolute top-1.5 end-1.5 inline-flex size-7 items-center justify-center rounded-lg bg-white/90 text-ink-faint opacity-0 shadow-sm backdrop-blur-md transition-opacity duration-200 group-hover:opacity-100 focus:opacity-100 hover:text-red-600"
         >
           <Trash2 className="size-3.5" aria-hidden="true" />
-          <span className="sr-only">Delete {item.filename}</span>
+          <span className="sr-only">
+            {fill(t.deleteNamed, { name: item.filename })}
+          </span>
         </button>
       )}
     </li>
@@ -99,6 +100,9 @@ export function MediaLibrary({
   selectedUrl?: string;
 }) {
   const api = useAdminApi();
+  const strings = useAdminStrings();
+  const t = strings.media;
+  const common = strings.common;
   const [items, setItems] = useState<MediaItem[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -116,7 +120,7 @@ export function MediaLibrary({
       if (cancelled) return;
 
       if (!response?.ok) {
-        setError("Could not load the media library.");
+        setError(t.loadFailed);
         setItems([]);
         return;
       }
@@ -128,7 +132,9 @@ export function MediaLibrary({
     return () => {
       cancelled = true;
     };
-  }, [api]);
+    // `t` comes from context and is one of two module constants, so naming the
+    // message here cannot re-fire the request.
+  }, [api, t.loadFailed]);
 
   const upload = useCallback(
     async (files: FileList | File[]) => {
@@ -149,7 +155,7 @@ export function MediaLibrary({
         const body = await response?.json().catch(() => null);
 
         if (!response?.ok) {
-          setError(body?.error ?? `Could not upload ${file.name}.`);
+          setError(body?.error ?? fill(t.uploadFailed, { name: file.name }));
           break;
         }
         setItems((current) => [body.item as MediaItem, ...(current ?? [])]);
@@ -157,14 +163,12 @@ export function MediaLibrary({
 
       setBusy(false);
     },
-    [api],
+    [api, t.uploadFailed],
   );
 
   async function remove(item: MediaItem) {
     if (
-      !window.confirm(
-        `Delete ${item.filename}? Any post still using it will show a broken image.`,
-      )
+      !window.confirm(fill(t.confirmDelete, { name: item.filename }))
     ) {
       return;
     }
@@ -174,7 +178,7 @@ export function MediaLibrary({
     ).catch(() => null);
 
     if (!response?.ok) {
-      setError(`Could not delete ${item.filename}.`);
+      setError(fill(t.deleteFailed, { name: item.filename }));
       return;
     }
     setItems((current) => current?.filter((i) => i.pathname !== item.pathname) ?? null);
@@ -213,7 +217,7 @@ export function MediaLibrary({
         />
         <ImagePlus className="mx-auto size-7 text-brand-400" aria-hidden="true" />
         <p className="mt-3 text-sm font-medium text-ink">
-          Drag images here, or
+          {t.dragHere}
         </p>
         <button
           type="button"
@@ -226,10 +230,10 @@ export function MediaLibrary({
           ) : (
             <Upload className="size-4" aria-hidden="true" />
           )}
-          {busy ? "Uploading…" : "Choose files"}
+          {busy ? t.uploading : t.chooseFiles}
         </button>
         <p className="mt-2 text-xs text-ink-faint">
-          JPG, PNG, WebP, AVIF or GIF · up to {formatBytes(MAX_UPLOAD_BYTES)} each
+          {fill(t.formats, { size: formatBytes(MAX_UPLOAD_BYTES) })}
         </p>
       </div>
 
@@ -241,29 +245,28 @@ export function MediaLibrary({
 
       <div className="mt-5 min-h-0 flex-1 overflow-y-auto">
         {items === null ? (
-          <p className="py-10 text-center text-sm text-ink-faint">Loading…</p>
+          <p className="py-10 text-center text-sm text-ink-faint">{t.loading}</p>
         ) : items.length === 0 ? (
           <p className="py-10 text-center text-sm text-ink-faint">
-            No images yet. Upload one above.
+            {t.empty}
           </p>
         ) : (
           <div className="space-y-6">
-            {GROUPS.map((group) => {
-              const shown = items.filter((item) => item.source === group.source);
+            {GROUP_SOURCES.map((source) => {
+              const shown = items.filter((item) => item.source === source);
               if (shown.length === 0) return null;
 
               return (
-                <section key={group.source}>
+                <section key={source}>
                   {/* Always labelled, even when only one group has anything in
                       it: the site images cannot be deleted, and a grid of cards
                       with no delete button and no explanation reads as a bug. */}
                   <h3 className="mb-2.5 text-[0.6875rem] font-semibold tracking-wide text-ink-faint uppercase">
-                    {group.label}
+                    {source === "upload" ? t.uploads : t.alreadyOnSite}
                   </h3>
-                  {group.source === "site" && (
+                  {source === "site" && (
                     <p className="mb-2.5 text-xs text-ink-faint">
-                      Artwork the current articles already use. Pick it for a new
-                      post; it ships with the site, so it cannot be deleted here.
+                      {t.siteNote}
                     </p>
                   )}
                   <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -291,7 +294,7 @@ export function MediaLibrary({
             onClick={onClose}
             className="rounded-xl border border-brand-200 px-4 py-2 text-sm font-semibold text-ink-soft transition-colors hover:bg-brand-50"
           >
-            Done
+            {common.done}
           </button>
         </div>
       )}
@@ -312,6 +315,8 @@ export function MediaPickerDialog({
   onClose: () => void;
   selectedUrl?: string;
 }) {
+  const t = useAdminStrings().media;
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -333,19 +338,19 @@ export function MediaPickerDialog({
     <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
       <button
         type="button"
-        aria-label="Close media library"
+        aria-label={t.closeLibrary}
         onClick={onClose}
         className="absolute inset-0 bg-brand-950/60 backdrop-blur-sm"
       />
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="Media library"
+        aria-label={t.library}
         className="relative flex max-h-[85vh] w-full max-w-3xl flex-col rounded-3xl bg-white p-6 shadow-2xl"
       >
         <div className="flex items-center justify-between pb-4">
           <h2 className="font-display text-lg font-semibold text-ink">
-            Media library
+            {t.library}
           </h2>
           <button
             type="button"
@@ -353,7 +358,7 @@ export function MediaPickerDialog({
             className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-50 hover:text-ink"
           >
             <X className="size-4" aria-hidden="true" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{t.close}</span>
           </button>
         </div>
         <MediaLibrary onPick={onPick} selectedUrl={selectedUrl} />

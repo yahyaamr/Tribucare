@@ -1,6 +1,7 @@
 "use client";
 
 import { useAdminApi } from "@/components/admin/base-path";
+import { fill, useAdminStrings } from "@/components/admin/strings";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Check, Loader2, Plus, Search, Tag, X } from "lucide-react";
@@ -45,6 +46,7 @@ export function CategorySelect({
   onCategoriesChange: (categories: Category[]) => void;
 }) {
   const api = useAdminApi();
+  const t = useAdminStrings().picker;
   const [query, setQuery] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
@@ -106,7 +108,7 @@ export function CategorySelect({
     const body = await response?.json().catch(() => null);
 
     if (!response?.ok) {
-      setError(body?.error ?? "Could not create that category.");
+      setError(body?.error ?? t.createCategoryFailed);
       setCreating(false);
       return;
     }
@@ -147,7 +149,9 @@ export function CategorySelect({
                   )}
                 >
                   <X className="size-3" aria-hidden="true" />
-                  <span className="sr-only">Remove {category}</span>
+                  <span className="sr-only">
+                    {fill(t.removeNamed, { name: category })}
+                  </span>
                 </button>
               </span>
             </li>
@@ -157,9 +161,7 @@ export function CategorySelect({
 
       {selected.length > 1 && (
         <p className="mb-2.5 text-xs text-ink-faint">
-          <strong className="font-semibold text-ink-soft">{selected[0]}</strong>{" "}
-          is the primary category — it is the one shown on the article card.
-          Remove and re-add to change the order.
+          {fill(t.primaryCategory, { name: selected[0] })}
         </p>
       )}
 
@@ -189,7 +191,7 @@ export function CategorySelect({
             if (e.key === "Escape") setOpen(false);
           }}
           placeholder={
-            selected.length ? "Add another category…" : "Search or create…"
+            selected.length ? t.addAnother : t.searchOrCreate
           }
           className="w-full rounded-xl border border-brand-200/80 bg-white py-2.5 pe-4 ps-9 text-sm text-ink shadow-sm transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none"
         />
@@ -208,7 +210,7 @@ export function CategorySelect({
         >
           {matches.length === 0 && !canCreate && (
             <p className="px-2.5 py-3 text-center text-xs text-ink-faint">
-              No categories yet.
+              {t.noCategories}
             </p>
           )}
 
@@ -259,7 +261,7 @@ export function CategorySelect({
               ) : (
                 <Plus className="size-4 shrink-0" aria-hidden="true" />
               )}
-              Create &ldquo;{trimmed}&rdquo;
+              {fill(t.createNamed, { name: trimmed })}
             </button>
           )}
         </div>

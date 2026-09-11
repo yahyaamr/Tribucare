@@ -35,6 +35,7 @@ import type { Author, Post, ResolvedPost } from "@/lib/cms/types";
 import { DocEditor } from "./doc-editor";
 import { MediaPickerDialog } from "./media-picker";
 import { StatusPill } from "./status-pill";
+import { fill, useAdminStrings } from "@/components/admin/strings";
 import { CategorySelect } from "./category-select";
 import { ArticleView } from "@/components/blog/article-view";
 import { getContent } from "@/content";
@@ -106,6 +107,7 @@ export function PostEditor({
   isNew: boolean;
 }) {
   const router = useRouter();
+  const t = useAdminStrings();
   const base = useAdminBase();
   const api = useAdminApi();
   // Undo/redo covers the whole draft, not just the article body — see
@@ -226,7 +228,7 @@ export function PostEditor({
         setErrors(body.errors);
         setNotice("");
       } else {
-        setNotice(body?.error ?? "Could not save. Check your connection.");
+        setNotice(body?.error ?? t.editor.saveFailed);
       }
       setSaving(null);
       return false;
@@ -237,7 +239,9 @@ export function PostEditor({
     setDirty(false);
     setSaving(null);
     setNotice(
-      status === "published" ? "Published — it is live now." : "Draft saved.",
+      status === "published"
+        ? t.editor.publishedNotice
+        : t.editor.draftSavedNotice,
     );
 
     if (isNew) {
@@ -251,9 +255,7 @@ export function PostEditor({
 
   async function remove() {
     if (
-      !window.confirm(
-        "Delete this post? It disappears from the website immediately and cannot be undone.",
-      )
+      !window.confirm(t.postEditor.confirmDelete)
     ) {
       return;
     }
@@ -288,7 +290,7 @@ export function PostEditor({
 
   const noLocale = post.locales.length === 0;
   const noLocaleReason = noLocale
-    ? "Pick a language under Content language first."
+    ? t.editor.pickLanguageFirst
     : undefined;
 
   return (
@@ -301,13 +303,13 @@ export function PostEditor({
             className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-soft transition-colors hover:text-brand-700"
           >
             <ArrowLeft className="size-4" aria-hidden="true" />
-            Posts
+            {t.nav.posts}
           </Link>
 
           <StatusPill status={post.status} />
           {dirty && (
             <span className="text-xs font-medium text-signal-600">
-              Unsaved changes
+              {t.common.unsavedChanges}
             </span>
           )}
 
@@ -317,21 +319,21 @@ export function PostEditor({
                 type="button"
                 onClick={stepBack}
                 disabled={!canUndo}
-                title="Undo (⌘Z / Ctrl+Z)"
+                title={t.editor.undoTitle}
                 className={HISTORY_BUTTON}
               >
                 <Undo2 className="size-4" aria-hidden="true" />
-                <span className="sr-only">Undo</span>
+                <span className="sr-only">{t.editor.undo}</span>
               </button>
               <button
                 type="button"
                 onClick={stepForward}
                 disabled={!canRedo}
-                title="Redo (⇧⌘Z / Ctrl+Y)"
+                title={t.editor.redoTitle}
                 className={HISTORY_BUTTON}
               >
                 <Redo2 className="size-4" aria-hidden="true" />
-                <span className="sr-only">Redo</span>
+                <span className="sr-only">{t.editor.redo}</span>
               </button>
             </div>
 
@@ -354,7 +356,7 @@ export function PostEditor({
                   ) : (
                     <Eye className="size-3.5" aria-hidden="true" />
                   )}
-                  {key === "edit" ? "Edit" : "Preview"}
+                  {key === "edit" ? t.editor.editTab : t.editor.previewTab}
                 </button>
               ))}
             </div>
@@ -366,7 +368,7 @@ export function PostEditor({
               title={noLocaleReason}
               className="rounded-xl border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-ink-soft transition-colors hover:bg-brand-50 disabled:opacity-60"
             >
-              {saving === "draft" ? "Saving…" : "Save draft"}
+              {saving === "draft" ? t.common.saving : t.editor.saveDraft}
             </button>
 
             <button
@@ -381,7 +383,7 @@ export function PostEditor({
               ) : (
                 <Send className="size-4" aria-hidden="true" />
               )}
-              {post.status === "published" ? "Update" : "Publish"}
+              {post.status === "published" ? t.editor.update : t.editor.publish}
             </button>
           </div>
         </div>
@@ -416,7 +418,7 @@ export function PostEditor({
           <div className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
             <p className="mb-8 inline-flex items-center gap-2 rounded-xl border border-brand-200 bg-white px-3.5 py-2 text-xs font-medium text-ink-soft">
               <Eye className="size-3.5" aria-hidden="true" />
-              Preview — exactly how this article will render on the site.
+              {t.postEditor.previewNote}
             </p>
             {/* The preview is the article itself, so it turns with the
                 article — the notice above it is panel chrome and does not. */}
@@ -436,11 +438,10 @@ export function PostEditor({
           <div className="min-w-0">
             <div>
               <label htmlFor="post-title" className={LABEL}>
-                Title
+                {t.editor.title}
               </label>
               <p className="mt-1 mb-2 text-xs text-ink-faint">
-                The article headline — shown on the card, the /blogs index and
-                the browser tab.
+                {t.postEditor.titleHelp}
               </p>
               {/* Direction comes from the Content language, not from the
                   panel's: the panel's is a cookie and cannot answer for the
@@ -458,18 +459,17 @@ export function PostEditor({
                       : { title, slug: slugify(title) },
                   );
                 }}
-                placeholder="Add title"
+                placeholder={t.editor.titlePlaceholder}
                 className={FIELD}
               />
             </div>
 
             <div className="mt-6">
               <label htmlFor="post-slug" className={LABEL}>
-                Permalink
+                {t.editor.permalink}
               </label>
               <p className="mt-1 mb-2 text-xs text-ink-faint">
-                The article&rsquo;s web address. Follows the title until you
-                edit it here.
+                {t.postEditor.permalinkHelp}
               </p>
               <div className="flex items-center gap-2">
                 <span
@@ -496,17 +496,16 @@ export function PostEditor({
                     const tidy = slugify(post.slug);
                     if (tidy !== post.slug) update({ slug: tidy });
                   }}
-                  placeholder="url-slug"
+                  placeholder={t.editor.slugPlaceholder}
                   className={cn(FIELD, "font-mono")}
                 />
               </div>
             </div>
 
             <div className="mt-8">
-              <h2 className={LABEL}>Content</h2>
+              <h2 className={LABEL}>{t.editor.content}</h2>
               <p className="mt-1 mb-3 text-xs text-ink-faint">
-                Write the article straight through. Enter starts a new
-                paragraph, and you can paste an image in where you want it.
+                {t.postEditor.contentHelp}
               </p>
               <DocEditor
                 blocks={post.blocks}
@@ -520,11 +519,10 @@ export function PostEditor({
                 twice — once as a guess, once for real. */}
             <div className="mt-8">
               <label htmlFor="post-excerpt" className={LABEL}>
-                Excerpt
+                {t.postEditor.excerpt}
               </label>
               <p className="mt-1 mb-2 text-xs text-ink-faint">
-                Shown on the article card, the /blogs index, and as the search
-                and social description.
+                {t.postEditor.excerptHelp}
               </p>
               <textarea
                 id="post-excerpt"
@@ -532,7 +530,7 @@ export function PostEditor({
                 rows={3}
                 value={post.excerpt}
                 onChange={(e) => update({ excerpt: e.target.value })}
-                placeholder="A two-line summary of the article…"
+                placeholder={t.postEditor.excerptPlaceholder}
                 className={cn(FIELD, "resize-y leading-relaxed")}
               />
             </div>
@@ -549,15 +547,15 @@ export function PostEditor({
                scrollbar and the cards' shadows their room back. */
             className="scroll-subtle space-y-4 lg:sticky lg:top-32 lg:-mx-2 lg:max-h-[calc(100vh-9rem)] lg:self-start lg:overflow-x-clip lg:overflow-y-auto lg:px-2"
           >
-            <Panel title="Publish">
+            <Panel title={t.editor.publishPanel}>
               <div className="flex items-center justify-between text-sm">
-                <span className="text-ink-soft">Status</span>
+                <span className="text-ink-soft">{t.editor.statusLabel}</span>
                 <StatusPill status={post.status} />
               </div>
 
               <div>
                 <label htmlFor="post-date" className={LABEL}>
-                  Publish date
+                  {t.postEditor.publishDate}
                 </label>
                 <input
                   id="post-date"
@@ -567,7 +565,7 @@ export function PostEditor({
                   className={cn(FIELD, "mt-1.5")}
                 />
                 <p className="mt-1 text-xs text-ink-faint">
-                  Shows as {formatPostDate(post.date)}
+                  {fill(t.editor.showsAs, { date: formatPostDate(post.date) })}
                 </p>
               </div>
 
@@ -581,11 +579,10 @@ export function PostEditor({
                 <span className="text-sm">
                   <span className="flex items-center gap-1.5 font-medium text-ink">
                     <Star className="size-3.5 text-signal-500" aria-hidden="true" />
-                    Feature this post
+                    {t.postEditor.featureThis}
                   </span>
                   <span className="mt-0.5 block text-xs text-ink-faint">
-                    Pins it to the top of /blog. Only one post can be featured —
-                    this replaces any current one.
+                    {t.postEditor.featureHelp}
                   </span>
                 </span>
               </label>
@@ -605,7 +602,7 @@ export function PostEditor({
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-700 transition-colors hover:bg-brand-50 hover:text-brand-800"
                     >
                       <Eye className="size-4" aria-hidden="true" />
-                      View live post
+                      {t.postEditor.viewLive}
                     </Link>
                   )}
 
@@ -616,14 +613,14 @@ export function PostEditor({
                       className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-100 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50 hover:text-red-700"
                     >
                       <Trash2 className="size-4" aria-hidden="true" />
-                      Permanently delete
+                      {t.editor.permanentlyDelete}
                     </button>
                   )}
                 </div>
               )}
             </Panel>
 
-            <Panel title="Cover image">
+            <Panel title={t.editor.coverImage}>
               {post.image ? (
                 <>
                   <div className="relative h-32 w-full overflow-hidden rounded-xl border border-brand-100 bg-brand-50">
@@ -641,14 +638,14 @@ export function PostEditor({
                       onClick={() => setCoverOpen(true)}
                       className="flex-1 rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-semibold text-ink-soft transition-colors hover:bg-brand-50"
                     >
-                      Replace
+                      {t.common.replace}
                     </button>
                     <button
                       type="button"
                       onClick={() => update({ image: "" })}
                       className="rounded-lg px-3 py-1.5 text-xs font-semibold text-ink-faint transition-colors hover:text-red-600"
                     >
-                      Remove
+                      {t.common.remove}
                     </button>
                   </div>
                 </>
@@ -659,7 +656,7 @@ export function PostEditor({
                   className="flex w-full flex-col items-center gap-1.5 rounded-xl border-2 border-dashed border-brand-200 py-6 text-xs font-semibold text-brand-700 transition-colors hover:border-brand-400 hover:bg-brand-50"
                 >
                   <ImagePlus className="size-5" aria-hidden="true" />
-                  Set cover image
+                  {t.editor.setCoverImage}
                 </button>
               )}
             </Panel>
@@ -668,10 +665,9 @@ export function PostEditor({
                 the English blog whatever language it is written in. Nothing
                 here inspects the body — the editor decides, because the panel
                 cannot know and guessing would be worse than asking. */}
-            <Panel title="Content language">
+            <Panel title={t.editor.contentLanguage}>
               <p className="text-xs text-ink-faint">
-                Which language site this post appears on. Choosing a language
-                does not translate the post — it decides where it is listed.
+                {t.editor.contentLanguageHelp}
               </p>
 
               <div className="space-y-2">
@@ -726,13 +722,12 @@ export function PostEditor({
                     className="mt-0.5 size-3.5 shrink-0"
                     aria-hidden="true"
                   />
-                  Pick a language — the post cannot be saved while it would
-                  appear nowhere.
+                  {t.postEditor.pickLanguageWarning}
                 </p>
               )}
             </Panel>
 
-            <Panel title="Categories">
+            <Panel title={t.editor.categories}>
               <CategorySelect
                 locale={contentLocale}
                 selected={post.categories}
@@ -742,13 +737,13 @@ export function PostEditor({
               />
             </Panel>
 
-            <Panel title="Author">
+            <Panel title={t.postEditor.author}>
               <select
                 value={post.authorId}
                 onChange={(e) => update({ authorId: e.target.value })}
                 className={FIELD}
               >
-                <option value="">No byline</option>
+                <option value="">{t.postEditor.noByline}</option>
                 {authors.map((author) => (
                   <option key={author.id} value={author.id}>
                     {author.name}
@@ -760,26 +755,38 @@ export function PostEditor({
                 {post.authorId &&
                   !authors.some((a) => a.id === post.authorId) && (
                     <option value={post.authorId}>
-                      (deleted author — pick a replacement)
+                      {t.postEditor.deletedAuthor}
                     </option>
                   )}
               </select>
               <p className="text-xs text-ink-faint">
-                Authors are managed once in{" "}
-                <Link
-                  href={`${base}/settings`}
-                  className="font-semibold text-brand-700 hover:text-brand-800"
-                >
-                  Settings
-                </Link>
-                , so correcting a name or photo updates every post they wrote.
+                {/* Split on the placeholder rather than concatenated around
+                    the link: an Arabic sentence puts "Settings" somewhere an
+                    English one does not, and two fragments joined in source
+                    order can only be right in one language. */}
+                {t.postEditor.authorsManaged
+                  .split("{settings}")
+                  .flatMap((part, i) =>
+                    i === 0
+                      ? [part]
+                      : [
+                          <Link
+                            key="settings"
+                            href={`${base}/settings`}
+                            className="font-semibold text-brand-700 hover:text-brand-800"
+                          >
+                            {t.nav.settings}
+                          </Link>,
+                          part,
+                        ],
+                  )}
               </p>
             </Panel>
 
-            <Panel title="SEO">
+            <Panel title={t.editor.seo}>
               <div>
                 <label htmlFor="seo-title" className={LABEL}>
-                  Meta title
+                  {t.editor.metaTitle}
                 </label>
                 <input
                   id="seo-title"
@@ -788,17 +795,18 @@ export function PostEditor({
                   onChange={(e) =>
                     update({ seo: { ...post.seo, metaTitle: e.target.value } })
                   }
-                  placeholder={post.title || "Defaults to the post title"}
+                  placeholder={post.title || t.postEditor.metaTitleDefault}
                   className={cn(FIELD, "mt-1.5")}
                 />
                 <p className="mt-1 text-xs text-ink-faint">
-                  {(post.seo.metaTitle || post.title).length} characters · aim
-                  for under 60
+                  {fill(t.editor.charsUnder60, {
+                    n: (post.seo.metaTitle || post.title).length,
+                  })}
                 </p>
               </div>
               <div>
                 <label htmlFor="seo-description" className={LABEL}>
-                  Meta description
+                  {t.editor.metaDescription}
                 </label>
                 <textarea
                   id="seo-description"
@@ -810,17 +818,20 @@ export function PostEditor({
                       seo: { ...post.seo, metaDescription: e.target.value },
                     })
                   }
-                  placeholder={post.excerpt || "Defaults to the excerpt"}
+                  placeholder={
+                    post.excerpt || t.postEditor.metaDescriptionDefault
+                  }
                   className={cn(FIELD, "mt-1.5 resize-y leading-relaxed")}
                 />
                 <p className="mt-1 text-xs text-ink-faint">
-                  {(post.seo.metaDescription || post.excerpt).length} characters
-                  · aim for 120–160
+                  {fill(t.editor.chars120to160, {
+                    n: (post.seo.metaDescription || post.excerpt).length,
+                  })}
                 </p>
               </div>
             </Panel>
 
-            <Panel title="Reading time">
+            <Panel title={t.postEditor.readingTime}>
               <input
                 value={post.readTime}
                 onChange={(e) => update({ readTime: e.target.value })}
@@ -828,8 +839,9 @@ export function PostEditor({
                 className={FIELD}
               />
               <p className="text-xs text-ink-faint">
-                Left blank it is calculated from the content —{" "}
-                {computeReadTime(post.blocks)}.
+                {fill(t.postEditor.readingTimeHelp, {
+                  time: computeReadTime(post.blocks),
+                })}
               </p>
             </Panel>
           </aside>

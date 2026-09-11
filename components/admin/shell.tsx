@@ -102,7 +102,7 @@ export function AdminShell({
         <div className="ms-auto flex items-center gap-1">
           <AdminLanguageSwitch
             locale={locale}
-            label={locale === "ar" ? "Switch to English" : "التبديل إلى العربية"}
+            label={locale === "ar" ? t.switchToEnglish : t.switchToArabic}
           />
           <Link
             href="/blogs"
@@ -131,7 +131,7 @@ export function AdminShell({
       {open && (
         <button
           type="button"
-          aria-label="Close menu"
+          aria-label={t.closeMenu}
           onClick={() => setOpen(false)}
           className="fixed inset-0 z-40 bg-brand-950/50 lg:hidden"
         />
@@ -139,7 +139,7 @@ export function AdminShell({
 
       <nav
         id="admin-sidebar"
-        aria-label="Admin"
+        aria-label={t.sidebarLabel}
         className={cn(
           "fixed inset-y-0 start-0 z-50 flex w-60 flex-col bg-brand-950 transition-transform duration-300 ease-[var(--ease-out)]",
           // The off-canvas transform is scoped to `max-lg` rather than being

@@ -39,6 +39,7 @@ import {
   type Field,
 } from "./rich-field";
 import { MediaPickerDialog } from "./media-picker";
+import { useAdminStrings } from "@/components/admin/strings";
 
 /**
  * The article editor — one continuous writing surface.
@@ -150,7 +151,8 @@ function shortcutFor(value: string): Block | null {
   return null;
 }
 
-async function uploadImage(file: File, endpoint: string) {
+/** `fallback` is the localised message used when the server sends none. */
+async function uploadImage(file: File, endpoint: string, fallback: string) {
   const form = new FormData();
   form.append("file", file);
 
@@ -164,7 +166,7 @@ async function uploadImage(file: File, endpoint: string) {
   if (!response?.ok) {
     return {
       ok: false as const,
-      error: (body?.error as string) ?? "Could not upload the image.",
+      error: (body?.error as string) ?? fallback,
     };
   }
   return { ok: true as const, url: (body.item as MediaItem).url };
@@ -208,18 +210,18 @@ const GHOST_BUTTON =
  * article carrying its own type scale stops looking like the site.
  */
 const MARKS = [
-  { label: "Bold", icon: Bold, command: "bold" },
-  { label: "Italic", icon: Italic, command: "italic" },
-  { label: "Underline", icon: Underline, command: "underline" },
-  { label: "Strikethrough", icon: Strikethrough, command: "strikeThrough" },
+  { label: "bold", icon: Bold, command: "bold" },
+  { label: "italic", icon: Italic, command: "italic" },
+  { label: "underline", icon: Underline, command: "underline" },
+  { label: "strikethrough", icon: Strikethrough, command: "strikeThrough" },
 ] as const;
 
 const TOOLS = [
-  { label: "Heading", icon: Heading2, kind: "heading" },
-  { label: "List", icon: ListIcon, kind: "list" },
-  { label: "Quote", icon: QuoteIcon, kind: "quote" },
-  { label: "Key takeaways", icon: ListChecks, kind: "takeaways" },
-  { label: "Image", icon: ImageIcon, kind: "image" },
+  { label: "heading", icon: Heading2, kind: "heading" },
+  { label: "list", icon: ListIcon, kind: "list" },
+  { label: "quote", icon: QuoteIcon, kind: "quote" },
+  { label: "takeaways", icon: ListChecks, kind: "takeaways" },
+  { label: "image", icon: ImageIcon, kind: "image" },
 ] as const;
 
 function TextRow({
@@ -347,6 +349,7 @@ export function DocEditor({
   onChange: (blocks: Block[], options?: { history?: "step" | "amend" }) => void;
 }) {
   const api = useAdminApi();
+  const t = useAdminStrings().doc;
   const [active, setActive] = useState<number | null>(null);
   const [pending, setPending] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
@@ -612,7 +615,7 @@ export function DocEditor({
     const withPlaceholder = [...latest.current];
     withPlaceholder.splice(at, 0, placeholder);
     commit(withPlaceholder, undefined, { history: "step" });
-    setPending((current) => ({ ...current, [placeholder.id]: "Compressing…" }));
+    setPending((current) => ({ ...current, [placeholder.id]: t.compressing }));
 
     const clearPending = () =>
       setPending((current) => {
@@ -640,8 +643,8 @@ export function DocEditor({
       return;
     }
 
-    setPending((current) => ({ ...current, [placeholder.id]: "Uploading…" }));
-    const uploaded = await uploadImage(fitted.file, api("/media"));
+    setPending((current) => ({ ...current, [placeholder.id]: t.uploading }));
+    const uploaded = await uploadImage(fitted.file, api("/media"), t.uploadFailed);
 
     if (!uploaded.ok) {
       drop(uploaded.error);
@@ -680,7 +683,7 @@ export function DocEditor({
       return false;
     };
 
-    setPending((current) => ({ ...current, [block.id]: "Fetching…" }));
+    setPending((current) => ({ ...current, [block.id]: t.fetching }));
     const response = await fetch(block.src).catch(() => null);
     const blob = await response?.blob().catch(() => null);
 
@@ -704,7 +707,7 @@ export function DocEditor({
     }
 
     setPending((current) => ({ ...current, [block.id]: "Uploading…" }));
-    const uploaded = await uploadImage(fitted.file, api("/media"));
+    const uploaded = await uploadImage(fitted.file, api("/media"), t.uploadFailed);
     clearPending();
     if (!uploaded.ok) return drop();
 
@@ -878,7 +881,7 @@ export function DocEditor({
   }
 
   function applyLink() {
-    const url = window.prompt("Link to… (leave empty to remove the link)", "https://");
+    const url = window.prompt(t.linkPrompt, "https://");
     if (url === null) return;
     if (!url.trim() || url.trim() === "https://") {
       document.execCommand("unlink");
@@ -920,32 +923,32 @@ export function DocEditor({
             type="button"
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => applyMark(mark.command)}
-            title={mark.label}
+            title={t[mark.label]}
             className={MARK_BUTTON}
           >
             <mark.icon className="size-3.5 shrink-0" aria-hidden="true" />
-            <span className="sr-only">{mark.label}</span>
+            <span className="sr-only">{t[mark.label]}</span>
           </button>
         ))}
         <button
           type="button"
           onMouseDown={(event) => event.preventDefault()}
           onClick={applyLink}
-          title="Link"
+          title={t.link}
           className={MARK_BUTTON}
         >
           <Link2 className="size-3.5 shrink-0" aria-hidden="true" />
-          <span className="sr-only">Link</span>
+          <span className="sr-only">{t.link}</span>
         </button>
         <button
           type="button"
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => applyMark("removeFormat")}
-          title="Clear formatting"
+          title={t.clearFormatting}
           className={MARK_BUTTON}
         >
           <RemoveFormatting className="size-3.5 shrink-0" aria-hidden="true" />
-          <span className="sr-only">Clear formatting</span>
+          <span className="sr-only">{t.clearFormatting}</span>
         </button>
 
         <span aria-hidden="true" className="mx-1.5 h-5 w-px bg-brand-100" />
@@ -956,15 +959,15 @@ export function DocEditor({
             type="button"
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => runTool(tool.kind)}
-            title={tool.label}
+            title={t[tool.label]}
             className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-medium text-ink-soft transition-colors hover:bg-brand-50 hover:text-brand-800"
           >
             <tool.icon className="size-3.5 shrink-0" aria-hidden="true" />
-            {tool.label}
+            {t[tool.label]}
           </button>
         ))}
         <span className="ms-auto hidden pe-1 text-[0.6875rem] text-ink-faint sm:inline">
-          ## heading · - list · 1. numbered · &gt; quote
+          {t.shortcutHint}
         </span>
       </div>
 
@@ -994,7 +997,7 @@ export function DocEditor({
                 >
                   <TextRow
                     block={block}
-                    placeholder="The quote itself, without quotation marks…"
+                    placeholder={t.quotePlaceholder}
                     register={register}
                     onValue={(value) => textValue(value, block, index)}
                     onKeyDown={(e) => textKeyDown(e, block, index)}
@@ -1002,7 +1005,7 @@ export function DocEditor({
                   />
                   <input
                     value={block.attribution ?? ""}
-                    placeholder="Attribution (defaults to “TribuCare Clinical Editorial”)"
+                    placeholder={t.attributionPlaceholder}
                     onFocus={focusHere}
                     onChange={(e) =>
                       replaceAt(index, { ...block, attribution: e.target.value })
@@ -1012,14 +1015,14 @@ export function DocEditor({
                   <button
                     type="button"
                     onClick={() => removeBlock(index)}
-                    title="Remove quote"
+                    title={t.removeQuote}
                     className={cn(
                       GHOST_BUTTON,
                       "absolute top-0 end-0 opacity-0 group-hover/row:opacity-100 focus:opacity-100",
                     )}
                   >
                     <Trash2 className="size-3.5" aria-hidden="true" />
-                    <span className="sr-only">Remove quote</span>
+                    <span className="sr-only">{t.removeQuote}</span>
                   </button>
                 </div>
               );
@@ -1031,9 +1034,9 @@ export function DocEditor({
                 block={block}
                 placeholder={
                   block.type === "heading"
-                    ? "Section heading"
+                    ? t.headingPlaceholder
                     : index === 0
-                      ? "Write the article…"
+                      ? t.writeArticle
                       : ""
                 }
                 register={register}
@@ -1063,7 +1066,7 @@ export function DocEditor({
                       className="size-4 text-signal-500"
                       aria-hidden="true"
                     />
-                    Key takeaways
+                    {t.takeawaysHeading}
                   </p>
                 )}
                 {/* `ol` when it is numbered, `ul` otherwise — the same
@@ -1077,7 +1080,9 @@ export function DocEditor({
                       index={i}
                       marker={ordered ? i + 1 : null}
                       value={item}
-                      placeholder={takeaways ? "A single takeaway" : "List item"}
+                      placeholder={
+                        takeaways ? t.takeawayPlaceholder : t.listItemPlaceholder
+                      }
                       register={register}
                       onValue={(value) => {
                         const items = [...block.items];
@@ -1092,7 +1097,7 @@ export function DocEditor({
                 <button
                   type="button"
                   onClick={() => removeBlock(index)}
-                  title={takeaways ? "Remove key takeaways" : "Remove list"}
+                  title={takeaways ? t.removeTakeaways : t.removeList}
                   className={cn(
                     GHOST_BUTTON,
                     "absolute top-2 end-2 opacity-0 group-hover/row:opacity-100 focus:opacity-100",
@@ -1128,7 +1133,7 @@ export function DocEditor({
               <figcaption className="mt-2.5 space-y-2">
                 <input
                   value={block.alt}
-                  placeholder="Alt text — describe the image for screen readers and search"
+                  placeholder={t.altPlaceholder}
                   onFocus={focusHere}
                   ref={(el) => {
                     register(`${block.id}:alt`, el);
@@ -1138,7 +1143,7 @@ export function DocEditor({
                 />
                 <input
                   value={block.caption ?? ""}
-                  placeholder="Caption (optional)"
+                  placeholder={t.captionPlaceholder}
                   onFocus={focusHere}
                   ref={(el) => {
                     register(`${block.id}:caption`, el);
@@ -1152,14 +1157,14 @@ export function DocEditor({
               <button
                 type="button"
                 onClick={() => removeBlock(index)}
-                title="Remove image"
+                title={t.removeImage}
                 className={cn(
                   GHOST_BUTTON,
                   "absolute top-3.5 end-3.5 bg-white/90 opacity-0 shadow-md backdrop-blur-md group-hover/row:opacity-100 focus:opacity-100",
                 )}
               >
                 <Trash2 className="size-3.5" aria-hidden="true" />
-                <span className="sr-only">Remove image</span>
+                <span className="sr-only">{t.removeImage}</span>
               </button>
             </figure>
           );
@@ -1171,7 +1176,7 @@ export function DocEditor({
             onClick={() => commit([makeParagraph()])}
             className="w-full text-start text-base text-ink-faint"
           >
-            Write the article…
+            {t.writeArticle}
           </button>
         )}
       </div>
