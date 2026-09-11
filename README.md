@@ -48,6 +48,13 @@ own language — decides which site lists it and which way the writing surface
 runs. Writing an Arabic article no longer means flipping the whole panel into
 Arabic.
 
+**The panel itself is fully bilingual.** Setting it to Arabic translates every
+screen — the dashboard, both lists, both editors including the toolbar and the
+publish rail, media, settings, careers and the sign-in page — not only the
+sidebar. The two languages are one typed object in
+`lib/i18n/admin-strings.ts`, so a string that exists in English and not in
+Arabic fails the build rather than quietly showing through.
+
 Leaving an editor with unsaved changes asks first — save and go, go anyway, or
 stay — and never asks when everything is saved. Events & news need no
 "feature" switch: the next upcoming item leads `/events`, the homepage
@@ -82,7 +89,17 @@ only translated strings are restated and anything missing falls back rather
 than rendering blank. The conventions for writing it — including what stays in
 Latin script, and the RTL rules for layout — are in
 [AGENTS.md](AGENTS.md#arabic--rtl). The panel has a language of its own, set by
-a cookie: see [docs/blog-admin.md](docs/blog-admin.md#languages).
+a cookie, and its strings live apart from the site's in
+`lib/i18n/admin-strings.ts`: see
+[docs/blog-admin.md](docs/blog-admin.md#languages).
+
+## Contact
+
+`/partner` doubles as the contact page. The office address, an embedded map and
+the partnership enquiry form sit at the foot of it under `#contact`, which is
+where the footer's *Contact* link points. There is no separate `/contact`
+route. The email and phone in the footer come from `contact` in
+`content/site.ts`.
 
 ## Deploying
 

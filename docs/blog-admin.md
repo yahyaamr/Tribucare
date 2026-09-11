@@ -620,7 +620,8 @@ lib/cms/
   revalidate.ts   Cache refresh on publish
 lib/i18n/
   admin.ts        The panel's language cookie
-  admin-strings.ts The panel's own strings, EN + AR, one typed object
+  admin-strings.ts The panel's own strings, EN + AR, one typed object — the
+                  single place any panel wording is defined
 proxy.ts          Mounts the panel on the secret path, seals /admin,
                   slides the idle window on each authenticated request
 scripts/
@@ -630,6 +631,7 @@ app/api/admin/      Its API — every handler calls requireSession()
 components/admin/
   shell.tsx         Sidebar, admin bar, sign out
   base-path.tsx     useAdminBase() / useAdminApi() — the secret path, client-side
+  strings.tsx       useAdminStrings() / fill() — the panel's strings, client-side
   tab-session.tsx   Ends the session when the tab that opened it is gone
   doc-editor.tsx    The continuous writing surface
   rich-field.tsx    One editable row, plus the caret maths behind it
@@ -660,6 +662,19 @@ components/admin/
   server ones. A hardcoded path lands on the 404 the moment `ADMIN_PATH` is set.
 - **Never make `ADMIN_PATH` public.** No `NEXT_PUBLIC_`, and nothing that puts
   it in a client bundle shared with the marketing site.
+- **Never type a user-visible word into the panel's markup.** Add it to
+  `lib/i18n/admin-strings.ts` in both locales first — the shape is one typed
+  object, so an English-only key fails the build — then read it with
+  `useAdminStrings()` in a client component or `adminStrings(await
+  adminLocale())` in a server one. This is not a preference: the panel spent a
+  release reading "PUBLISHED" on Arabic screens because the Arabic word existed
+  in the file and the markup never asked for it.
+  - A sentence that names a value stays **one string with a `{placeholder}`**,
+    filled by `fill()`. Fragments glued around a count or a title can only be
+    in the right order in one language.
+  - A link inside a sentence is **spliced into the placeholder**, not appended
+    around it.
+  - A count carries **a singular and a plural string**. Do not append an "s".
 - **Every new API handler starts with `requireSession()`.**
 - **Call `revalidateBlog()` (or the news equivalent) after every write**, or the
   public pages keep serving the old copy until the cache window ages out.
@@ -701,6 +716,14 @@ panel in Settings — switches the interface between English and Arabic. It is a
 cookie, not a URL, so it is per person: one editor can work in Arabic while
 another works in English, on the same posts. Switching does not move you off
 the page you are on. It decides what the buttons say, and nothing else.
+
+**Every screen is translated, not just the sidebar.** The dashboard and its
+stat cards, both lists with their filters and search, both editors down to the
+writing toolbar and the publish rail, the media library, Settings and all three
+of its managers, Careers and the role editor, the unsaved-changes dialog, the
+storage notice and the sign-in page. Browser tab titles too. If you find an
+English word on an Arabic panel, that is a bug worth reporting — it is not a
+gap by design.
 
 **A post's language** is the **Content language** radio in the editor. It
 decides two things: which site lists the post, and which way the writing

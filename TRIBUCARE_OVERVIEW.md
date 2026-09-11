@@ -126,27 +126,32 @@ than improvising.
 
 | Route | Purpose |
 |---|---|
-| `/` | Homepage — hero (Partner With Us / About TribuCare), mission & vision, three-vertical expertise, reach stats, core values, events & news carousel, teams, careers, blog rail, FAQ, partnerships close |
+| `/` | Homepage — hero (Partner With Us / About TribuCare), mission & vision, three-vertical expertise (the sticky card stack), reach stats, core values, events & news carousel, teams, careers, blog rail, FAQ, partnerships close |
 | `/about` | About page — team hero, figures, mission & vision, story and leadership (the last two still marked as drafts) |
 | `/dermatology` | Professional dermatology catalogue (12 devices/injectables), with the live events rail |
 | `/dermatology/[slug]` | Individual product page with specs, gallery + request form |
 | `/mlay` | MLAY home-use beauty device catalogue (15 products) |
 | `/altesse-soin` | Altesse Soin skincare catalogue (23 products, 6 lines) |
-| `/partner` | Partnership pitch, stats, pillars, and a partner enquiry form |
-| `/blogs`, `/blogs/[slug]` | Blogs and Insights — written in the admin panel (`/blog` redirects here) |
+| `/partner` | Partnership pitch, stats, pillars, the brand ecosystem (the three vertical cards), the enquiry form, and the contact section — office address, embedded Google map, `#contact`. This page doubles as Contact; there is no `/contact` route. |
+| `/blogs`, `/blogs/[slug]` | Blogs and Insights — written in the admin panel (`/blog` redirects here). No newsletter sign-up: TribuCare does not run one. |
 | `/events`, `/events/[slug]` | Events & News — written in the admin panel; the next upcoming item leads automatically (`/news` redirects here) |
 | `/ar/…` | Every route above, in Arabic |
 | *secret path* | The admin panel — blogs, events & news, careers, media, settings. Not at `/admin`, which returns the site's 404; served from `ADMIN_PATH`. |
 
 **Header:** Home · Our Expertise ▾ · Core Values · Events & News · Blogs and
-Insights · About. *Our Expertise* opens a drop-down straight to the three
-verticals' pages — Dermatology Solutions, MLAY, Altesse Soin — on desktop as
-the header bar stretching, and on phones and tablets as a sub-list inside the
-menu.
+Insights · About. *Our Expertise* is a split pill — the label half links to the
+homepage section, the chevron half opens a drop-down straight to the three
+verticals' pages. The drop-down names the **fields**, not the brands inside
+them: Professional Dermatology Solutions, Home-Use Beauty Devices, Medicated
+Skincare Products, each with its audience line. On desktop it stretches the
+header bar; on phones and tablets it unfolds as a sub-list inside the menu.
 
-**Footer:** brand block and socials, then two link columns (Company incl. FAQ;
-Our Brands), the copyright line and the studio credit ("Designed and developed
-by Web and Value" → webandvalue.com).
+**Footer:** brand block, contact (email `cx@tribucare.com` and phone, both
+clickable) and socials, then two link columns — Company (About, Events & News,
+Blogs and Insights, FAQ, Partnerships, Contact) and **Our Expertise**, which
+carries the same three vertical names as the header drop-down. Then the
+copyright line and the studio credit ("Designed and developed by Web and Value"
+→ webandvalue.com).
 
 ## Blog
 
@@ -182,7 +187,14 @@ sits in the mid-90s for performance with 100 for best practices and SEO.
 - **Canonical card:** `components/blog/post-card.tsx` — the pattern every
   content card (blog, event, future types) must follow exactly: white
   `card-surface`, `h-52` media band, floating category badge, meta row,
-  title, excerpt, footer.
+  title, excerpt, footer, and a **fully circular** arrow disc in that footer.
+- **Shared feature card:** `components/sections/vertical-card.tsx` — the three
+  verticals, drawn once and rendered by both the homepage's sticky Expertise
+  stack and the Partnerships page's Brand Ecosystem column. One component and
+  one content array, so the two pages cannot describe the verticals
+  differently.
+- **Icons:** one circular plate (`icon-disc` / `icon-disc-dark`) everywhere.
+  Never squircles, never square tiles.
 - **Motion:** one house easing curve, no bespoke cubic-beziers; every
   animation respects `prefers-reduced-motion`.
 - **Sections:** alternate `ground-light` / `ground-deep` backgrounds down the
@@ -192,12 +204,20 @@ sits in the mid-90s for performance with 100 for best practices and SEO.
 
 All copy lives in typed `content/*.ts` files, imported into presentational
 components — never hardcoded in JSX:
-- `content/site.ts` — core company/homepage copy (644 lines)
-- `content/dermatology.ts` — professional device/injectable catalogue (675
-  lines)
-- `content/mlay.ts` — MLAY product catalogue (316 lines)
-- `content/altesse.ts` — Altesse Soin product catalogue (448 lines)
-- `content/blogs.ts` — blog posts & categories (225 lines)
+- `content/site.ts` — core company/homepage copy, plus contact and the office
+- `content/dermatology.ts` — professional device/injectable catalogue
+- `content/mlay.ts` — MLAY collections
+- `content/altesse.ts` — Altesse Soin collections
+- `content/collections.ts` — the shared `BrandCollection` shape both use
+- `content/blogs.ts` — the one-time CMS seed, never read by a page
+
+(Line counts are deliberately not quoted here; they were wrong within a week of
+being written.)
+
+The admin panel's own strings are **not** in `content/` — they are software
+chrome and live in `lib/i18n/admin-strings.ts`, English and Arabic as one typed
+object so a missing translation is a build error. Every panel screen reads them
+through `useAdminStrings()`; nothing in the panel hardcodes English.
 
 **Sourcing discipline:** every factual claim is traceable to TribuCare's
 company-profile deck or manufacturer documentation — no invented
@@ -208,9 +228,14 @@ pending real values).
 
 ## What's not yet filled in
 
-- **Contact details** (`content/site.ts`): email, phone and address are
-  intentionally empty — the source deck had no contact slide. The three social
-  links (LinkedIn, Facebook, Instagram) were supplied by TribuCare and are live.
+- **Contact details** (`content/site.ts`) are now supplied and live: the email
+  `cx@tribucare.com`, the phone number, the main office address in Zahraa
+  Al-Maadi with its map coordinates, and the three social links (LinkedIn,
+  Facebook, Instagram). Like the social links, these came directly from
+  TribuCare rather than from the company-profile deck, which carries no contact
+  slide — the two documented exceptions to the sourcing rule. `contact.address`
+  itself is still empty; the address is rendered from `contactOffice` on the
+  Partnerships page instead.
 - **About page**: the story paragraphs and the leadership section are marked
   as drafts on the page itself until the real copy and people are supplied.
 - **Careers**: the three roles are agreed stand-ins, and the apply URL is
@@ -220,3 +245,20 @@ pending real values).
   fallback for an unreachable store.
 - **FAQ**: placeholder Q&A pending the commercial team's actual most-asked
   questions.
+- **Two store addresses are no longer shown anywhere.** The City Stars and Mall
+  of Arabia branch addresses were on the site briefly and were removed when the
+  contact section narrowed to the main office and its map. They are not in
+  `content/` either — ask TribuCare for them again if they should come back.
+
+## Content that exists but is no longer rendered
+
+Three exports in `content/site.ts` are live copy that nothing currently draws.
+They were left in place rather than deleted, so any of them is a one-line change
+to restore:
+
+- **`brandGroups`** and **`altesseLines`** — the Partnerships page's brand-group
+  blocks, which listed each represented brand with its country and a line of
+  role copy. Replaced by the three vertical cards; the brand marks survive in
+  each card's brand row, the country and role lines do not.
+- **`mlayChannels`** — the homepage's *Flagship branches* strip and the "Where
+  you will find MLAY / Altesse Soin" strips on the two brand pages, all removed.

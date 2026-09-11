@@ -59,7 +59,11 @@ the site — article, event, or anything added later — is that card:
 - meta row `flex items-center gap-3 text-xs text-ink-faint`, items `flex items-center gap-1` with a `size-3.5` lucide icon, separated by a `•`
 - title `mt-3 line-clamp-2 font-display text-lg leading-snug font-semibold text-ink transition-colors duration-300 group-hover:text-brand-700`
 - excerpt `mt-2.5 line-clamp-3 text-sm leading-relaxed text-ink-soft`
-- footer `mt-6 flex items-center justify-between border-t border-brand-50 pt-4`
+- footer `mt-6 flex items-center justify-between border-t border-brand-50 pt-4`,
+  whose arrow sits in a **full circle** — `inline-flex size-9 items-center
+  justify-center rounded-full bg-brand-50 text-brand-700`. Circular, because
+  `icon-disc` is the site's one icon language; a squircle here is the bug that
+  was fixed, not a variant
 
 `components/events/event-card.tsx` is that same card with event fields. **If you
 change one, change the other.** A third card type gets a component next to
@@ -81,6 +85,8 @@ app/
     layout.tsx          fonts, metadata, nav, footer, smooth scroll, site JSON-LD
     page.tsx            homepage = ordered list of <Section /> components
     about/ dermatology/ mlay/ altesse-soin/ partner/ blogs/ events/
+                        /partner is also the contact page — the office, the map
+                        and the enquiry form. There is no /contact route.
     news/               retired — /news and /news/[slug] redirect into /events
     not-found.tsx       branded 404; [...rest]/page.tsx routes unknown paths to it
   (admin)/admin/        the CMS panel — blogs, events & news, careers, media,
@@ -95,6 +101,9 @@ proxy.ts                locale routing (/x → /en/x rewrite, /ar/x passes,
                         the session's idle window on each authenticated request
 components/
   sections/             one file per page section, named export, no props
+                        vertical-card.tsx — the three verticals' feature card,
+                        shared by the homepage's Expertise stack and the
+                        Partnerships page's Brand Ecosystem column
   site/                 layout + motion primitives (Shell, Eyebrow, Reveal, …)
                         json-ld.tsx — the only way to emit structured data
   brand/                logo, brand-plate, wave-field, lanyard (3D)
@@ -103,6 +112,8 @@ components/
                         article-body.tsx — the ONE renderer for a Block[]
                         event-carousel.tsx — the homepage's one-at-a-time frame
   admin/                the panel's UI
+                        strings.tsx — useAdminStrings() + fill(); the panel's
+                        own strings, handed to client components by context
                         rich-field.tsx — one contenteditable row + caret maths
                         use-draft-history.ts — undo/redo over the whole draft
                         leave-guard.tsx — the unsaved-changes prompt, shared by
@@ -120,7 +131,9 @@ lib/
   fonts.ts              the four faces, shared by both root layouts
   i18n/config.ts        locales, URL shapes, localePath / splitLocale
   i18n/admin.ts         the panel's language cookie
-  i18n/admin-strings.ts the panel's OWN strings, EN + AR — not content/
+  i18n/admin-strings.ts the panel's OWN strings, EN + AR — not content/.
+                        One typed object, so a missing Arabic key is a build
+                        error. Nothing in the panel may hardcode English.
   cms/                  store, posts, news, roles, authors, categories,
                         news-tags, media, revalidate
   cms/rich-text.ts      the closed inline whitelist — sanitize on paste, on
@@ -148,6 +161,52 @@ scripts/
   the lucide import there, never inline an SVG. The Arabic `nav` override must
   carry the same item at the same index, with its own `menu` labels; hrefs and
   icons inherit. Reordering the English nav means reordering the Arabic one.
+
+  **The pill is split on purpose, and the chevron half owns the air beside it.**
+  The link half goes where the item always went; the chevron half opens the
+  panel and is padded `ps-3 pe-4` with no trailing padding on the link, so the
+  gap looks unchanged while the harder-to-hit half is 44px rather than 32px
+  wide. Merging the two into one button makes the whole pill open the menu and
+  loses the link — that was tried and reverted.
+- **The three verticals are named once.** The header drop-down, the footer's
+  *Our Expertise* column and the Expertise cards all show `verticals[].label`
+  — "Professional Dermatology Solutions", "Home-Use Beauty Devices", "Medicated
+  Skincare Products" — and the drop-down's second line is that vertical's
+  `audience`. They are fields, not brands: MLAY and Altesse Soin are what is
+  *inside* two of them. Renaming a vertical renames it everywhere, which is the
+  point; do not retype any of these three names anywhere else.
+- **`/partner` is the contact page.** There is no `/contact` route — one was
+  built and removed, because a second page saying the same thing is a second
+  page to keep in step. The office card, the map and the enquiry form live at
+  the foot of Partnerships under `id="contact"`, and the footer's *Contact*
+  link is an anchor to it.
+
+  The map is a Google Maps `<iframe>` built from `contactOffice.lat/lng`, not
+  from `mapUrl`. That share link is a `maps.app.goo.gl` redirect and an iframe
+  cannot follow one, so the coordinates are stored beside it. It carries
+  `loading="lazy"` and `hl={locale}`, which is what puts the map's own labels
+  into the page's language. It is the only third-party embed on the site; adding
+  another is a decision to bring to the user, not a detail.
+- **`<ChannelCard>` takes two optional props beyond `tone`.** `href` turns the
+  whole card into a link using the site's overlay pattern, and opens a new tab
+  when the address is absolute. `image` adds a media panel that is `flex-1`
+  rather than the usual fixed `h-52`, so the card fills whatever height a
+  neighbour forces on it. With neither prop it renders exactly as it always did
+  — the padding simply moves from the shell to the copy — which is what keeps
+  the MLAY and Altesse Soin distribution sections untouched.
+- **`<VerticalCard>` is rendered by two pages and owns no copy.** The homepage
+  wraps it in `<CardStack>` for the sticky stack; the Partnerships page renders
+  it in a plain column. It reads `--stack-card-height`, which resolves to `auto`
+  where there is no stack, so it needs no variant and no flag for the
+  difference. Change the card once and both pages move. Never inline a second
+  copy of that markup.
+- **Three content exports are currently rendered by nothing**: `brandGroups`
+  and `altesseLines` (the Partnerships page's brand-group blocks, replaced by
+  the three vertical cards) and `mlayChannels` (the homepage's flagship-branch
+  strip and the two brand pages' "Where you will find …" strips, all removed).
+  They are real TribuCare copy and were left in place rather than deleted, so
+  putting any of them back on a page is a one-line change. Do not treat them as
+  live content, and do not assume a name they contain appears anywhere.
 - Server components read content with `await content()` from
   `content/server.ts`; client components receive what they need as props.
   Internal links go through `localePath(locale, path)` so both languages stay
@@ -279,10 +338,36 @@ page. So:
   answer — a legacy list, or a legacy post still naming both languages. A name
   may be taken once across both, so Settings can move a category between them
   rather than forcing a delete and re-create.
-- Panel strings go in `lib/i18n/admin-strings.ts`, never in `content/`. That
-  file is software chrome — "Permanently delete" does not belong beside the
-  homepage headline. Both locales are one typed object, so a missing Arabic key
-  is a build error.
+- **Panel strings go in `lib/i18n/admin-strings.ts`, never in `content/`, and
+  nothing in the panel may hardcode a word of English.** That file is software
+  chrome — "Permanently delete" does not belong beside the homepage headline.
+  Both locales are one typed object, so a missing Arabic key is a build error,
+  which is the only thing keeping the two in step.
+
+  A server component inside the panel reads them directly:
+  `adminStrings(await adminLocale())`. A client component calls
+  `useAdminStrings()` from `components/admin/strings.tsx`, which the panel
+  layout provides — the same indirection `base-path.tsx` uses for `ADMIN_PATH`,
+  and for the same reason: prop-drilling a string bundle through four editor
+  levels is noise at every call site, and the level that forgets to pass it is
+  the level that silently stays English. That is exactly how the whole panel
+  came to read "PUBLISHED" on an Arabic screen while the Arabic word for it sat
+  unused in the file.
+
+  Three rules follow, and each has a failure mode that only shows in Arabic:
+
+  - **A sentence that names a value stays one string, with a `{placeholder}`.**
+    Use `fill()` from the same file. Fragments concatenated around a count, a
+    title or a link can only be in the right order in one language.
+  - **A link inside a sentence is spliced, not appended.** Split the string on
+    its placeholder and put the `<Link>` where it lands — see the editor's
+    "Authors are managed once in {settings}".
+  - **A count carries a singular and a plural string**, worded so the plural
+    reads correctly at any number. Do not build one by appending an "s".
+
+  The login screen is outside the panel layout, so it reads the cookie itself
+  and takes its strings as a prop. `<StatusPill>` reads the context, so no
+  caller has to remember to pass labels.
 
 ## Design tokens — use these, never raw hex
 
@@ -342,6 +427,8 @@ Defined in `app/globals.css`:
 | Need | Use |
 |---|---|
 | A content card (article, event, anything) | `<PostCard>` / `<EventCard>` — copy one, never invent |
+| One of the three verticals, as a feature card | `<VerticalCard vertical brandLogos locale>` — one component, one content array, two pages |
+| A channel, an address, anything icon + title + body | `<ChannelCard channel tone href? image?>` |
 | Horizontal card scroller | `<Rail>` (wheel + drag + edge fades), items get `rail-item` |
 | Unframed scrolling column | `<ScrollColumn>` (wheel handling + themed bar), cards `gap-8` |
 | Page gutter | `<Shell>` — the only horizontal rhythm. Never a bespoke max-w. |
@@ -569,6 +656,12 @@ Add to that only when the change earns it:
   rather than failing.
 - **Anything visual on a page that has an Arabic version:** check it in both
   directions. A logical-property miss is invisible in English by definition.
+- **Touched anything in the panel:** add the string to `admin-strings.ts` in
+  both locales before you add the markup — the type will otherwise fail the
+  build, which is the point — and then open the screen with the panel set to
+  Arabic. `tsc` proves the key exists; only looking proves it is being read.
+  A screen that renders English on an Arabic panel is the failure this is for,
+  and it does not show up in any check.
 - **Re-exported an image that has already shipped:** give the new file a new
   URL. `next/image` caches by URL, as does every CDN and browser in front of
   it, so overwriting a path serves the old pixels — and where two layers are
