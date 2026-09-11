@@ -103,7 +103,7 @@ export async function ProductCard({
 
           <span
             aria-hidden="true"
-            className="inline-flex size-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700 transition-colors duration-300 group-hover:bg-brand-700 group-hover:text-white"
+            className="inline-flex size-9 items-center justify-center rounded-full bg-brand-50 text-brand-700 transition-colors duration-300 group-hover:bg-brand-700 group-hover:text-white"
           >
             <ArrowRight className="size-4" />
           </span>

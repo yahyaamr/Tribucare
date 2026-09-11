@@ -395,7 +395,11 @@ export function SiteNav({
                           onClick={() => setMenuOpen(false)}
                           aria-label={item.label}
                           aria-current={isActive ? "location" : undefined}
-                          className="flex items-center rounded-s-lg py-2.5 ps-3.5 pe-1.5"
+                          // No trailing padding of its own: the air between the
+                          // label and the chevron belongs to the chevron's hit
+                          // area, not to the link's. The gap looks the same and
+                          // the half that is harder to hit gets the benefit.
+                          className="flex items-center rounded-s-lg py-2.5 ps-3.5 pe-0"
                         >
                           <Icon
                             aria-hidden="true"
@@ -429,9 +433,11 @@ export function SiteNav({
                           aria-label={
                             menuOpen ? ui.closeSubmenu : ui.openSubmenu
                           }
-                          // Stretches to the pill's full height so the whole
-                          // end cap is the target, not just the 16px glyph.
-                          className="grid self-stretch place-items-center rounded-e-lg ps-1 pe-3"
+                          // The end cap, stretched to the pill's full height and
+                          // padded out to either side of the glyph, so the
+                          // target is the whole corner of the pill rather than
+                          // the 16px chevron the pointer had to land on.
+                          className="grid self-stretch place-items-center rounded-e-lg ps-3 pe-4"
                         >
                           <ChevronDown
                             aria-hidden="true"

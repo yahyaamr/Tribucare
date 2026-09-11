@@ -27,7 +27,7 @@ export const mlayCollections: BrandCollection[] = [
     summary:
       "Flagship system with 1,000,000 flashes, an AI smart skin tone sensor and continuous 5°C contact cooling. Four colourways, with the matching precision lamps.",
     store: "tribucare.com",
-    image: "/brand/mlay/mlay-t14-pro-real.webp",
+    image: "/brand/mlay/mlay-t14-pro-series.webp",
     url: "https://www.tribucare.com/collections/t14-pro-series",
   },
   {
@@ -38,7 +38,7 @@ export const mlayCollections: BrandCollection[] = [
     summary:
       "High-speed 500,000-flash IPL with instant contact ice-cooling conduction and 5 energy levels. Five colourways, with the matching precision lamps.",
     store: "tribucare.com",
-    image: "/brand/mlay/mlay-t14-black.webp",
+    image: "/brand/mlay/mlay-t14a-series.webp",
     url: "https://www.tribucare.com/collections/mlay-t14-series",
   },
   {
@@ -49,7 +49,7 @@ export const mlayCollections: BrandCollection[] = [
     summary:
       "Compact ergonomic handset with an integrated cold sapphire plate, made for precise handling around facial contours and sensitive body zones. In rose gold and black.",
     store: "tribucare.com",
-    image: "/brand/mlay/mlay-t10-real.webp",
+    image: "/brand/mlay/mlay-t10-series.webp",
     url: "https://www.tribucare.com/collections/t10-series",
   },
   {
@@ -60,7 +60,7 @@ export const mlayCollections: BrandCollection[] = [
     summary:
       "Painless hair removal with an instant-cooling ceramic window, a high-capacity quartz lamp and 5 adjustable power settings.",
     store: "tribucare.com",
-    image: "/brand/mlay/mlay-t4-real.webp",
+    image: "/brand/mlay/mlay-t4-series.webp",
     url: "https://www.tribucare.com/collections/mlay-t4-series",
   },
   {
@@ -71,7 +71,7 @@ export const mlayCollections: BrandCollection[] = [
     summary:
       "Home workstation with interchangeable lamp heads for hair removal, skin rejuvenation and acne clearance — the handset and all five cartridges together.",
     store: "tribucare.com",
-    image: "/brand/mlay/mlay-t3-real.webp",
+    image: "/brand/mlay/mlay-t3-series.webp",
     url: "https://www.tribucare.com/collections/mlay-t3-series",
   },
   {
@@ -82,7 +82,7 @@ export const mlayCollections: BrandCollection[] = [
     summary:
       "Every replacement lamp and precision lens in one place — facial, bikini, underarm, beard, body, skin rejuvenation and acne clearance heads for T14 Pro, T14A and T3 handsets.",
     store: "tribucare.com",
-    image: "/brand/mlay/mlay-t14-body-lamp.webp",
+    image: "/brand/mlay/mlay-accessories.webp",
     url: "https://www.tribucare.com/collections/accessories",
   },
 ];
@@ -208,7 +208,6 @@ export const mlay = {
         body: "Our own storefront carries the full catalogue direct, on the same warranty and the same local technical service.",
       },
     ],
-    channelsLabel: "Where you will find MLAY",
     partner: {
       label: "Partner with us",
       body: "Retailers, pharmacy groups and e-commerce operators who want to carry MLAY deal with a single Egyptian agent: official stock, one price list, marketing and merchandising support, and a local service centre standing behind every unit you sell.",

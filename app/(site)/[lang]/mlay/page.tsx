@@ -33,8 +33,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const HERO_IMAGE_SIZES = "(max-width: 1024px) 88vw, 54vw";
 
 export default async function MlayPage() {
-  const { mlay, mlayCollections, mlayChannels, ui } =
-    await content();
+  const { mlay, mlayCollections, ui } = await content();
   const locale = await currentLocale();
 
   return (
@@ -399,24 +398,6 @@ export default async function MlayPage() {
               </Reveal>
             ))}
           </ul>
-
-          {/* The places themselves, read straight off `mlayChannels` so the
-              malls and platforms are stated in one place site-wide. */}
-          <Reveal delay={120}>
-            <div className="mt-14 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-white/10 pt-8">
-              <span className="eyebrow text-brand-300">
-                {mlay.distribution.channelsLabel}
-              </span>
-              {[...mlayChannels.flagship, ...mlayChannels.retail].map((place) => (
-                <span
-                  key={place}
-                  className="rounded-xl border border-white/15 px-3.5 py-1.5 text-[0.8125rem] font-medium text-brand-100 transition-colors duration-300 hover:border-signal-500/60 hover:text-white"
-                >
-                  {place}
-                </span>
-              ))}
-            </div>
-          </Reveal>
 
           {/* The invitation. Same two-column header rhythm as the section top,
               so it reads as this section's closing move rather than a section

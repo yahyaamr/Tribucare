@@ -24,11 +24,21 @@ export const nav = [
   { label: "الرئيسية" },
   {
     label: "مجالات خبرتنا",
-    // Brand names stay Latin; the details are the verticals' own labels below.
+    // The three verticals by their own names, each with its audience line —
+    // both taken verbatim from `verticals` below, as in the English file.
     menu: [
-      { label: "حلول طب الجلد", detail: "أطباء الجلدية · العيادات · مراكز التجميل" },
-      { label: "MLAY", detail: "أجهزة التجميل للاستخدام المنزلي" },
-      { label: "Altesse Soin", detail: "مستحضرات العناية الطبية بالبشرة" },
+      {
+        label: "حلول طب الجلد المتخصصة",
+        detail: "أطباء الجلدية · العيادات · مراكز التجميل",
+      },
+      {
+        label: "أجهزة التجميل للاستخدام المنزلي",
+        detail: "المستهلكون · التجزئة · التجارة الإلكترونية",
+      },
+      {
+        label: "مستحضرات العناية الطبية بالبشرة",
+        detail: "المستهلكون · الصيدليات · طب الجلد",
+      },
     ],
   },
   { label: "قيمنا الأساسية" },
@@ -453,24 +463,37 @@ export const partner = {
   },
 };
 
+/**
+ * المقر الرئيسي. العنوان بالعربية؛ الرابط والإحداثيات تُورَّث من الملف
+ * الإنجليزي لأنها ليست نصًا يُترجم.
+ */
+export const contactOffice = {
+  // TribuCare's own wording for the address, used verbatim — spelling and
+  // punctuation included. It is their premises; this is not a translation to
+  // be improved.
+  title: "المكتب الرئيسي",
+  body: "الحى السادس عمارة 115 زهراء المعادى المنطقة الصناعية القاهرة مصر",
+  image: { alt: "مبنى تريبوكير في زهراء المعادي بالقاهرة، من الشارع." },
+};
+
 export const footerNav = [
   {
     title: "الشركة",
     links: [
       { label: "من نحن" },
-      { label: "مجالات خبرتنا" },
       { label: "الفعاليات والأخبار" },
       { label: "المدونة والمقالات" },
       { label: "الأسئلة الشائعة" },
       { label: "الشراكات" },
+      { label: "تواصل معنا" },
     ],
   },
   {
-    title: "علاماتنا",
+    title: "مجالات خبرتنا",
     links: [
-      { label: "حلول طب الجلد" },
-      { label: "MLAY" },
-      { label: "Altesse Soin" },
+      { label: "حلول طب الجلد المتخصصة" },
+      { label: "أجهزة التجميل للاستخدام المنزلي" },
+      { label: "مستحضرات العناية الطبية بالبشرة" },
     ],
   },
 ];

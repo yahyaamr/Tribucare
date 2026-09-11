@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { Mail, Phone } from "lucide-react";
 import { TribuLogo } from "@/components/brand/logo";
 import { WaveField } from "@/components/brand/wave-field";
 import { SOCIAL_MARKS } from "@/components/brand/social-marks";
@@ -92,12 +93,17 @@ export function Footer({
               {hasContact && (
                 <address className="mt-6 space-y-1.5 text-[0.9375rem] not-italic text-ink-soft">
                   {contact.address && <p>{contact.address}</p>}
+                  {/* The two reachable lines carry their mark, the way every
+                      meta row on the site does: a `size-4` lucide glyph beside
+                      text this size, decorative because the address that
+                      follows it already says what it is. */}
                   {contact.email && (
                     <p>
                       <a
                         href={`mailto:${contact.email}`}
-                        className="transition-colors hover:text-brand-700"
+                        className="inline-flex items-center gap-2 transition-colors hover:text-brand-700"
                       >
+                        <Mail className="size-4 shrink-0" aria-hidden="true" />
                         {contact.email}
                       </a>
                     </p>
@@ -106,9 +112,14 @@ export function Footer({
                     <p>
                       <a
                         href={`tel:${contact.phone.replace(/\s/g, "")}`}
-                        className="transition-colors hover:text-brand-700"
+                        className="inline-flex items-center gap-2 transition-colors hover:text-brand-700"
                       >
-                        {contact.phone}
+                        <Phone className="size-4 shrink-0" aria-hidden="true" />
+                        {/* `dir="ltr"` on the number alone, not on the link:
+                            the digit groups would otherwise be reordered by
+                            Arabic's bidi run, while setting it on the anchor
+                            would drag the icon to the wrong edge of the row. */}
+                        <span dir="ltr">{contact.phone}</span>
                       </a>
                     </p>
                   )}

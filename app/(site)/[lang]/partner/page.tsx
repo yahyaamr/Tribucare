@@ -7,6 +7,7 @@ import { Rise } from "@/components/site/rise";
 import { PartnerPillars } from "./pillars";
 import { PartnerFormPanel } from "./partner-form";
 import { Brands } from "@/components/sections/brands";
+import { ChannelCard } from "@/components/distribution/channel-card";
 import { content, currentLocale } from "@/content/server";
 import { pageMetadata } from "@/lib/seo";
 
@@ -30,7 +31,14 @@ export async function generateMetadata(): Promise<Metadata> {
 
 
 export default async function PartnerPage() {
-  const { ui, partnerPillars, partnerStats, partner } = await content();
+  const { ui, partnerPillars, partnerStats, partner, contactOffice } =
+    await content();
+  const locale = await currentLocale();
+
+  // Built from the coordinates rather than from `mapUrl`: that is a
+  // `maps.app.goo.gl` redirect, and an iframe cannot follow one. `hl` puts the
+  // map's own labels into the page's language.
+  const mapSrc = `https://www.google.com/maps?q=${contactOffice.lat},${contactOffice.lng}&z=16&hl=${locale}&output=embed`;
   return (
     <div className="relative min-h-screen bg-gradient-to-b from-brand-50/60 via-white to-brand-50/40 pt-28 pb-24">
       <div
@@ -153,6 +161,76 @@ export default async function PartnerPage() {
 
       <Shell>
         <PartnerFormPanel ui={ui.partnerForm} />
+      </Shell>
+
+      {/* Where to find us. This page is the site's contact page — the form
+          above is how a partner reaches TribuCare in writing, and these are the
+          office, the two store counters and the inbox. The footer's "Contact"
+          link is an anchor to this `id`, so there is one destination rather
+          than a second page saying the same thing.
+
+          The cards are <ChannelCard>, the component the MLAY and Altesse Soin
+          distribution sections use, so an address reads as the same object as a
+          distribution channel. The customer-service card is that card carrying
+          an `href`, which is how the inbox becomes a `mailto:` without a card
+          type of its own. */}
+      <Shell>
+        <div
+          id="contact"
+          className="mt-16 scroll-mt-28 border-t border-brand-200/70 pt-16 md:mt-24 md:pt-24"
+        >
+          <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
+            <div className="lg:col-span-7">
+              <Reveal>
+                <Eyebrow>{ui.sections.contact.eyebrow}</Eyebrow>
+              </Reveal>
+              <LineReveal
+                as="h2"
+                delay={90}
+                className="mt-6 font-display text-[clamp(2.125rem,4.6vw,3.5rem)] font-semibold leading-[1.03] tracking-[-0.025em] text-ink"
+                lines={[
+                  ui.sections.contact.headlineLead,
+                  <span key="accent" className="text-brand-600">
+                    {ui.sections.contact.headlineAccent}
+                  </span>,
+                ]}
+              />
+            </div>
+            <Reveal className="lg:col-span-5" delay={100} from="right">
+              <p className="text-[1.0625rem] leading-relaxed text-ink-soft">
+                {ui.sections.contact.intro}
+              </p>
+            </Reveal>
+          </div>
+
+          <div className="mt-16 grid gap-6 md:mt-24 lg:grid-cols-12 lg:items-stretch">
+            <Reveal className="lg:col-span-4" from="left">
+              <ChannelCard
+                channel={contactOffice}
+                href={contactOffice.mapUrl}
+                image={contactOffice.image}
+                imageSizes="(max-width: 1024px) 100vw, 32vw"
+              />
+            </Reveal>
+
+            {/* The map itself, in the site's standard panel. `overflow-hidden`
+                is what clips Google's square frame to the card's radius, and
+                `loading="lazy"` keeps a third-party embed off the critical path
+                — it sits at the foot of the page and is never in the first
+                screenful. */}
+            <Reveal className="lg:col-span-8" delay={90} from="right">
+              <div className="card-surface h-full overflow-hidden p-0">
+                <iframe
+                  src={mapSrc}
+                  title={ui.sections.contact.mapTitle}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="h-[20rem] w-full border-0 lg:h-full lg:min-h-[22rem]"
+                />
+              </div>
+            </Reveal>
+          </div>
+        </div>
       </Shell>
     </div>
   );

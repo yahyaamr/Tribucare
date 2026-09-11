@@ -282,25 +282,6 @@ export default async function AltesseSoinPage() {
             ))}
           </ul>
 
-          {/* The places themselves. Altesse Soin has its own list rather than
-              MLAY's: it reaches the market through clinics, pharmacies and the
-              marketplaces, not through the MLAY line's mall counters. */}
-          <Reveal delay={120}>
-            <div className="mt-14 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-white/10 pt-8">
-              <span className="eyebrow text-brand-300">
-                {altesse.distribution.channelsLabel}
-              </span>
-              {altesse.distribution.places.map((place) => (
-                <span
-                  key={place}
-                  className="rounded-xl border border-white/15 px-3.5 py-1.5 text-[0.8125rem] font-medium text-brand-100 transition-colors duration-300 hover:border-signal-500/60 hover:text-white"
-                >
-                  {place}
-                </span>
-              ))}
-            </div>
-          </Reveal>
-
           {/* The invitation. Same two-column header rhythm as the section top,
               so it reads as this section's closing move rather than a section
               of its own. */}

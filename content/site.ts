@@ -33,28 +33,29 @@ export const nav = [
     icon: "atom",
     /**
      * The desktop pill carries a drop-down straight to the three verticals'
-     * own pages. Nothing here is new wording: each `label` is the footer's
-     * "Our Brands" name, and each `detail` comes from that vertical in
-     * `verticals` below — its label for the two brands, and for dermatology,
-     * whose name already *is* the vertical, its audience line instead. `icon`
-     * keys resolve in the header the same way the item's own does.
+     * own pages. Nothing here is new wording: each `label` is that vertical's
+     * own `label` in `verticals` below, and each `detail` is its `audience`
+     * line. The drop-down names the three fields TribuCare works in rather
+     * than the brands inside them, which is what the footer column and the
+     * homepage's Expertise cards do too. `icon` keys resolve in the header the
+     * same way the item's own does.
      */
     menu: [
       {
-        label: "Dermatology Solutions",
+        label: "Professional Dermatology Solutions",
         detail: "Dermatologists · Clinics · Aesthetic centres",
         href: "/dermatology",
         icon: "stethoscope",
       },
       {
-        label: "MLAY",
-        detail: "Home-Use Beauty Devices",
+        label: "Home-Use Beauty Devices",
+        detail: "Consumers · Retail · E-commerce",
         href: "/mlay",
         icon: "zap",
       },
       {
-        label: "Altesse Soin",
-        detail: "Medicated Skincare Products",
+        label: "Medicated Skincare Products",
+        detail: "Consumers · Pharmacy · Dermatology",
         href: "/altesse-soin",
         icon: "droplet",
       },
@@ -809,8 +810,10 @@ export const contact: {
    */
   social: { label: string; href: string; icon: string }[];
 } = {
-  email: "",
-  phone: "",
+  email: "cx@tribucare.com",
+  // Spaced for reading only. The footer strips the spaces back out to build the
+  // `tel:` href, so what is dialled is the number exactly as TribuCare gave it.
+  phone: "0100 215 9168",
   address: "",
   social: [
     {
@@ -831,24 +834,52 @@ export const contact: {
   ],
 };
 
+/**
+ * The main office, and where it is on a map.
+ *
+ * Supplied directly by TribuCare, like `contact.social` above — the
+ * company-profile deck carries no contact slide, so these are the second
+ * exception to the sourcing rule at the top of this file.
+ *
+ * `mapUrl` is the share link TribuCare gave for the place; `lat`/`lng` are the
+ * coordinates that link resolves to, kept as numbers because the embedded map
+ * is built from them rather than from the short URL — a `maps.app.goo.gl`
+ * address is a redirect, and an iframe cannot follow one.
+ *
+ * `icon` resolves in `components/distribution/channel-card.tsx`, the card the
+ * Partnerships page renders this through.
+ */
+export const contactOffice = {
+  icon: "building",
+  title: "Main Office",
+  body: "The sixth part, building 115, Zahraa Al-Maadi, Industrial Zone, Cairo, Egypt.",
+  mapUrl: "https://maps.app.goo.gl/Ph36Cr46tHhpFErQ8",
+  lat: 29.9621842,
+  lng: 31.3197374,
+  image: {
+    src: "/brand/tribucare-office.webp",
+    alt: "The TribuCare building in Zahraa Al-Maadi, Cairo, seen from the street.",
+  },
+} as const;
+
 export const footerNav = [
   {
     title: "Company",
     links: [
       { label: "About", href: "/about" },
-      { label: "Our Expertise", href: "/#expertise" },
       { label: "Events & News", href: "/events" },
       { label: "Blogs and Insights", href: "/blogs" },
       { label: "FAQ", href: "/#faq" },
       { label: "Partnerships", href: "/partner" },
+      { label: "Contact", href: "/partner#contact" },
     ],
   },
   {
-    title: "Our Brands",
+    title: "Our Expertise",
     links: [
-      { label: "Dermatology Solutions", href: "/dermatology" },
-      { label: "MLAY", href: "/mlay" },
-      { label: "Altesse Soin", href: "/altesse-soin" },
+      { label: "Professional Dermatology Solutions", href: "/dermatology" },
+      { label: "Home-Use Beauty Devices", href: "/mlay" },
+      { label: "Medicated Skincare Products", href: "/altesse-soin" },
     ],
   },
 ] as const;

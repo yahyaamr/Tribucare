@@ -61,12 +61,19 @@ const ui = {
     },
     teamsNote:
       "Dedicated experts in medical dermatology, device logistics, clinical education, and retail distribution across Egypt & MENA.",
-    flagshipBranches: "Flagship branches",
     retailEcommerce: "Retail & e-commerce",
     railHint: "Drag or scroll for more →",
     brandsWeRepresent: "Brands we represent",
     officialBrandPartner: "Official Brand Partner",
     ownFlagshipBrand: "Own Flagship Brand",
+    contact: {
+      eyebrow: "Visit us",
+      headlineLead: "Where to find",
+      headlineAccent: "TribuCare.",
+      intro:
+        "Our main office is in Zahraa Al-Maadi, Cairo. Open the map for directions.",
+      mapTitle: "TribuCare's main office on Google Maps",
+    },
     partnerPage: {
       eyebrow: "Strategic Partnerships",
       headlineLead: "Let's build what's next in",
@@ -112,15 +119,6 @@ const ui = {
         "Stay informed with dermatological whitepapers, formulation science breakdowns, and market intelligence from TribuCare's specialists.",
       cta: "Explore Blogs and Insights",
       stepperLabel: "Latest insights",
-    },
-    newsletter: {
-      eyebrow: "Newsletter",
-      headline: "Stay updated with clinical & beauty tech insights",
-      body: "Quarterly dermatological whitepapers, brand launch announcements and medical training schedules, straight to your inbox.",
-      emailLabel: "Work email",
-      emailPlaceholder: "Enter your work email...",
-      subscribe: "Subscribe",
-      sending: "Sending…",
     },
   },
 
@@ -392,6 +390,7 @@ const ui = {
  */
 export const data = {
   company: site.company,
+  contactOffice: site.contactOffice,
   nav: site.nav,
   hero: site.hero,
   missionVision: site.missionVision,

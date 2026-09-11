@@ -30,7 +30,7 @@ export const altesseCollections: BrandCollection[] = [
     summary:
       "Formulated with therapeutic concentrations of Centella Asiatica (Cica), Madecassoside, and bio-identical Ceramides to soothe irritated, red, or post-procedure skin and restore epidermal resilience.",
     store: "altessesoin.com",
-    image: "/brand/altesse/altesse-cica-bundle-real.webp",
+    image: "/brand/altesse/altesse-cica.webp",
     url: "https://altessesoin.com/collections/cica-1",
   },
   {
@@ -41,7 +41,7 @@ export const altesseCollections: BrandCollection[] = [
     summary:
       "Advanced multi-target brightening protocols combining Vitamin C, Niacinamide, and botanical antioxidants to fade stubborn sun spots, unify tone, and reveal natural dermal luminescence.",
     store: "altessesoin.com",
-    image: "/brand/altesse/brightening-bundle.webp",
+    image: "/brand/altesse/altesse-lustre.webp",
     url: "https://altessesoin.com/collections/lustre",
   },
   {
@@ -52,7 +52,7 @@ export const altesseCollections: BrandCollection[] = [
     summary:
       "Multi-molecular Hyaluronic Acid, Polyglutamic Acid, and restorative Ceramides delivering sustained 72-hour moisture that plumps dehydration lines without oiliness.",
     store: "altessesoin.com",
-    image: "/brand/altesse/reservoir-kit-hydration-rotten-3pcs.webp",
+    image: "/brand/altesse/altesse-reservoir.webp",
     url: "https://altessesoin.com/collections/reservoir",
   },
   {
@@ -63,7 +63,7 @@ export const altesseCollections: BrandCollection[] = [
     summary:
       "High-performance broad-spectrum UVA/UVB and HEV Blue Light defense formulated with antioxidant complexes, offering an invisible, non-greasy matte finish in intense sun.",
     store: "altessesoin.com",
-    image: "/brand/altesse/sunissime-hydrating-daily-sunscreen-spf50-50ml.webp",
+    image: "/brand/altesse/altesse-sunissime.webp",
     url: "https://altessesoin.com/collections/sunissime",
   },
   {
@@ -74,7 +74,7 @@ export const altesseCollections: BrandCollection[] = [
     summary:
       "Aluminum-free brightening roll-on deodorants with natural plant-derived hair-growth retarding complexes and 48-hour gentle odor control in signature fragrances.",
     store: "altessesoin.com",
-    image: "/brand/altesse/daily-duo.webp",
+    image: "/brand/altesse/altesse-deodorants.webp",
     url: "https://altessesoin.com/collections/rollon",
   },
   {
@@ -149,21 +149,6 @@ export const altesse = {
         title: "The TribuCare store",
         body: "Our own storefront carries the full catalogue direct, with the complete three-step rituals kept together rather than split across listings.",
       },
-    ],
-    channelsLabel: "Where you will find Altesse Soin",
-    /**
-     * The routes above, named. Deliberately NOT `mlayChannels` — those are the
-     * MLAY line's flagship mall counters, and Altesse Soin does not reach the
-     * market through them. This list restates the four channel cards above and
-     * claims nothing they do not.
-     */
-    places: [
-      "Dermatology clinics",
-      "Major pharmacy chains",
-      "Amazon",
-      "Noon",
-      "Jumia",
-      "The TribuCare store",
     ],
     partner: {
       label: "Partner with us",

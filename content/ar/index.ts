@@ -61,12 +61,19 @@ const ui = {
     },
     teamsNote:
       "خبراء متخصصون في طب الجلد ولوجستيات الأجهزة والتعليم الإكلينيكي وتوزيع التجزئة في مصر ومنطقة الشرق الأوسط.",
-    flagshipBranches: "الفروع الرئيسية",
     retailEcommerce: "التجزئة والتجارة الإلكترونية",
     railHint: "اسحب أو مرّر للمزيد ←",
     brandsWeRepresent: "العلامات التي نمثّلها",
     officialBrandPartner: "شريك رسمي للعلامة",
     ownFlagshipBrand: "علامتنا الرئيسية",
+    contact: {
+      eyebrow: "زورنا",
+      headlineLead: "أين تجد",
+      headlineAccent: "تريبوكير.",
+      intro:
+        "مقرنا الرئيسي في زهراء المعادي بالقاهرة. افتح الخريطة للحصول على الاتجاهات.",
+      mapTitle: "المقر الرئيسي لتريبوكير على خرائط جوجل",
+    },
     partnerPage: {
       eyebrow: "الشراكات الاستراتيجية",
       headlineLead: "لنبنِ معًا المرحلة القادمة في",
@@ -108,15 +115,6 @@ const ui = {
         "ابقَ على اطلاع بالأوراق العلمية في طب الجلد، وتحليلات علوم التركيبات، وتحليلات السوق من متخصصي تريبوكير.",
       cta: "تصفّح المدونة والمقالات",
       stepperLabel: "أحدث الرؤى",
-    },
-    newsletter: {
-      eyebrow: "النشرة البريدية",
-      headline: "ابقَ على اطلاع بالرؤى الإكلينيكية وتقنيات التجميل",
-      body: "أوراق علمية ربع سنوية في طب الجلد، وإعلانات إطلاق العلامات، وجداول التدريب الطبي — تصلك مباشرةً إلى بريدك.",
-      emailLabel: "بريد العمل",
-      emailPlaceholder: "أدخل بريد العمل...",
-      subscribe: "اشترك",
-      sending: "جارٍ الإرسال…",
     },
   },
 
@@ -352,6 +350,7 @@ const ui = {
 
 export const ar: DeepPartial<ContentData> = {
   company: site.company,
+  contactOffice: site.contactOffice,
   nav: site.nav,
   hero: site.hero,
   missionVision: site.missionVision,

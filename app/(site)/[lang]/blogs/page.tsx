@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Shell, Eyebrow } from "@/components/site/shell";
 import { Reveal, LineReveal } from "@/components/site/reveal";
-import { Newsletter } from "@/components/blog/newsletter";
 import { BlogIndex } from "./blog-index";
 import { getPublishedPostsFor } from "@/lib/cms/posts";
 import { content, currentLocale } from "@/content/server";
@@ -77,7 +76,6 @@ export default async function BlogListingPage() {
           ui={ui.blog}
           locale={await currentLocale()}
         />
-        <Newsletter ui={ui.sections.newsletter} />
       </Shell>
     </div>
   );

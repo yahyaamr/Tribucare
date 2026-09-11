@@ -70,7 +70,7 @@ function ValueCard({ value }: { value: CoreValue }) {
  * section rather than on the rail inside it.
  */
 export async function Reach() {
-  const { reach, mlayChannels, coreValues, ui } = await content();
+  const { reach, coreValues, ui } = await content();
 
   return (
     <section
@@ -159,25 +159,6 @@ export async function Reach() {
             ))}
           </Rail>
         </div>
-
-        {/* Flagship branches close the section: the numbers give the scale, the
-            values give the conduct, and these name the places you can walk into
-            — the concrete end of the same argument. */}
-        <Reveal delay={120}>
-          <div className="mt-14 flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-white/10 pt-8">
-            <span className="eyebrow text-brand-300">
-              {ui.sections.flagshipBranches}
-            </span>
-            {mlayChannels.flagship.map((mall) => (
-              <span
-                key={mall}
-                className="rounded-xl border border-white/15 px-3.5 py-1.5 text-[0.8125rem] font-medium text-brand-100 transition-colors duration-300 hover:border-signal-500/60 hover:text-white"
-              >
-                {mall}
-              </span>
-            ))}
-          </div>
-        </Reveal>
       </Shell>
     </section>
   );

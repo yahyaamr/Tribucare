@@ -1,15 +1,14 @@
 /**
  * Form delivery.
  *
- * Neither the partnership form nor the newsletter had anywhere to send to —
- * they set a local "success" flag (and one raised an `alert`) while discarding
- * the submission, so anyone filling them in was told they would be contacted
- * and never was.
+ * The site's forms had nowhere to send to — they set a local "success" flag
+ * (and one raised an `alert`) while discarding the submission, so anyone
+ * filling them in was told they would be contacted and never was.
  *
  * Point `NEXT_PUBLIC_INQUIRY_ENDPOINT` at a form backend (a route handler,
- * Formspree, HubSpot, whatever the business uses) and both forms start
- * delivering. Until it is set they report honestly that they cannot send,
- * rather than silently dropping the enquiry.
+ * Formspree, HubSpot, whatever the business uses) and they start delivering.
+ * Until it is set they report honestly that they cannot send, rather than
+ * silently dropping the enquiry.
  */
 const ENDPOINT = process.env.NEXT_PUBLIC_INQUIRY_ENDPOINT ?? "";
 
@@ -27,7 +26,6 @@ export type SubmitResult =
  */
 export type InquiryKind =
   | "partnership"
-  | "newsletter"
   | "request-demo"
   | "request-quotation"
   | "request-support";
