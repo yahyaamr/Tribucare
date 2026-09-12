@@ -85,7 +85,7 @@ export const altesseCollections: BrandCollection[] = [
     summary:
       "The Cica, Lustré and Réservoir foaming cleansers in 30ml format — the same formulations in cabin-friendly sizes, for travel or for trying a routine before committing to it.",
     store: "altessesoin.com",
-    image: "/brand/altesse/altesse-cica-mild-foaming-cleanser-30ml.webp",
+    image: "/brand/altesse/altesse-travel-size.webp",
     url: "https://altessesoin.com/collections/travel-size-items",
   },
 ];
