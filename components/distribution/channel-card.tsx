@@ -35,7 +35,9 @@ export type Channel = {
  * Neither tone is invented. `tone="light"` is Mission & Vision's white panel —
  * `card-surface card-interactive` with an `icon-disc` plate — and `tone="dark"`
  * is Core Values' rail card, down to the `signal-500` trace tick that stretches
- * on hover. The `tone` prop itself is the site's own convention, the one
+ * on hover. Both now resolve to one utility: `card-surface-dark` is shared
+ * with <ValueCard>, so the dimmed glass can only be changed for both at once.
+ * The `tone` prop itself is the site's own convention, the one
  * <Eyebrow>, <WaveField> and <CardStepper> already use.
  */
 export function ChannelCard({
@@ -79,9 +81,7 @@ export function ChannelCard({
         "group h-full",
         href && "relative",
         image ? "flex flex-col overflow-hidden" : "p-7",
-        dark
-          ? "rounded-3xl border border-white/10 bg-white/[0.04] transition-colors duration-500 hover:border-brand-400/40 hover:bg-white/[0.07]"
-          : "card-surface card-interactive",
+        dark ? "card-surface-dark" : "card-surface card-interactive",
       )}
     >
       <div className={cn(image && "p-7")}>

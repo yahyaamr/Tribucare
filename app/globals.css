@@ -535,6 +535,38 @@
   }
 }
 
+/* The same panel on deep-teal grounds — Core Values' rail card and the two
+   distribution sections, which carried this as duplicated markup until it
+   became a utility.
+
+   It tints *down*, not up. A white wash over `ground-deep` lightens the ground
+   it sits on, so WaveField's lines kept their contrast and read straight
+   through the copy; a brand-950 tint darkens them instead, which is what buys
+   the white title and `brand-200` body their legibility back. The backdrop
+   blur is the other half: whatever line happens to pass behind a card is
+   softened rather than tracked across the text.
+
+   No lift and no shadow — this is the flat counterpart to `card-surface`, and
+   pairing it with `card-interactive` would fight its own hover. */
+@utility card-surface-dark {
+  border: 1px solid rgb(255 255 255 / 0.12);
+  background-color: rgb(4 39 38 / 0.66);
+  border-radius: var(--radius-3xl);
+  /* Unprefixed only. Lightning CSS adds `-webkit-` from the browser targets,
+     the way it does for Tailwind's own `backdrop-blur-*`; writing the prefixed
+     line by hand instead made it collapse the pair to just that one, which
+     left Firefox with no blur at all. */
+  backdrop-filter: blur(16px) saturate(1.25);
+  transition:
+    background-color var(--duration-slow) var(--ease-out),
+    border-color var(--duration-slow) var(--ease-out);
+
+  &:hover {
+    border-color: rgb(69 178 175 / 0.4);
+    background-color: rgb(4 39 38 / 0.8);
+  }
+}
+
 /* Circular icon plate on light grounds — Mission & Vision's treatment, now the
    single icon language site-wide (Teams and Partner previously used squircles). */
 @utility icon-disc {

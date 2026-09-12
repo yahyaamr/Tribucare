@@ -43,7 +43,7 @@ type CoreValue = ContentData["coreValues"]["items"][number];
 function ValueCard({ value }: { value: CoreValue }) {
   const Icon = ICONS[value.icon];
   return (
-    <div className="group h-full rounded-3xl border border-white/10 bg-white/[0.04] p-7 transition-colors duration-500 hover:border-brand-400/40 hover:bg-white/[0.07]">
+    <div className="group card-surface-dark h-full p-7">
       <span className="icon-disc-dark size-12 group-hover:scale-110 group-hover:bg-brand-400/30 group-hover:text-white">
         {Icon && (
           <Icon className="size-6" strokeWidth={1.75} aria-hidden="true" />
