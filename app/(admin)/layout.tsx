@@ -34,7 +34,17 @@ export default function AdminRootLayout({
 }) {
   return (
     <html lang="en" className={`${fontClassNames} h-full antialiased`}>
-      <body className="min-h-full">{children}</body>
+      {/* Extensions in the writer's own browser stamp attributes onto the
+          body before React hydrates — ColorZilla writes `cz-shortcut-listen`,
+          Demoway writes `data-demoway-document-id` — and React reports each
+          one as a hydration mismatch it "won't patch up". None of them come
+          from this codebase, and the warning is noise that buries a real
+          mismatch when one appears. Suppressed on this element only: it
+          covers this tag's own attributes and nothing inside it, so a genuine
+          mismatch anywhere in the tree still reports. */}
+      <body className="min-h-full" suppressHydrationWarning>
+        {children}
+      </body>
     </html>
   );
 }
