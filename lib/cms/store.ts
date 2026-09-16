@@ -127,6 +127,51 @@ export function guardStore<A extends unknown[]>(
   };
 }
 
+/**
+ * How many objects a read fan-out has in flight at once.
+ *
+ * The store's records are one object each, so "every post" is one request per
+ * post. Fired through a bare `Promise.all` that is a burst as wide as the
+ * collection — and `/settings` reads every post, every news item and the
+ * author list in a single render, so the burst was wide enough that a blip in
+ * any one of ~20 sockets failed the page. Retrying the loser helps; not
+ * opening twenty at once helps more, and it is what keeps the retry budget a
+ * safety net rather than the thing holding the page up.
+ *
+ * Six is chosen to stay under the practical per-origin connection limit, so
+ * requests are not queued below us where a timeout cannot see them.
+ */
+const READ_CONCURRENCY = 6;
+
+/**
+ * `Promise.all(items.map(fn))` with a ceiling on how many run at once.
+ *
+ * Results keep the input's order, so every caller that sorts afterwards is
+ * unaffected. A rejection propagates exactly as `Promise.all`'s would, which
+ * is what `readAllPosts`/`readAllNews` rely on in strict mode.
+ */
+export async function mapLimited<T, R>(
+  items: T[],
+  fn: (item: T, index: number) => Promise<R>,
+  limit = READ_CONCURRENCY,
+): Promise<R[]> {
+  const out = Array<R>(items.length);
+  let next = 0;
+
+  const worker = async () => {
+    for (;;) {
+      const index = next++;
+      if (index >= items.length) return;
+      out[index] = await fn(items[index], index);
+    }
+  };
+
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, worker),
+  );
+  return out;
+}
+
 /* ------------------------------------------------------------------ blob -- */
 
 /**
@@ -160,20 +205,70 @@ function remember(pathname: string, entry: Recent) {
   }
 }
 
+/**
+ * How long to wait before asking storage again, and therefore how many times.
+ *
+ * A read is one request over the public internet, and the panel's pages fan
+ * several out at once — `/settings` alone reads every news item through a
+ * single `Promise.all`. One dropped socket in that fan-out failed the whole
+ * page with "Storage did not answer" while storage was in fact perfectly
+ * healthy, which is a blip reported as an outage.
+ *
+ * Only genuinely transient failures are retried: a request that threw, and a
+ * 5xx. The two answers that mean something are never retried, because asking
+ * again cannot change them — a 404 is *absence*, which `read` must report as
+ * `null` on the first attempt to keep its contract, and a 429 is a rate limit
+ * whose instruction to the editor is to wait a minute, not to be hammered
+ * three times in half a second.
+ */
+const RETRY_BACKOFF_MS = [150, 450, 1200];
+
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Runs `attempt` until it reports success, up to one try per backoff step plus
+ * the first. `attempt` returns either the value or `{ retry: cause }`; a cause
+ * it does not want retried it throws itself, which passes straight through.
+ */
+async function withRetry<T>(
+  attempt: () => Promise<T | { retry: unknown }>,
+): Promise<T> {
+  let cause: unknown;
+  for (let i = 0; i <= RETRY_BACKOFF_MS.length; i++) {
+    if (i > 0) await sleep(RETRY_BACKOFF_MS[i - 1]);
+    const result = await attempt();
+    if (typeof result === "object" && result !== null && "retry" in result) {
+      cause = (result as { retry: unknown }).retry;
+      continue;
+    }
+    return result as T;
+  }
+  throw toUnavailable(cause);
+}
+
 /** The store's public origin, learned from the first object we look up and
  *  kept for the life of the process. Every store has exactly one. */
 let baseUrl: string | null = null;
 
 async function learnBaseUrl(pathname: string): Promise<string | null> {
   const { head } = await import("@vercel/blob");
-  try {
-    const meta = await head(pathname);
-    baseUrl = meta.url.slice(0, meta.url.length - pathname.length - 1);
-    return baseUrl;
-  } catch (error) {
-    if (isNotFound(error)) return null;
-    throw toUnavailable(error);
-  }
+  return withRetry<string | null>(async () => {
+    try {
+      const meta = await head(pathname);
+      baseUrl = meta.url.slice(0, meta.url.length - pathname.length - 1);
+      return baseUrl;
+    } catch (error) {
+      // Absence is an answer, and it is this object's alone — the caller reads
+      // it as "not stored" and stops. Anything else is worth asking again.
+      if (isNotFound(error)) return null;
+      if (error instanceof StoreUnavailableError) throw error;
+      const rate =
+        /rate[ _-]?limit|\b429\b/i.test(String((error as Error)?.message ?? ""));
+      if (rate) throw toUnavailable(error);
+      return { retry: error };
+    }
+  });
 }
 
 function blobStore(): CmsStore {
@@ -183,24 +278,40 @@ function blobStore(): CmsStore {
       const byPath = new Map<string, StoredObject>();
       let cursor: string | undefined;
 
-      try {
-        // `list` pages at 1000; a blog will never approach that, but looping
-        // costs nothing and removes a silent ceiling on the media library.
-        do {
-          const page = await list({ prefix, cursor, limit: 1000 });
-          for (const blob of page.blobs) {
-            byPath.set(blob.pathname, {
-              pathname: blob.pathname,
-              url: blob.url,
-              size: blob.size,
-              uploadedAt: new Date(blob.uploadedAt).toISOString(),
-            });
+      // `list` pages at 1000; a blog will never approach that, but looping
+      // costs nothing and removes a silent ceiling on the media library.
+      // Each page is retried on its own, so a blip on page two does not
+      // discard page one and start over.
+      do {
+        const at = cursor;
+        const page = await withRetry(async () => {
+          try {
+            return await list({ prefix, cursor: at, limit: 1000 });
+          } catch (error) {
+            if (error instanceof StoreUnavailableError) throw error;
+            const message = String((error as Error)?.message ?? "");
+            const name = (error as { constructor?: { name?: string } })
+              ?.constructor?.name;
+            // A rate limit wants a minute, not another try in 150ms.
+            if (
+              name === "BlobRateLimited" ||
+              /rate[ _-]?limit|\b429\b/i.test(message)
+            ) {
+              throw toUnavailable(error);
+            }
+            return { retry: error };
           }
-          cursor = page.hasMore ? page.cursor : undefined;
-        } while (cursor);
-      } catch (error) {
-        throw toUnavailable(error);
-      }
+        });
+        for (const blob of page.blobs) {
+          byPath.set(blob.pathname, {
+            pathname: blob.pathname,
+            url: blob.url,
+            size: blob.size,
+            uploadedAt: new Date(blob.uploadedAt).toISOString(),
+          });
+        }
+        cursor = page.hasMore ? page.cursor : undefined;
+      } while (cursor);
 
       // Overlay what this process wrote or deleted since the index caught up.
       for (const [pathname, entry] of recent) {
@@ -227,31 +338,44 @@ function blobStore(): CmsStore {
       const base = baseUrl ?? (await learnBaseUrl(pathname));
       if (!base) return null;
 
-      let response: Response;
-      try {
-        // Straight to the object, past the Blob CDN: the timestamp makes every
-        // URL new, so no edge or fetch cache can hand back a stale copy.
-        //
-        // Deliberately NOT `cache: "no-store"`. That option forces any route
-        // that reads the store to render on every request — which is what
-        // silently turned the public pages' `revalidate = 3600` into per-visit
-        // renders with `Cache-Control: no-store`. With Next's default mode the
-        // fetch still runs on every request wherever the route is dynamic
-        // anyway (the panel and its API read cookies), and runs once per
-        // regeneration where it is not (the site), which is the ISR the pages
-        // declare and `revalidate.ts` refreshes on publish.
-        response = await fetch(`${base}/${pathname}?nc=${Date.now()}`);
-      } catch (error) {
-        throw toUnavailable(error);
-      }
-      if (response.status === 404) return null;
-      if (response.status === 429) {
-        throw toUnavailable(new Error("429 rate limited"));
-      }
-      if (!response.ok) {
-        throw toUnavailable(new Error(`storage responded ${response.status}`));
-      }
-      return response.text();
+      return withRetry<string | null>(async () => {
+        let response: Response;
+        try {
+          // Straight to the object, past the Blob CDN: the timestamp makes
+          // every URL new, so no edge or fetch cache can hand back a stale
+          // copy.
+          //
+          // Deliberately NOT `cache: "no-store"`. That option forces any route
+          // that reads the store to render on every request — which is what
+          // silently turned the public pages' `revalidate = 3600` into
+          // per-visit renders with `Cache-Control: no-store`. With Next's
+          // default mode the fetch still runs on every request wherever the
+          // route is dynamic anyway (the panel and its API read cookies), and
+          // runs once per regeneration where it is not (the site), which is
+          // the ISR the pages declare and `revalidate.ts` refreshes on
+          // publish.
+          response = await fetch(`${base}/${pathname}?nc=${Date.now()}`);
+        } catch (error) {
+          return { retry: error };
+        }
+        if (response.status === 404) return null;
+        if (response.status === 429) {
+          throw toUnavailable(new Error("429 rate limited"));
+        }
+        if (response.status >= 500) {
+          return { retry: new Error(`storage responded ${response.status}`) };
+        }
+        if (!response.ok) {
+          throw toUnavailable(new Error(`storage responded ${response.status}`));
+        }
+        try {
+          return await response.text();
+        } catch (error) {
+          // The status arrived and the body did not. A half-read object is not
+          // a shorter object, so this can only be retried, never returned.
+          return { retry: error };
+        }
+      });
     },
 
     async put(pathname, body, contentType) {
