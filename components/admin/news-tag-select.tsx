@@ -6,6 +6,8 @@ import { fill, useAdminStrings } from "@/components/admin/strings";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { Check, Loader2, Plus, Search, Tag, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { NewsTag } from "@/lib/cms/news-tags";
+import type { Locale } from "@/lib/i18n/config";
 
 /**
  * Multi-select news tags, with inline creation.
@@ -19,18 +21,29 @@ import { cn } from "@/lib/utils";
  *
  * The first selected tag is the primary one: it is what shows wherever there
  * is only room for a single badge, so the chip row labels it.
+ *
+ * Only the current language's tags are offered. A tag is a filter tab on one
+ * of the two sites, so an Arabic item can no more be filed under "Congress"
+ * than an English one can be filed under "مؤتمرات" — offering both is
+ * offering a list half of which cannot be used. Anything created here is
+ * created in the language being written.
  */
 export function NewsTagSelect({
   selected,
   available,
+  locale,
   onChange,
   onTagsChange,
 }: {
   selected: string[];
-  available: string[];
+  /** Every tag the panel knows, both languages. Narrowed here rather than by
+   *  the server, because the language can change without a reload. */
+  available: NewsTag[];
+  /** The language the item is being written in — its Content language. */
+  locale: Locale;
   onChange: (tags: string[]) => void;
   /** Lets the editor keep its own copy of the list in step after a create. */
-  onTagsChange: (tags: string[]) => void;
+  onTagsChange: (tags: NewsTag[]) => void;
 }) {
   const api = useAdminApi();
   const t = useAdminStrings().picker;
@@ -54,17 +67,23 @@ export function NewsTagSelect({
 
   const trimmed = query.trim().replace(/\s+/g, " ");
 
+  const forLocale = useMemo(
+    () => available.filter((t) => t.locale === locale).map((t) => t.name),
+    [available, locale],
+  );
+
   const matches = useMemo(() => {
     const q = trimmed.toLowerCase();
-    return available.filter((t) => !q || t.toLowerCase().includes(q));
-  }, [available, trimmed]);
+    return forLocale.filter((t) => !q || t.toLowerCase().includes(q));
+  }, [forLocale, trimmed]);
 
   /** Only offer creation when the typed name isn't already a tag — matched
-   *  case-insensitively, so "product launch" doesn't create a duplicate of
-   *  "Product Launch". */
+   *  case-insensitively across *both* languages, so "product launch" offers no
+   *  duplicate of "Product Launch" and a name taken on the other site is
+   *  refused by the server rather than silently reused. */
   const canCreate =
     trimmed.length > 0 &&
-    !available.some((t) => t.toLowerCase() === trimmed.toLowerCase());
+    !available.some((t) => t.name.toLowerCase() === trimmed.toLowerCase());
 
   function toggle(tag: string) {
     setError("");
@@ -83,7 +102,7 @@ export function NewsTagSelect({
     const response = await fetch(api("/news-tags"), {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: trimmed }),
+      body: JSON.stringify({ name: trimmed, locale }),
     }).catch(() => null);
 
     const body = await response?.json().catch(() => null);
@@ -94,7 +113,7 @@ export function NewsTagSelect({
       return;
     }
 
-    onTagsChange(body.tags as string[]);
+    onTagsChange(body.tags as NewsTag[]);
     // The server returns the canonical spelling, which may differ in case from
     // what was typed if it already existed.
     if (!selected.includes(body.tag)) {

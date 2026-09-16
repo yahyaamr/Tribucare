@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/cms/session";
+import { getCategories } from "@/lib/cms/categories";
 import { guardStore } from "@/lib/cms/store";
 import { revalidateBlog } from "@/lib/cms/revalidate";
 import {
@@ -51,7 +52,10 @@ async function PUT_(request: Request, { params }: Context) {
   // The uniqueness scan reads every post; only pay for it when the slug is
   // actually new. An unchanged slug is unique by construction.
   if (!next.slug || next.slug !== existing.slug) {
-    next.slug = await uniqueSlug(next.slug || next.title, next.id);
+    next.slug = await uniqueSlug(next.slug || next.title, next.id,
+      // A category page shares this path level, so its slug is spoken for.
+      (await getCategories()).map((c) => c.slug),
+    );
   }
 
   const saved = await savePost(next);

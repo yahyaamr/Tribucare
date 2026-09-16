@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 import { getPublishedPosts } from "@/lib/cms/posts";
 import { getPublishedNews } from "@/lib/cms/news";
+import { getPublicCategories } from "@/lib/cms/categories";
+import { getPublicNewsTags } from "@/lib/cms/news-tags";
+import { taxonomyPath } from "@/lib/cms/format";
 import type { NewsItem, Post } from "@/lib/cms/types";
 import { getContent } from "@/content";
 import {
@@ -93,9 +96,25 @@ function entry(
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [blogPosts, newsItems] = await Promise.all([
+  const [blogPosts, newsItems, categoryPages, tagPages] = await Promise.all([
     getPublishedPosts(),
     getPublishedNews(),
+    // Category and tag pages exist per language — a category belongs to one
+    // site — so each is listed under its own locale only, with no alternate
+    // in the other. Only those with something published behind them, which
+    // is also the only ones the route will answer for.
+    Promise.all(
+      LOCALES.map(async (locale) => ({
+        locale,
+        pages: await getPublicCategories(locale),
+      })),
+    ),
+    Promise.all(
+      LOCALES.map(async (locale) => ({
+        locale,
+        pages: await getPublicNewsTags(locale),
+      })),
+    ),
   ]);
   // Product slugs are shared across locales, so the default bundle lists them
   // for both.
@@ -145,6 +164,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
       lastModified: newestPost,
     }),
+    // A category page is the index filtered, so it inherits the index's
+    // freshness rather than claiming one of its own.
+    ...categoryPages.flatMap(({ locale, pages }) =>
+      pages.flatMap((category) =>
+        entry(taxonomyPath("/blogs", category.slug), {
+          changeFrequency: "weekly",
+          priority: 0.7,
+          lastModified: newestPost,
+          locales: [locale],
+        }),
+      ),
+    ),
     ...blogPosts.flatMap((post) =>
       entry(`/blogs/${post.slug}`, {
         changeFrequency: "yearly",
@@ -152,6 +183,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: publishedAt(post),
         locales: post.locales,
       }),
+    ),
+    ...tagPages.flatMap(({ locale, pages }) =>
+      pages.flatMap((tag) =>
+        entry(taxonomyPath("/events", tag.slug), {
+          changeFrequency: "weekly",
+          priority: 0.7,
+          lastModified: newestNews,
+          locales: [locale],
+        }),
+      ),
     ),
     // No `/news` entry: it redirects to `/events`, and a sitemap should list
     // the destination rather than the hop.

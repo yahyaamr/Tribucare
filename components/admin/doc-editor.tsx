@@ -14,11 +14,14 @@ import {
   ListChecks,
   List as ListIcon,
   Loader2,
+  Plus,
   Quote as QuoteIcon,
   RemoveFormatting,
   Strikethrough,
+  Table as TableIcon,
   Trash2,
   Underline,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { newBlockId } from "@/lib/cms/format";
@@ -28,6 +31,7 @@ import {
   inlineToPlain,
   isBlankInline,
   plainToInline,
+  sanitizeInline,
 } from "@/lib/cms/rich-text";
 import type { Block, MediaItem } from "@/lib/cms/types";
 import {
@@ -39,7 +43,7 @@ import {
   type Field,
 } from "./rich-field";
 import { MediaPickerDialog } from "./media-picker";
-import { useAdminStrings } from "@/components/admin/strings";
+import { fill, useAdminStrings } from "@/components/admin/strings";
 
 /**
  * The article editor — one continuous writing surface.
@@ -75,6 +79,7 @@ import { useAdminStrings } from "@/components/admin/strings";
 
 type TextBlock = Extract<Block, { text: string }>;
 type ItemsBlock = Extract<Block, { items: string[] }>;
+type TableBlock = Extract<Block, { type: "table" }>;
 
 function isTextBlock(block: Block): block is TextBlock {
   return (
@@ -91,6 +96,28 @@ const makeParagraph = (text = ""): Block => ({
   text,
 });
 
+/** A new table: a header and two rows across two columns. Small enough to be
+ *  quicker to extend than to cut down, which is the way round a writer wants
+ *  it when they reach for the button rather than pasting one. */
+const makeTable = (): Block => ({
+  id: newBlockId(),
+  type: "table",
+  head: ["", ""],
+  rows: [
+    ["", ""],
+    ["", ""],
+  ],
+});
+
+/**
+ * One cell's field address. The header is addressed as `h<col>` and a body
+ * cell as `<row>-<col>`, so focus walks a table the same way it walks a list —
+ * by field key, with the editor never holding a reference to a DOM node.
+ */
+function cellKey(id: string, row: number, col: number): FieldKey {
+  return row < 0 ? `${id}:h${col}` : `${id}:${row}-${col}`;
+}
+
 /**
  * A field address.
  *
@@ -105,6 +132,7 @@ type FocusAt = "start" | "end" | number;
 function firstFieldOf(block: Block): FieldKey {
   if (block.type === "list" || block.type === "takeaways") return `${block.id}:0`;
   if (block.type === "image") return `${block.id}:alt`;
+  if (block.type === "table") return cellKey(block.id, -1, 0);
   return block.id;
 }
 
@@ -113,6 +141,15 @@ function lastFieldOf(block: Block): FieldKey {
     return `${block.id}:${Math.max(0, block.items.length - 1)}`;
   }
   if (block.type === "image") return `${block.id}:caption`;
+  if (block.type === "table") {
+    // The bottom-right cell, which is where a writer's eye already is after
+    // pasting a table — and where the next Enter adds a row.
+    return cellKey(
+      block.id,
+      Math.max(0, block.rows.length - 1),
+      Math.max(0, block.head.length - 1),
+    );
+  }
   return block.id;
 }
 
@@ -195,6 +232,11 @@ const MARK_BUTTON =
 const GHOST_BUTTON =
   "inline-flex size-7 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-red-50 hover:text-red-600";
 
+/** The two "add a row / add a column" controls under a table. The toolbar's
+ *  own tool button, at the size a control sitting inside the document wants. */
+const ADD_BUTTON =
+  "inline-flex items-center gap-1 rounded-xl px-2 py-1 text-[0.6875rem] font-medium text-ink-faint transition-colors hover:bg-brand-50 hover:text-brand-800";
+
 /**
  * The inline marks, and the one browser API that can apply them.
  *
@@ -221,6 +263,7 @@ const TOOLS = [
   { label: "list", icon: ListIcon, kind: "list" },
   { label: "quote", icon: QuoteIcon, kind: "quote" },
   { label: "takeaways", icon: ListChecks, kind: "takeaways" },
+  { label: "table", icon: TableIcon, kind: "table" },
   { label: "image", icon: ImageIcon, kind: "image" },
 ] as const;
 
@@ -315,6 +358,58 @@ function ItemRow({
         className="rich-text flex-1 text-base leading-relaxed text-ink-soft"
       />
     </li>
+  );
+}
+
+/**
+ * One table cell.
+ *
+ * Built exactly as `ItemRow` is, for the same reason: the writer is editing an
+ * inline fragment, so the cell is a `RichField` and bold, links and footnote
+ * markers work inside a table the way they work in a paragraph. The two
+ * classNames are the ones `article-body.tsx` gives a header cell and a body
+ * cell, so the grid being typed into is the grid that publishes.
+ */
+function CellRow({
+  fieldKey,
+  value,
+  placeholder,
+  header,
+  register,
+  onValue,
+  onKeyDown,
+  onFocus,
+}: {
+  fieldKey: FieldKey;
+  value: string;
+  placeholder: string;
+  header: boolean;
+  register: (key: FieldKey, el: Field | null) => void;
+  onValue: (value: string) => void;
+  onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => void;
+  onFocus: () => void;
+}) {
+  const setRef = useCallback(
+    (el: HTMLDivElement | null) => register(fieldKey, el),
+    [fieldKey, register],
+  );
+
+  return (
+    <RichField
+      html={value}
+      placeholder={placeholder}
+      ariaLabel={placeholder}
+      onValue={onValue}
+      onKeyDown={onKeyDown}
+      onFocus={onFocus}
+      fieldRef={setRef}
+      className={cn(
+        "rich-text min-w-24 flex-1",
+        header
+          ? "font-display text-xs font-semibold tracking-wider text-brand-900 uppercase"
+          : "text-sm leading-relaxed text-ink-soft",
+      )}
+    />
   );
 }
 
@@ -599,6 +694,135 @@ export function DocEditor({
 
   /* ---- paste --------------------------------------------------------- */
 
+  /* ---- table --------------------------------------------------------- */
+
+  /** Every table edit goes through here, so a structural change can hand the
+   *  caret to the cell it created in the same commit. */
+  function updateTable(
+    index: number,
+    block: TableBlock,
+    focus?: { key: FieldKey; at: FocusAt },
+  ) {
+    const next = [...latest.current];
+    next[index] = block;
+    commit(next, focus);
+  }
+
+  function setCell(
+    block: TableBlock,
+    index: number,
+    row: number,
+    col: number,
+    value: string,
+  ) {
+    if (row < 0) {
+      const head = block.head.map((cell, i) => (i === col ? value : cell));
+      updateTable(index, { ...block, head });
+      return;
+    }
+    const rows = block.rows.map((cells, r) =>
+      r === row ? cells.map((cell, c) => (c === col ? value : cell)) : cells,
+    );
+    updateTable(index, { ...block, rows });
+  }
+
+  function addRow(block: TableBlock, index: number) {
+    const at = block.rows.length;
+    updateTable(
+      index,
+      { ...block, rows: [...block.rows, Array(block.head.length).fill("")] },
+      { key: cellKey(block.id, at, 0), at: "end" },
+    );
+  }
+
+  /** A column is added to the header and to every row in one step — the grid is
+   *  rectangular by contract, and half-adding one is how a renderer ends up
+   *  reading a cell that is not there. */
+  function addColumn(block: TableBlock, index: number) {
+    const at = block.head.length;
+    updateTable(
+      index,
+      {
+        ...block,
+        head: [...block.head, ""],
+        rows: block.rows.map((cells) => [...cells, ""]),
+      },
+      { key: cellKey(block.id, -1, at), at: "end" },
+    );
+  }
+
+  function removeRow(block: TableBlock, index: number, row: number) {
+    const rows = block.rows.filter((_, r) => r !== row);
+    updateTable(index, { ...block, rows }, {
+      key: cellKey(block.id, Math.min(row, rows.length - 1), 0),
+      at: "end",
+    });
+  }
+
+  function removeColumn(block: TableBlock, index: number, col: number) {
+    const head = block.head.filter((_, c) => c !== col);
+    updateTable(
+      index,
+      {
+        ...block,
+        head,
+        rows: block.rows.map((cells) => cells.filter((_, c) => c !== col)),
+      },
+      { key: cellKey(block.id, -1, Math.min(col, head.length - 1)), at: "end" },
+    );
+  }
+
+  function cellKeyDown(
+    event: React.KeyboardEvent<HTMLDivElement>,
+    block: TableBlock,
+    index: number,
+    row: number,
+    col: number,
+  ) {
+    if (event.key !== "Enter" || event.shiftKey) return;
+    // A cell holds one line. Left to the browser, Enter inserts a `<div>` —
+    // which `sanitizeInline` unwraps on blur, silently running the two lines
+    // together. So it walks down the column instead, adding a row at the
+    // bottom, which is also how a writer fills a table out.
+    event.preventDefault();
+    if (row >= block.rows.length - 1) {
+      addRow(block, index);
+      return;
+    }
+    focusField(cellKey(block.id, row + 1, col), "end");
+  }
+
+  /**
+   * Sends an image block's alt and caption back to the media library.
+   *
+   * The library is the source of truth, so describing an image while writing
+   * an article is describing it *everywhere* — which is the sync the panel
+   * promises. The library then rewrites every other article using the image,
+   * so this call is the only place the value has to be entered.
+   *
+   * Reads the block back out of `latest` rather than trusting the argument:
+   * the blur fires with the block as it was when the row rendered, and the
+   * keystroke that triggered the blur may not be in it yet.
+   *
+   * Silent on failure. The value is already in the draft and will be saved
+   * with it; an error here means the *other* articles are briefly out of step,
+   * which is not worth an alarm over a caption the writer can see is correct.
+   */
+  async function pushImageNotes(block: Block & { type: "image" }) {
+    const current = latest.current.find((b) => b.id === block.id);
+    if (!current || current.type !== "image" || !current.src.trim()) return;
+
+    await fetch(api("/media"), {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        url: current.src,
+        alt: current.alt,
+        description: current.caption ?? "",
+      }),
+    }).catch(() => null);
+  }
+
   async function insertPastedImage(file: File, at: number) {
     const placeholder: Block = {
       id: newBlockId(),
@@ -721,7 +945,7 @@ export function DocEditor({
     return true;
   }
 
-  async function adoptPastedImages(pasted: Block[], droppedTables: number) {
+  async function adoptPastedImages(pasted: Block[]) {
     const images = pasted.filter(
       (block): block is Block & { type: "image" } => block.type === "image",
     );
@@ -731,18 +955,11 @@ export function DocEditor({
       if (!(await adoptImage(image))) lost += 1;
     }
 
-    const notes: string[] = [];
-    if (droppedTables) {
-      notes.push(
-        `${droppedTables} table${droppedTables > 1 ? "s were" : " was"} left out — the article template has no table.`,
-      );
-    }
+    // One string per number rather than an "s" appended to one: Arabic does
+    // not form its plural that way, and the sentence names the count.
     if (lost) {
-      notes.push(
-        `${lost} image${lost > 1 ? "s" : ""} could not be copied across — add ${lost > 1 ? "them" : "it"} with the Image button.`,
-      );
+      setError(fill(lost === 1 ? t.imageLost : t.imagesLost, { count: lost }));
     }
-    if (notes.length) setError(notes.join(" "));
   }
 
   /**
@@ -755,7 +972,6 @@ export function DocEditor({
    */
   function insertPastedDocument(
     pasted: Block[],
-    droppedTables: number,
     /** The block's own row, or null when the paste landed in one of its side
      *  fields — an attribution, an alt text — which cannot be split. */
     el: HTMLElement | null,
@@ -780,7 +996,7 @@ export function DocEditor({
 
     const tail = body[body.length - 1];
     commit(next, { key: lastFieldOf(tail), at: "end" });
-    void adoptPastedImages(pasted, droppedTables);
+    void adoptPastedImages(pasted);
   }
 
   function handlePaste(event: React.ClipboardEvent) {
@@ -832,10 +1048,25 @@ export function DocEditor({
     // one undifferentiated run of paragraphs.
     const html = event.clipboardData.getData("text/html");
     if (html && hasStructure(html)) {
-      const { blocks: pasted, dropped } = htmlToBlocks(html);
+      const { blocks: pasted } = htmlToBlocks(html);
       if (pasted.length) {
         event.preventDefault();
-        insertPastedDocument(pasted, dropped.tables, inRow ? field : null, block, active);
+
+        /**
+         * A cell cannot be split, so a paste landing in one would otherwise
+         * insert its blocks *after* the table — which is the wrong answer for
+         * the commonest paste of all: a few words, with a bold or a link in
+         * them, dropped into a cell. One text block goes into the cell at the
+         * caret; a table or a whole document still lands after the table,
+         * because neither fits inside a cell.
+         */
+        const single = pasted.length === 1 ? pasted[0] : null;
+        if (inRow && block.type === "table" && single && "text" in single) {
+          document.execCommand("insertHTML", false, sanitizeInline(single.text));
+          return;
+        }
+
+        insertPastedDocument(pasted, inRow ? field : null, block, active);
         return;
       }
     }
@@ -908,6 +1139,9 @@ export function DocEditor({
         return;
       case "takeaways":
         insertBlock({ id: newBlockId(), type: "takeaways", items: [""] });
+        return;
+      case "table":
+        insertBlock(makeTable());
     }
   }
 
@@ -1110,6 +1344,132 @@ export function DocEditor({
             );
           }
 
+          if (block.type === "table") {
+            const cols = block.head.length;
+            return (
+              <div key={block.id} className="group/row relative">
+                {/* The frame, the tint, the hairlines and the header face are
+                    `article-body.tsx`'s, so the table being edited is the
+                    table that publishes — including the overflow pair, which
+                    is the one documented on `rail`. */}
+                <div className="scroll-subtle overflow-x-auto overflow-y-clip rounded-3xl border border-brand-200/80">
+                  <table className="w-full min-w-[32rem] border-collapse">
+                    <thead>
+                      <tr className="bg-brand-50/60">
+                        {block.head.map((cell, c) => (
+                          <th
+                            key={`h${c}`}
+                            scope="col"
+                            className="group/col border-b border-brand-200/80 px-3 py-2.5 text-start align-top font-normal"
+                          >
+                            <div className="flex items-start gap-1">
+                              <CellRow
+                                fieldKey={cellKey(block.id, -1, c)}
+                                value={cell}
+                                placeholder={t.tableHeaderPlaceholder}
+                                header
+                                register={register}
+                                onValue={(value) => setCell(block, index, -1, c, value)}
+                                onKeyDown={(e) => cellKeyDown(e, block, index, -1, c)}
+                                onFocus={focusHere}
+                              />
+                              {cols > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => removeColumn(block, index, c)}
+                                  title={t.removeColumn}
+                                  className={cn(
+                                    GHOST_BUTTON,
+                                    "size-5 shrink-0 opacity-0 group-hover/col:opacity-100 focus:opacity-100",
+                                  )}
+                                >
+                                  <X className="size-3" aria-hidden="true" />
+                                  <span className="sr-only">{t.removeColumn}</span>
+                                </button>
+                              )}
+                            </div>
+                          </th>
+                        ))}
+                        <th className="w-8 border-b border-brand-200/80" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {block.rows.map((cells, r) => (
+                        <tr
+                          key={`r${r}`}
+                          className="group/trow border-b border-brand-100 last:border-0"
+                        >
+                          {cells.map((cell, c) => (
+                            <td key={`c${c}`} className="px-3 py-2.5 align-top">
+                              <CellRow
+                                fieldKey={cellKey(block.id, r, c)}
+                                value={cell}
+                                placeholder={t.tableCellPlaceholder}
+                                header={false}
+                                register={register}
+                                onValue={(value) => setCell(block, index, r, c, value)}
+                                onKeyDown={(e) => cellKeyDown(e, block, index, r, c)}
+                                onFocus={focusHere}
+                              />
+                            </td>
+                          ))}
+                          <td className="px-1 align-top">
+                            {block.rows.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeRow(block, index, r)}
+                                title={t.removeRow}
+                                className={cn(
+                                  GHOST_BUTTON,
+                                  "mt-1 size-5 opacity-0 group-hover/trow:opacity-100 focus:opacity-100",
+                                )}
+                              >
+                                <X className="size-3" aria-hidden="true" />
+                                <span className="sr-only">{t.removeRow}</span>
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => addRow(block, index)}
+                    className={ADD_BUTTON}
+                  >
+                    <Plus className="size-3 shrink-0" aria-hidden="true" />
+                    {t.addRow}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addColumn(block, index)}
+                    className={ADD_BUTTON}
+                  >
+                    <Plus className="size-3 shrink-0" aria-hidden="true" />
+                    {t.addColumn}
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => removeBlock(index)}
+                  title={t.removeTable}
+                  className={cn(
+                    GHOST_BUTTON,
+                    "absolute -top-1 end-0 opacity-0 group-hover/row:opacity-100 focus:opacity-100",
+                  )}
+                >
+                  <Trash2 className="size-3.5" aria-hidden="true" />
+                  <span className="sr-only">{t.removeTable}</span>
+                </button>
+              </div>
+            );
+          }
+
           const status = pending[block.id];
           return (
             <figure key={block.id} className="group/row relative">
@@ -1130,6 +1490,9 @@ export function DocEditor({
                   </span>
                 )}
               </div>
+              {/* On blur, not on change: this writes to the library and to
+                  every other article using the image, which is not something
+                  to do once per keystroke. */}
               <figcaption className="mt-2.5 space-y-2">
                 <input
                   value={block.alt}
@@ -1139,6 +1502,7 @@ export function DocEditor({
                     register(`${block.id}:alt`, el);
                   }}
                   onChange={(e) => replaceAt(index, { ...block, alt: e.target.value })}
+                  onBlur={() => void pushImageNotes(block)}
                   className={SUBTLE_FIELD}
                 />
                 <input
@@ -1151,6 +1515,7 @@ export function DocEditor({
                   onChange={(e) =>
                     replaceAt(index, { ...block, caption: e.target.value })
                   }
+                  onBlur={() => void pushImageNotes(block)}
                   className={SUBTLE_FIELD}
                 />
               </figcaption>
@@ -1185,12 +1550,16 @@ export function DocEditor({
         open={pickerOpen}
         onClose={() => setPickerOpen(false)}
         onPick={(item) => {
+          // The library is the source of truth for what an image is, so a
+          // picked image arrives already described. Typing the same alt text
+          // again for every article that reuses a photograph is exactly what
+          // the sidecar exists to stop.
           insertBlock({
             id: newBlockId(),
             type: "image",
             src: item.url,
-            alt: "",
-            caption: "",
+            alt: item.alt,
+            caption: item.description,
           });
           setPickerOpen(false);
         }}

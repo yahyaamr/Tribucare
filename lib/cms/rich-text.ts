@@ -263,6 +263,19 @@ export function isBlankInline(input: string): boolean {
  */
 export function sanitizeBlocks<T extends { type: string }>(blocks: T[]): T[] {
   return blocks.map((block) => {
+    // A table's cells are fragments like any other block's text, and they are
+    // checked first because a table carries neither `text` nor `items` and
+    // would otherwise fall past every branch below and be stored unsanitized.
+    if ("rows" in block && Array.isArray((block as { rows: unknown }).rows)) {
+      const table = block as unknown as { head: string[]; rows: string[][] };
+      return {
+        ...block,
+        head: (table.head ?? []).map((cell) => sanitizeInline(cell)),
+        rows: (table.rows ?? []).map((row) =>
+          (row ?? []).map((cell) => sanitizeInline(cell)),
+        ),
+      };
+    }
     if ("items" in block && Array.isArray((block as { items: unknown }).items)) {
       const items = (block as unknown as { items: string[] }).items;
       return { ...block, items: items.map((item) => sanitizeInline(item)) };

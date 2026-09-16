@@ -11,10 +11,12 @@
  * What survives, and what deliberately does not:
  *
  *   survives   headings, paragraphs, bulleted and numbered lists, block
- *              quotes, images, and the inline marks in `rich-text.ts` —
- *              bold, italic, underline, strikethrough, code, sup/sub, links
+ *              quotes, tables, images, and the inline marks in
+ *              `rich-text.ts` — bold, italic, underline, strikethrough, code,
+ *              sup/sub, links
  *   dropped    every font, size, colour, alignment, margin, class and style
- *              attribute the source document carried
+ *              attribute the source document carried, and every width,
+ *              border and background a table brought with it
  *
  * The second half is not a limitation, it is the feature. A pasted `h2` comes
  * out as *the site's* `h2`; a pasted paragraph comes out at the site's body
@@ -61,9 +63,6 @@ const IGNORED = new Set([
 
 export interface PasteResult {
   blocks: Block[];
-  /** What the article template has no home for, counted so the editor can say
-   *  so rather than letting it vanish silently. */
-  dropped: { tables: number };
 }
 
 /**
@@ -194,6 +193,126 @@ function quoteBlock(el: Element): Block | null {
   return { id: newBlockId(), type: "quote", text: value, attribution: "" };
 }
 
+/**
+ * A table, read as a grid.
+ *
+ * `<thead>`, `<tbody>` and a bare run of `<tr>` all read the same way: the
+ * rows in document order. The first row becomes the header when it is one —
+ * either because it sits in a `<thead>` or because its cells are `<th>` —
+ * and otherwise the table renders headerless, which is what a pasted data
+ * table that never had a header needs.
+ *
+ * Two things are normalised so the renderer never meets a ragged grid:
+ *
+ * - **`colspan` is expanded** into that many cells, the first carrying the
+ *   words and the rest empty. The alternative is honouring the span, which
+ *   would mean a `colSpan` attribute in the block model and a merged cell in
+ *   the editor — a table-authoring feature, not a paste. Expanding keeps every
+ *   column under the header it was written beneath.
+ * - **Every row is padded** to the widest row's width. A row short of the
+ *   header is what a source document's trailing blank cell looks like once
+ *   its `<td>` is omitted.
+ *
+ * `rowspan` is read as an ordinary cell: its words land in the row that
+ * declared it and the rows below are one cell shorter, which padding fills.
+ * Nothing is lost, which is the bar here — a table the writer has to nudge is
+ * a far better outcome than a table they have to retype.
+ */
+/**
+ * One cell's words.
+ *
+ * A cell is not always one line: it can hold a couple of paragraphs, or a
+ * whole nested table. `inlineOf` drops those tags — correctly, a cell is an
+ * inline fragment — but dropping them with nothing in their place runs the
+ * last word of one line straight into the first of the next ("Inner AInner
+ * B"). Each boundary is marked with a space first, and `inlineOf` collapses
+ * the run.
+ */
+function cellOf(cell: Element): string {
+  const clone = cell.cloneNode(true) as Element;
+  for (const inner of Array.from(
+    clone.querySelectorAll("td,th,tr,p,div,li,br,h1,h2,h3,h4,h5,h6"),
+  )) {
+    inner.after(clone.ownerDocument.createTextNode(" "));
+  }
+  return inlineOf(clone);
+}
+
+function tableBlock(el: Element): Block | null {
+  const rows: string[][] = [];
+  let headerRows = 0;
+
+  // `querySelectorAll` would reach into a table nested inside a cell and
+  // splice its rows into this one. Only rows belonging to *this* table count.
+  const ownRows = Array.from(el.querySelectorAll("tr")).filter(
+    (tr) => tr.closest("table") === el,
+  );
+
+  for (const tr of ownRows) {
+    const cells = Array.from(tr.children).filter(
+      (cell) => cell.tagName === "TD" || cell.tagName === "TH",
+    );
+    if (!cells.length) continue;
+
+    const row: string[] = [];
+    for (const cell of cells) {
+      const span = Math.min(
+        Math.max(Number.parseInt(cell.getAttribute("colspan") ?? "1", 10) || 1, 1),
+        // A hostile or broken `colspan="9999"` is a memory bill, not a table.
+        24,
+      );
+      row.push(cellOf(cell));
+      for (let i = 1; i < span; i++) row.push("");
+    }
+
+    const isHeader =
+      rows.length === headerRows &&
+      (tr.closest("thead") !== null ||
+        cells.every((cell) => cell.tagName === "TH"));
+    if (isHeader) headerRows += 1;
+    rows.push(row);
+  }
+
+  if (!rows.length) return null;
+  if (!rows.some((row) => row.some((cell) => inlineToPlain(cell).trim()))) {
+    return null;
+  }
+
+  const width = Math.max(...rows.map((row) => row.length));
+  const square = rows.map((row) => [
+    ...row,
+    ...Array(width - row.length).fill(""),
+  ]);
+
+  // More than one header row flattens into the first: the template has one
+  // header band, and a second one drawn as a body row is still readable.
+  const head = headerRows ? square[0] : Array(width).fill("");
+  const body = headerRows ? square.slice(1) : square;
+
+  if (!body.length) {
+    // Header only. Those are the words the writer pasted, so they become the
+    // body of a headerless table rather than a table with nothing under it.
+    return { id: newBlockId(), type: "table", head: Array(width).fill(""), rows: [head] };
+  }
+
+  return { id: newBlockId(), type: "table", head, rows: body };
+}
+
+/**
+ * Whether a `<table>` is a table or a page layout.
+ *
+ * Word, Outlook and older site templates use tables to position things, and a
+ * one-cell table is almost always a wrapper around the real content. Rendering
+ * that as a table puts a border around an entire pasted article. A table is
+ * only treated as data when it has more than one cell.
+ */
+function isLayoutTable(el: Element): boolean {
+  const cells = Array.from(el.querySelectorAll("td,th")).filter(
+    (cell) => cell.closest("table") === el,
+  );
+  return cells.length <= 1;
+}
+
 function figureBlock(el: Element): Block | null {
   const img = el.querySelector("img");
   if (!img) return null;
@@ -210,7 +329,6 @@ export function htmlToBlocks(html: string): PasteResult {
   promoteStyledEmphasis(doc);
 
   const blocks: Block[] = [];
-  const dropped = { tables: 0 };
 
   const push = (block: Block | null) => {
     if (block) blocks.push(block);
@@ -275,10 +393,13 @@ export function htmlToBlocks(html: string): PasteResult {
         return;
       }
       case "TABLE":
-        // The article template has no table. Counted rather than flattened:
-        // a table pulled apart into paragraphs is worse than a table the
-        // editor is told to re-enter.
-        dropped.tables += 1;
+        // A layout table is a container and is descended into; a real one is
+        // read as a grid.
+        if (isLayoutTable(el)) {
+          Array.from(el.childNodes).forEach(walk);
+          return;
+        }
+        push(tableBlock(el));
         return;
       case "BR":
         return;
@@ -296,7 +417,7 @@ export function htmlToBlocks(html: string): PasteResult {
 
   Array.from(doc.body.childNodes).forEach(walk);
 
-  return { blocks, dropped };
+  return { blocks };
 }
 
 /**

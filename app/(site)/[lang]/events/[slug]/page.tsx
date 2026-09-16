@@ -8,9 +8,22 @@ import { NewsView } from "@/components/news/news-view";
 import { formatPostDate } from "@/lib/cms/format";
 import { getNewsBySlug, getPublishedNews, getPublishedNewsFor } from "@/lib/cms/news";
 import { content, currentLocale } from "@/content/server";
-import { localePath } from "@/lib/i18n/config";
+import { LOCALES, localePath } from "@/lib/i18n/config";
 import { JsonLd } from "@/components/site/json-ld";
 import { breadcrumbSchema, newsArticleSchema, pageMetadata } from "@/lib/seo";
+import { findPublicNewsTag, getPublicNewsTags } from "@/lib/cms/news-tags";
+import { taxonomyPath } from "@/lib/cms/format";
+import { EventsListing } from "../listing";
+
+/** `/events/<slug>` is an item or a tag page, exactly as `/blogs/<slug>` is
+ *  an article or a category page — see that route for the reasoning. */
+function decodeSlug(slug: string) {
+  try {
+    return decodeURIComponent(slug);
+  } catch {
+    return slug;
+  }
+}
 
 /**
  * A single item from Events & News.
@@ -23,8 +36,15 @@ import { breadcrumbSchema, newsArticleSchema, pageMetadata } from "@/lib/seo";
 export const revalidate = 3600;
 
 export async function generateStaticParams() {
-  const items = await getPublishedNews();
-  return items.map((item) => ({ slug: item.slug }));
+  const [items, ...perLocale] = await Promise.all([
+    getPublishedNews(),
+    ...LOCALES.map((locale) => getPublicNewsTags(locale)),
+  ]);
+  const slugs = new Set([
+    ...items.map((item) => item.slug),
+    ...perLocale.flat().map((tag) => tag.slug),
+  ]);
+  return [...slugs].map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -36,7 +56,17 @@ export async function generateMetadata({
   const locale = await currentLocale();
   const item = await getNewsBySlug(slug);
   if (!item || item.status !== "published" || !item.locales.includes(locale)) {
-    return {};
+    const tag = await findPublicNewsTag(decodeSlug(slug), locale);
+    if (!tag) return {};
+    const { ui } = await content();
+    const m = ui.pageMeta.events;
+    return pageMetadata({
+      locale,
+      path: taxonomyPath("/events", tag.slug),
+      locales: [tag.locale],
+      title: m.tagTitle.replace("{tag}", tag.name),
+      description: m.tagDescription.replace("{tag}", tag.name),
+    });
   }
 
   const title = item.seo.metaTitle.trim() || item.title;
@@ -67,8 +97,11 @@ export default async function NewsDetailPage({
   const locale = await currentLocale();
 
   // A draft is a 404 to the public, and so is an item this language was not
-  // ticked for — same rule the blog follows.
+  // ticked for — same rule the blog follows. Before giving up, the slug is
+  // tried as a tag's: `/events/<tag>` is the index filtered to it.
   if (!item || item.status !== "published" || !item.locales.includes(locale)) {
+    const tag = await findPublicNewsTag(decodeSlug(slug), locale);
+    if (tag) return <EventsListing active={tag} />;
     notFound();
   }
 

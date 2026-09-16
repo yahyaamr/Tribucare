@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/cms/session";
+import { getNewsTags } from "@/lib/cms/news-tags";
 import { guardStore } from "@/lib/cms/store";
 import { revalidateNews } from "@/lib/cms/revalidate";
 import {
@@ -44,7 +45,10 @@ async function POST_(request: Request) {
     return Response.json({ errors }, { status: 422 });
   }
 
-  draft.slug = await uniqueNewsSlug(draft.slug || draft.title, draft.id);
+  draft.slug = await uniqueNewsSlug(draft.slug || draft.title, draft.id,
+      // A category page shares this path level, so its slug is spoken for.
+      (await getNewsTags()).map((c) => c.slug),
+    );
 
   const saved = await saveNews(draft);
   revalidateNews(saved.slug);

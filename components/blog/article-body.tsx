@@ -17,7 +17,11 @@ import type { ContentData } from "@/content/en";
  * stood before the CMS existed — the mint takeaways panel, the lead paragraph,
  * the `h2`, the dark pull-quote. The two additions, `list` and `image`, are
  * built from vocabulary already on the page: the list reuses the takeaways
- * bullet, and the figure reuses the article hero's frame.
+ * bullet, and the figure reuses the article hero's frame. The table, added
+ * later, does the same — the takeaways panel's frame and tint for its shell
+ * and header band, the card hairline between its rows, and the takeaways
+ * heading's face for the header cells. No border, width or alignment survives
+ * from the document a table was pasted out of.
  *
  * A block's text is an inline fragment (bold, italic, links — see
  * `lib/cms/rich-text.ts`) rather than a plain string, so it is written with
@@ -54,6 +58,32 @@ function Rich({
 }
 
 /**
+ * A table's grid, as the renderer needs it.
+ *
+ * `sanitizeBlocks` squares a table up on save, but it runs on the way *in* and
+ * this component is the only gate on the way out — the same reason every
+ * fragment here is sanitized again rather than trusted. A table is the one
+ * block whose shape is two-dimensional, so unlike an array of strings it can
+ * arrive ragged or with a row missing entirely from a record written by hand
+ * or by an older build, and `head.some` on an absent header is a crashed
+ * article page rather than a malformed one.
+ */
+function grid(block: Extract<Block, { type: "table" }>) {
+  const head = Array.isArray(block.head) ? block.head : [];
+  const rows = (Array.isArray(block.rows) ? block.rows : []).map((row) =>
+    Array.isArray(row) ? row : [],
+  );
+  const width = Math.max(head.length, ...rows.map((row) => row.length), 0);
+  return {
+    width,
+    head: Array.from({ length: width }, (_, i) => head[i] ?? ""),
+    rows: rows.map((row) =>
+      Array.from({ length: width }, (_, i) => row[i] ?? ""),
+    ),
+  };
+}
+
+/**
  * Vertical rhythm, decided by a block and the one above it.
  *
  * The old template hard-coded this: `mt-8 space-y-8` between sections with the
@@ -70,6 +100,7 @@ function spacingFor(block: Block, previous: Block | undefined) {
       return "mt-12";
     case "takeaways":
     case "image":
+    case "table":
       return "mt-10";
     default:
       return previous.type === "heading" ? "mt-3" : "mt-6";
@@ -167,6 +198,59 @@ function BlockView({ block, ui }: { block: Block; ui: BlogUi }) {
       );
     }
 
+    case "table": {
+      // The header band only appears when the header has words in it: a
+      // pasted data table often has none, and an empty tinted strip above the
+      // first row reads as a rendering fault rather than as a table.
+      const { head, rows } = grid(block);
+      const headed = head.some((cell) => inlineToPlain(cell).trim());
+      return (
+        // A table is the one block whose width is set by its content rather
+        // than by the column, so it scrolls sideways on a narrow screen. The
+        // overflow pair is the `rail` utility's, for the reason documented
+        // there: naming one axis `auto` computes the other to `auto` too, and
+        // an empty vertical scroller latches a downward swipe on a phone
+        // before the page gets it. (A browser resolves `clip` to `hidden`
+        // next to an `auto` axis, which is exactly what every rail on the
+        // site already computes to — the point is that it is not `auto`.)
+        // No `data-lenis-prevent` and no eased-wheel loop either: Lenis
+        // drives the vertical axis only, so horizontal is already native.
+        <div className="scroll-subtle overflow-x-auto overflow-y-clip rounded-3xl border border-brand-200/80">
+          <table className="w-full min-w-[32rem] border-collapse">
+            {headed && (
+              <thead>
+                <tr className="bg-brand-50/60">
+                  {head.map((cell, i) => (
+                    <th
+                      key={`h${i}`}
+                      scope="col"
+                      className="border-b border-brand-200/80 px-4 py-3 text-start font-display text-xs font-semibold tracking-wider text-brand-900 uppercase"
+                    >
+                      <Rich className="rich-text" html={cell} />
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            )}
+            <tbody>
+              {rows.map((row, r) => (
+                <tr key={`r${r}`} className="border-b border-brand-100 last:border-0">
+                  {row.map((cell, c) => (
+                    <td
+                      key={`c${c}`}
+                      className="px-4 py-3 align-top text-start text-sm leading-relaxed text-ink-soft"
+                    >
+                      <Rich className="rich-text" html={cell} />
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      );
+    }
+
     case "quote":
       return (
         <blockquote className="relative overflow-hidden rounded-3xl border-s-4 border-signal-500 bg-brand-900 p-8 text-white shadow-lg">
@@ -219,6 +303,12 @@ function isEmpty(block: Block) {
       return block.items.every((item) => !inlineToPlain(item).trim());
     case "image":
       return !block.src.trim();
+    case "table": {
+      const { head, rows } = grid(block);
+      return ![...head, ...rows.flat()].some((cell) =>
+        inlineToPlain(cell).trim(),
+      );
+    }
     default:
       // The words, not the markup: an emptied-out `<strong></strong>` left
       // behind by a deletion is a blank block, not a one-tag one.

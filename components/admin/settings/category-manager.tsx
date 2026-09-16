@@ -17,7 +17,17 @@ import {
 import { cn } from "@/lib/utils";
 import { fill, useAdminStrings } from "@/components/admin/strings";
 import type { Category, CategoryUsage } from "@/lib/cms/categories";
-import { LOCALES, LOCALE_LABELS, type Locale } from "@/lib/i18n/config";
+import {
+  LOCALES,
+  LOCALE_LABELS,
+  localePath,
+  type Locale,
+} from "@/lib/i18n/config";
+import {
+  slugifyTaxonomy,
+  slugifyTaxonomyDraft,
+  taxonomyPath,
+} from "@/lib/cms/format";
 
 /**
  * Category management.
@@ -42,9 +52,11 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
   const t = useAdminStrings();
   const st = t.settings;
   const [categories, setCategories] = useState(initial);
-  const [adding, setAdding] = useState("");
+  const [adding, setAdding] = useState<TaxonomyDraft>(BLANK);
   const [addingLocale, setAddingLocale] = useState<Locale>(LOCALES[0]);
-  const [editing, setEditing] = useState<{ from: string; to: string } | null>(null);
+  const [editing, setEditing] = useState<
+    { from: string; draft: TaxonomyDraft } | null
+  >(null);
   const [confirming, setConfirming] = useState<{
     name: string;
     usage: CategoryUsage;
@@ -85,25 +97,31 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    if (!adding.trim()) return;
+    if (!adding.name.trim()) return;
 
     const { ok, body } = await call(
       api("/categories"),
       {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: adding, locale: addingLocale }),
+        body: JSON.stringify({
+          name: adding.name,
+          locale: addingLocale,
+          slug: adding.slug,
+        }),
       },
       "add",
     );
 
     if (!ok) return setError(body?.error ?? st.addFailed);
     setCategories(body.categories);
-    setAdding("");
+    setAdding(BLANK);
     router.refresh();
   }
 
-  async function rename() {
+  /** Name and both notes in one request — see the route's PUT, which applies
+   *  the rename first so the notes land on the record it settled on. */
+  async function save() {
     if (!editing) return;
 
     const { ok, body } = await call(
@@ -111,7 +129,11 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
       {
         method: "PUT",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ from: editing.from, to: editing.to }),
+        body: JSON.stringify({
+          from: editing.from,
+          to: editing.draft.name,
+          slug: editing.draft.slug,
+        }),
       },
       editing.from,
     );
@@ -179,59 +201,46 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
       )}
 
       <ul className="divide-y divide-brand-50">
-        {categories.map(({ name: category, locale }) => {
+        {categories.map(({ name: category, locale, slug }) => {
           const isEditing = editing?.from === category;
+          const dir = locale === "ar" ? "rtl" : "ltr";
 
           return (
             <li
               key={category}
-              className="group flex items-center gap-3 px-5 py-2.5"
+              className={cn(
+                "group flex gap-3 px-5 py-2.5",
+                isEditing ? "items-start" : "items-center",
+              )}
             >
               {isEditing ? (
                 <>
-                  <Tag className="size-4 shrink-0 text-brand-400" aria-hidden="true" />
-                  <input
-                    autoFocus
-                    value={editing.to}
-                    onChange={(e) =>
-                      setEditing({ ...editing, to: e.target.value })
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") void rename();
-                      if (e.key === "Escape") setEditing(null);
-                    }}
-                    className="flex-1 rounded-lg border border-brand-300 bg-white px-2.5 py-1.5 text-sm text-ink focus:border-brand-600 focus:outline-none"
+                  <Tag
+                    className="mt-6 size-4 shrink-0 text-brand-400"
+                    aria-hidden="true"
                   />
-                  <button
-                    type="button"
-                    onClick={rename}
-                    disabled={busy === category}
-                    className="inline-flex size-8 items-center justify-center rounded-lg bg-brand-700 text-white transition-colors hover:bg-brand-800 disabled:opacity-60"
-                  >
-                    {busy === category ? (
-                      <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-                    ) : (
-                      <Check className="size-4" aria-hidden="true" />
-                    )}
-                    <span className="sr-only">{t.common.save}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditing(null)}
-                    className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-50"
-                  >
-                    <X className="size-4" aria-hidden="true" />
-                    <span className="sr-only">{t.common.cancel}</span>
-                  </button>
+                  <TaxonomyEditor
+                    draft={editing.draft}
+                    original={slug}
+                    locale={locale}
+                    basePath="/blogs"
+                    busy={busy === category}
+                    onChange={(draft) => setEditing({ ...editing, draft })}
+                    onSave={save}
+                    onCancel={() => setEditing(null)}
+                  />
                 </>
               ) : (
                 <>
                   <Tag className="size-4 shrink-0 text-brand-400" aria-hidden="true" />
-                  <span
-                    dir={locale === "ar" ? "rtl" : "ltr"}
-                    className="flex-1 text-sm font-medium text-ink"
-                  >
-                    {category}
+                  <span className="min-w-0 flex-1">
+                    <span
+                      dir={dir}
+                      className="block truncate text-sm font-medium text-ink"
+                    >
+                      {category}
+                    </span>
+                    <TaxonomyPermalink slug={slug} locale={locale} basePath="/blogs" />
                   </span>
                   <button
                     type="button"
@@ -239,18 +248,26 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
                       void move(category, locale === "ar" ? LOCALES[0] : "ar")
                     }
                     disabled={busy === category}
-                    title={`Move to the ${
-                      locale === "ar" ? LOCALE_LABELS[LOCALES[0]] : LOCALE_LABELS.ar
-                    } site`}
-                    className="shrink-0 rounded-md border border-brand-200/60 bg-brand-50 px-2 py-0.5 text-[0.6875rem] font-semibold text-brand-800 transition-colors hover:border-brand-300 hover:bg-brand-100 disabled:opacity-50"
+                    title={fill(st.moveToNamed, {
+                      label:
+                        locale === "ar"
+                          ? LOCALE_LABELS[LOCALES[0]]
+                          : LOCALE_LABELS.ar,
+                    })}
+                    className="shrink-0 self-center rounded-md border border-brand-200/60 bg-brand-50 px-2 py-0.5 text-[0.6875rem] font-semibold text-brand-800 transition-colors hover:border-brand-300 hover:bg-brand-100 disabled:opacity-50"
                   >
                     {LOCALE_LABELS[locale]}
                   </button>
 
-                  <div className="flex items-center gap-0.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
+                  <div className="flex shrink-0 items-center gap-0.5 self-center opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
                     <button
                       type="button"
-                      onClick={() => setEditing({ from: category, to: category })}
+                      onClick={() =>
+                        setEditing({
+                          from: category,
+                          draft: { name: category, slug },
+                        })
+                      }
                       className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-100 hover:text-brand-800"
                     >
                       <Pencil className="size-3.5" aria-hidden="true" />
@@ -282,50 +299,16 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
         })}
       </ul>
 
-      <form
+      <TaxonomyAdder
+        draft={adding}
+        locale={addingLocale}
+        basePath="/blogs"
+        namePlaceholder={st.newCategoryName}
+        busy={busy === "add"}
+        onChange={setAdding}
+        onLocaleChange={setAddingLocale}
         onSubmit={add}
-        className="flex flex-wrap gap-2 border-t border-brand-100 px-5 py-3.5"
-      >
-        {/* Which site the new shelf goes on. The same segmented control the
-            editor uses for Edit / Preview. */}
-        <div className="flex shrink-0 rounded-xl bg-brand-50 p-0.5">
-          {LOCALES.map((locale) => (
-            <button
-              key={locale}
-              type="button"
-              onClick={() => setAddingLocale(locale)}
-              aria-pressed={addingLocale === locale}
-              className={cn(
-                "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors duration-200",
-                addingLocale === locale
-                  ? "bg-white text-brand-800 shadow-sm"
-                  : "text-ink-faint hover:text-ink",
-              )}
-            >
-              {LOCALE_LABELS[locale]}
-            </button>
-          ))}
-        </div>
-        <input
-          value={adding}
-          dir={addingLocale === "ar" ? "rtl" : "ltr"}
-          onChange={(e) => setAdding(e.target.value)}
-          placeholder={st.newCategoryName}
-          className="flex-1 rounded-xl border border-brand-200/80 bg-white px-3.5 py-2 text-sm text-ink shadow-sm transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none"
-        />
-        <button
-          type="submit"
-          disabled={!adding.trim() || busy === "add"}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-800 disabled:opacity-50"
-        >
-          {busy === "add" ? (
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <Plus className="size-4" aria-hidden="true" />
-          )}
-          {t.common.add}
-        </button>
-      </form>
+      />
 
       {confirming && (
         <DeleteWarning
@@ -355,6 +338,295 @@ export function CategoryManager({ initial }: { initial: Category[] }) {
         />
       )}
     </section>
+  );
+}
+
+/** The two fields an edit or add row holds. Shared so both managers' state,
+ *  their request bodies and both forms all describe the same record. */
+export interface TaxonomyDraft {
+  name: string;
+  slug: string;
+}
+
+/** A frozen empty draft, so resetting the add row after a successful create is
+ *  one reference rather than two literals in two files. */
+export const BLANK: TaxonomyDraft = Object.freeze({ name: "", slug: "" });
+
+/** Which public index a manager's rows belong to. Decides what a permalink
+ *  preview reads, and nothing else — the two lists still have no path to each
+ *  other's endpoint. */
+export type TaxonomyBase = "/blogs" | "/events";
+
+/**
+ * The edit form shared by both managers.
+ *
+ * A row used to become a single input, because a row was a single name. It now
+ * carries its permalink as well, so editing opens a small stacked form — and
+ * the permalink field says, right beside it, that changing it moves the page.
+ * The name and the slug have opposite consequences: a rename keeps every link
+ * working, a moved slug breaks every link to the old address. The form does
+ * not hide that behind a matching pair of boxes.
+ *
+ * Imported by `news-tag-manager.tsx` rather than copied, on the same grounds
+ * as `DeleteWarning` below: it is presentation with no knowledge of either
+ * content type, it cannot address an endpoint, and one of the two files has to
+ * own it.
+ */
+export function TaxonomyEditor({
+  draft,
+  original,
+  locale,
+  basePath,
+  busy,
+  onChange,
+  onSave,
+  onCancel,
+}: {
+  draft: TaxonomyDraft;
+  /** The slug the row had when editing opened, so the warning shows only once
+   *  the permalink has actually been changed. */
+  original: string;
+  /** The language the record belongs to — its name runs that way, and its
+   *  page lives under that language's site. The panel's chrome is unaffected. */
+  locale: Locale;
+  basePath: TaxonomyBase;
+  busy: boolean;
+  onChange: (draft: TaxonomyDraft) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  const t = useAdminStrings();
+  const st = t.settings;
+  const dir = locale === "ar" ? "rtl" : "ltr";
+
+  // Enter saves from either field; Escape abandons from anywhere.
+  const keys = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      onSave();
+    }
+    if (event.key === "Escape") onCancel();
+  };
+
+  const field =
+    "w-full rounded-lg border border-brand-200 bg-white px-2.5 py-1.5 text-sm text-ink transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none";
+  const label =
+    "mb-1 block text-[0.625rem] font-semibold tracking-wide text-ink-faint uppercase";
+
+  const moved = slugifyTaxonomy(draft.slug) !== original;
+
+  return (
+    <div className="flex-1 space-y-2.5">
+      <div>
+        <label className={label}>{st.nameLabel}</label>
+        <input
+          autoFocus
+          dir={dir}
+          value={draft.name}
+          onChange={(e) => onChange({ ...draft, name: e.target.value })}
+          onKeyDown={keys}
+          className={cn(field, "border-brand-300 font-medium")}
+        />
+      </div>
+
+      <div>
+        <label className={label}>{st.permalinkLabel}</label>
+        {/* The slug is typed into a Latin-direction field even for an Arabic
+            category: it is an address, and an address reads left to right in
+            the location bar regardless of the letters in it. */}
+        <div className="flex items-center gap-1.5">
+          <span
+            dir="ltr"
+            className="shrink-0 font-mono text-[0.6875rem] text-ink-faint"
+          >
+            {localePath(locale, basePath)}/
+          </span>
+          <input
+            dir="ltr"
+            value={draft.slug}
+            placeholder={st.permalinkPlaceholder}
+            onChange={(e) =>
+              onChange({ ...draft, slug: slugifyTaxonomyDraft(e.target.value) })
+            }
+            onBlur={(e) =>
+              onChange({ ...draft, slug: slugifyTaxonomy(e.target.value) })
+            }
+            onKeyDown={keys}
+            className={cn(field, "font-mono text-xs")}
+          />
+        </div>
+        <p
+          className={cn(
+            "mt-1 text-[0.6875rem] leading-relaxed",
+            moved ? "font-medium text-signal-600" : "text-ink-faint",
+          )}
+        >
+          {moved ? st.permalinkMoved : st.permalinkHint}
+        </p>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={onSave}
+          disabled={busy}
+          className="inline-flex items-center gap-1.5 rounded-lg bg-brand-700 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-brand-800 disabled:opacity-60"
+        >
+          {busy ? (
+            <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+          ) : (
+            <Check className="size-3.5" aria-hidden="true" />
+          )}
+          {t.common.save}
+        </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-ink-faint transition-colors hover:bg-brand-50 hover:text-ink"
+        >
+          <X className="size-3.5" aria-hidden="true" />
+          {t.common.cancel}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The add form shared by both managers.
+ *
+ * The language control and the name keep the line they always had, so the
+ * common case — type a name, press Add — is unchanged; the permalink sits on a
+ * second line and is optional. Left empty, the server makes one from the name,
+ * and the placeholder shows exactly what that will be, so nobody has to type a
+ * slug just to find out what they would have got.
+ *
+ * `onSubmit` is the form's, not a button's, so Enter from either field adds.
+ */
+export function TaxonomyAdder({
+  draft,
+  locale,
+  basePath,
+  namePlaceholder,
+  busy,
+  onChange,
+  onLocaleChange,
+  onSubmit,
+}: {
+  draft: TaxonomyDraft;
+  locale: Locale;
+  basePath: TaxonomyBase;
+  namePlaceholder: string;
+  busy: boolean;
+  onChange: (draft: TaxonomyDraft) => void;
+  onLocaleChange: (locale: Locale) => void;
+  onSubmit: (event: React.FormEvent) => void;
+}) {
+  const t = useAdminStrings();
+  const st = t.settings;
+  const dir = locale === "ar" ? "rtl" : "ltr";
+
+  const field =
+    "w-full rounded-xl border border-brand-200/80 bg-white px-3.5 py-2 text-sm text-ink shadow-sm transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none";
+
+  return (
+    <form
+      onSubmit={onSubmit}
+      className="space-y-2 border-t border-brand-100 px-5 py-3.5"
+    >
+      <div className="flex flex-wrap gap-2">
+        {/* Which site the new shelf goes on. The same segmented control the
+            editor uses for Edit / Preview. */}
+        <div className="flex shrink-0 rounded-xl bg-brand-50 p-0.5">
+          {LOCALES.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onLocaleChange(option)}
+              aria-pressed={locale === option}
+              className={cn(
+                "rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors duration-200",
+                locale === option
+                  ? "bg-white text-brand-800 shadow-sm"
+                  : "text-ink-faint hover:text-ink",
+              )}
+            >
+              {LOCALE_LABELS[option]}
+            </button>
+          ))}
+        </div>
+        <input
+          value={draft.name}
+          dir={dir}
+          onChange={(e) => onChange({ ...draft, name: e.target.value })}
+          placeholder={namePlaceholder}
+          className={cn(field, "min-w-40 flex-1")}
+        />
+        <button
+          type="submit"
+          disabled={!draft.name.trim() || busy}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-800 disabled:opacity-50"
+        >
+          {busy ? (
+            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+          ) : (
+            <Plus className="size-4" aria-hidden="true" />
+          )}
+          {t.common.add}
+        </button>
+      </div>
+
+      <div className="flex items-center gap-1.5">
+        <span
+          dir="ltr"
+          className="shrink-0 font-mono text-[0.6875rem] text-ink-faint"
+        >
+          {localePath(locale, basePath)}/
+        </span>
+        <input
+          dir="ltr"
+          value={draft.slug}
+          placeholder={slugifyTaxonomy(draft.name) || st.permalinkPlaceholder}
+          onChange={(e) =>
+            onChange({ ...draft, slug: slugifyTaxonomyDraft(e.target.value) })
+          }
+          onBlur={(e) =>
+            onChange({ ...draft, slug: slugifyTaxonomy(e.target.value) })
+          }
+          aria-label={st.permalinkLabel}
+          className={cn(field, "font-mono text-xs")}
+        />
+      </div>
+    </form>
+  );
+}
+
+/**
+ * What a row shows under its name when it is not being edited: the address
+ * of its page, as a working link. The notes were only useful if visible
+ * without clicking Edit, and a permalink is only useful if it can be copied.
+ */
+export function TaxonomyPermalink({
+  slug,
+  locale,
+  basePath,
+}: {
+  slug: string;
+  locale: Locale;
+  basePath: TaxonomyBase;
+}) {
+  return (
+    <a
+      href={localePath(locale, taxonomyPath(basePath, slug))}
+      target="_blank"
+      rel="noreferrer"
+      dir="ltr"
+      className="mt-0.5 block truncate font-mono text-[0.6875rem] text-ink-faint transition-colors hover:text-brand-700 hover:underline"
+    >
+      {/* Shown decoded — an Arabic slug reads as its letters here, and the
+          browser encodes the href on the way out. */}
+      {localePath(locale, `${basePath}/${slug}`)}
+    </a>
   );
 }
 

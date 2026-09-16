@@ -152,6 +152,12 @@ const ui = {
     intro:
       "Explore clinical insights, formulation breakthroughs, device innovations, and market intelligence from TribuCare's medical advisory team.",
     allArticles: "All Articles",
+    /** `{category}` — the page a category permalink lands on. Derived from
+     *  the index copy above rather than written fresh: a category page is the
+     *  index, filtered. */
+    categoryMetaTitle: "{category} — Blogs and Insights",
+    categoryMetaDescription:
+      "{category}: clinical insights, formulation breakthroughs, device innovations and market intelligence from TribuCare's medical advisory team.",
     searchLabel: "Search articles and topics",
     searchPlaceholder: "Search articles & topics...",
     filterLabel: "Filter articles by category",
@@ -360,6 +366,10 @@ const ui = {
       ogTitle: "TribuCare Events & News — Congresses, Training & Launches",
       ogDescription:
         "Congresses, hands-on training days, brand launches and regional exhibitions across Egypt and the MENA region.",
+      /** `{tag}` — the page a tag permalink lands on: the index, filtered. */
+      tagTitle: "{tag} — Events & News",
+      tagDescription:
+        "{tag}: congresses, hands-on training days, brand launches and regional exhibitions from TribuCare.",
     },
     about: {
       title: "About TribuCare",

@@ -8,6 +8,8 @@ import { CalendarDays, Calendar, MapPin, Search, Sparkles } from "lucide-react";
 import { Reveal } from "@/components/site/reveal";
 import { EventCard } from "@/components/events/event-card";
 import type { ContentData } from "@/content/en";
+import type { NewsTag } from "@/lib/cms/news-tags";
+import { taxonomyPath } from "@/lib/cms/format";
 import { localePath, type Locale } from "@/lib/i18n/config";
 import { cn } from "@/lib/utils";
 
@@ -26,22 +28,42 @@ type EventItem = ReturnType<
  */
 export function EventsIndex({
   items,
-  categories,
+  tags,
+  active,
   ui,
   locale,
   allLabel,
 }: {
   items: EventItem[];
-  /** Every category with a published item behind it, "All" already at the
-   *  front — the page never offers a filter that leads nowhere. */
-  categories: string[];
+  /** Every tag with a published item behind it — the page never offers a
+   *  filter that leads nowhere. */
+  tags: NewsTag[];
+  /** The tag this page is filtered to, by name — decided by the route, since
+   *  `/events/<slug>` is what makes a filtered view sendable. Absent on
+   *  `/events` itself. */
+  active?: string;
   ui: ContentData["ui"]["events"];
   locale: Locale;
   allLabel: string;
 }) {
   const ALL = allLabel;
-  const [category, setCategory] = useState<string>(ALL);
+  const [chosen, setChosen] = useState<string>(ALL);
   const [query, setQuery] = useState("");
+  // On the index itself the tabs filter in place, as they always did — one
+  // click, no navigation. On a tag page the route owns the filter and the
+  // tabs are links, so the address never names one tag while the grid shows
+  // another. Both read the same `category`.
+  const linked = active !== undefined;
+  const category = linked ? active : chosen;
+
+  // Real links, not buttons — see `BlogIndex`. The "All" tab is the index.
+  const tabs = [
+    { name: ALL, href: localePath(locale, "/events") },
+    ...tags.map((t) => ({
+      name: t.name,
+      href: localePath(locale, taxonomyPath("/events", t.slug)),
+    })),
+  ];
 
   /** The next thing on the calendar leads the page; failing that, the newest.
    *  Both are absent when the store is empty, which the render guards. */
@@ -66,31 +88,45 @@ export function EventsIndex({
   return (
     <>
       <div className="mt-10 flex flex-col gap-6 border-b border-brand-100 pb-8 lg:flex-row lg:items-center lg:justify-between">
-        <div
-          role="group"
+        <nav
           aria-label="Filter events by type"
           className="flex flex-wrap items-center gap-2"
         >
-          {categories.map((cat) => {
-            const isActive = category === cat;
-            return (
+          {tabs.map((tab) => {
+            const isActive = category === tab.name;
+            const className = cn(
+              "rounded-lg px-4 py-2 text-sm font-medium transition-all duration-300",
+              isActive
+                ? "bg-brand-800 text-white shadow-md"
+                : "card-surface text-ink-soft hover:border-brand-300 hover:text-brand-700",
+            );
+            return linked ? (
+              // No viewport prefetch: on a category page every tab is in view,
+              // and Next would fetch every sibling page's payload on load —
+              // measured at 171 KB on mobile, a third again on top of the page.
+              // Hover still prefetches, so a click is as quick as before.
+              <Link
+                key={tab.name}
+                href={tab.href}
+                prefetch={false}
+                aria-current={isActive ? "page" : undefined}
+                className={className}
+              >
+                {tab.name}
+              </Link>
+            ) : (
               <button
-                key={cat}
+                key={tab.name}
                 type="button"
                 aria-pressed={isActive}
-                onClick={() => setCategory(cat)}
-                className={cn(
-                  "rounded-lg px-4 py-2 text-sm font-medium transition-all duration-300",
-                  isActive
-                    ? "bg-brand-800 text-white shadow-md"
-                    : "card-surface text-ink-soft hover:border-brand-300 hover:text-brand-700",
-                )}
+                onClick={() => setChosen(tab.name)}
+                className={className}
               >
-                {cat}
+                {tab.name}
               </button>
             );
           })}
-        </div>
+        </nav>
 
         <div className="relative w-full lg:w-80">
           <label htmlFor="events-search" className="sr-only">
@@ -214,16 +250,28 @@ export function EventsIndex({
             <p className="mt-1 text-sm text-ink-faint">
               Try resetting your type filter or adjusting your search keywords.
             </p>
-            <button
-              type="button"
-              onClick={() => {
-                setCategory(ALL);
-                setQuery("");
-              }}
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-800"
-            >
-{ui.resetFilters}
-            </button>
+            {/* Resetting the tag is a navigation now, back to the index; the
+                search is the one filter still held here. */}
+            {linked ? (
+              <Link
+                href={localePath(locale, "/events")}
+                onClick={() => setQuery("")}
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-800"
+              >
+                {ui.resetFilters}
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setChosen(ALL);
+                  setQuery("");
+                }}
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-brand-700 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-brand-800"
+              >
+                {ui.resetFilters}
+              </button>
+            )}
           </div>
         ) : (
           <ul className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">

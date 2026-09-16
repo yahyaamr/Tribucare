@@ -5,17 +5,18 @@ import { fill, useAdminStrings } from "@/components/admin/strings";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Loader2, Pencil, Tag, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { NewsTag, NewsTagUsage } from "@/lib/cms/news-tags";
+import { LOCALES, LOCALE_LABELS, type Locale } from "@/lib/i18n/config";
 import {
-  Check,
-  Loader2,
-  Pencil,
-  Plus,
-  Tag,
-  Trash2,
-  X,
-} from "lucide-react";
-import type { NewsTagUsage } from "@/lib/cms/news-tags";
-import { DeleteWarning } from "./category-manager";
+  BLANK,
+  DeleteWarning,
+  TaxonomyAdder,
+  TaxonomyEditor,
+  TaxonomyPermalink,
+  type TaxonomyDraft,
+} from "./category-manager";
 
 /**
  * News tag management.
@@ -32,20 +33,28 @@ import { DeleteWarning } from "./category-manager";
  * server what the tag is attached to and shows the answer, including the items
  * that would be left untagged.
  *
- * The confirmation sheet is imported from the category manager rather than
- * copied: it is presentation with no knowledge of either content type, and one
- * of the two files has to own it.
+ * The confirmation sheet and the edit form are imported from the category
+ * manager rather than copied: both are presentation with no knowledge of
+ * either content type — neither can address an endpoint — and one of the two
+ * files has to own them.
+ *
+ * Every tag belongs to one language site, and the row says which, on exactly
+ * the reasoning categories follow: the editor only offers an item the tags of
+ * the language it is written in, so a tag filed under the wrong one is
+ * invisible where it was meant to be used. A name may be taken only once
+ * across both.
  */
-export function NewsTagManager({ initial }: { initial: string[] }) {
+export function NewsTagManager({ initial }: { initial: NewsTag[] }) {
   const api = useAdminApi();
   const router = useRouter();
   const t = useAdminStrings();
   const st = t.settings;
   const [tags, setTags] = useState(initial);
-  const [adding, setAdding] = useState("");
-  const [editing, setEditing] = useState<{ from: string; to: string } | null>(
-    null,
-  );
+  const [adding, setAdding] = useState<TaxonomyDraft>(BLANK);
+  const [addingLocale, setAddingLocale] = useState<Locale>(LOCALES[0]);
+  const [editing, setEditing] = useState<
+    { from: string; draft: TaxonomyDraft } | null
+  >(null);
   const [confirming, setConfirming] = useState<{
     name: string;
     usage: NewsTagUsage;
@@ -68,25 +77,49 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    if (!adding.trim()) return;
+    if (!adding.name.trim()) return;
 
     const { ok, body } = await call(
       api("/news-tags"),
       {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ name: adding }),
+        body: JSON.stringify({
+          name: adding.name,
+          locale: addingLocale,
+          slug: adding.slug,
+        }),
       },
       "add",
     );
 
     if (!ok) return setError(body?.error ?? st.addFailed);
     setTags(body.tags);
-    setAdding("");
+    setAdding(BLANK);
     router.refresh();
   }
 
-  async function rename() {
+  /** Moves a tag to the other language site. The name — and so every item
+   *  filed under it — is untouched; only which editor offers it moves. */
+  async function move(tag: string, locale: Locale) {
+    const { ok, body } = await call(
+      api("/news-tags"),
+      {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ from: tag, locale }),
+      },
+      tag,
+    );
+
+    if (!ok) return setError(body?.error ?? st.moveFailed);
+    setTags(body.tags);
+    router.refresh();
+  }
+
+  /** Name and both notes in one request — see the route's PUT, which applies
+   *  the rename first so the notes land on the record it settled on. */
+  async function save() {
     if (!editing) return;
 
     const { ok, body } = await call(
@@ -94,7 +127,11 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
       {
         method: "PUT",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ from: editing.from, to: editing.to }),
+        body: JSON.stringify({
+          from: editing.from,
+          to: editing.draft.name,
+          slug: editing.draft.slug,
+        }),
       },
       editing.from,
     );
@@ -170,53 +207,34 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
         </p>
       ) : (
         <ul className="divide-y divide-brand-50">
-          {tags.map((tag) => {
+          {tags.map(({ name: tag, locale, slug }) => {
             const isEditing = editing?.from === tag;
+            const dir = locale === "ar" ? "rtl" : "ltr";
 
             return (
-              <li key={tag} className="group flex items-center gap-3 px-5 py-2.5">
+              <li
+                key={tag}
+                className={cn(
+                  "group flex gap-3 px-5 py-2.5",
+                  isEditing ? "items-start" : "items-center",
+                )}
+              >
                 {isEditing ? (
                   <>
                     <Tag
-                      className="size-4 shrink-0 text-brand-400"
+                      className="mt-6 size-4 shrink-0 text-brand-400"
                       aria-hidden="true"
                     />
-                    <input
-                      autoFocus
-                      value={editing.to}
-                      onChange={(e) =>
-                        setEditing({ ...editing, to: e.target.value })
-                      }
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") void rename();
-                        if (e.key === "Escape") setEditing(null);
-                      }}
-                      className="flex-1 rounded-lg border border-brand-300 bg-white px-2.5 py-1.5 text-sm text-ink focus:border-brand-600 focus:outline-none"
+                    <TaxonomyEditor
+                      draft={editing.draft}
+                      original={slug}
+                      locale={locale}
+                      basePath="/events"
+                      busy={busy === tag}
+                      onChange={(draft) => setEditing({ ...editing, draft })}
+                      onSave={save}
+                      onCancel={() => setEditing(null)}
                     />
-                    <button
-                      type="button"
-                      onClick={rename}
-                      disabled={busy === tag}
-                      className="inline-flex size-8 items-center justify-center rounded-lg bg-brand-700 text-white transition-colors hover:bg-brand-800 disabled:opacity-60"
-                    >
-                      {busy === tag ? (
-                        <Loader2
-                          className="size-3.5 animate-spin"
-                          aria-hidden="true"
-                        />
-                      ) : (
-                        <Check className="size-4" aria-hidden="true" />
-                      )}
-                      <span className="sr-only">{t.common.save}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditing(null)}
-                      className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-50"
-                    >
-                      <X className="size-4" aria-hidden="true" />
-                      <span className="sr-only">{t.common.cancel}</span>
-                    </button>
                   </>
                 ) : (
                   <>
@@ -224,14 +242,45 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
                       className="size-4 shrink-0 text-brand-400"
                       aria-hidden="true"
                     />
-                    <span className="flex-1 text-sm font-medium text-ink">
-                      {tag}
+                    <span className="min-w-0 flex-1">
+                      <span
+                        dir={dir}
+                        className="block truncate text-sm font-medium text-ink"
+                      >
+                        {tag}
+                      </span>
+                      <TaxonomyPermalink
+                        slug={slug}
+                        locale={locale}
+                        basePath="/events"
+                      />
                     </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        void move(tag, locale === "ar" ? LOCALES[0] : "ar")
+                      }
+                      disabled={busy === tag}
+                      title={fill(st.moveToNamed, {
+                        label:
+                          locale === "ar"
+                            ? LOCALE_LABELS[LOCALES[0]]
+                            : LOCALE_LABELS.ar,
+                      })}
+                      className="shrink-0 self-center rounded-md border border-brand-200/60 bg-brand-50 px-2 py-0.5 text-[0.6875rem] font-semibold text-brand-800 transition-colors hover:border-brand-300 hover:bg-brand-100 disabled:opacity-50"
+                    >
+                      {LOCALE_LABELS[locale]}
+                    </button>
 
-                    <div className="flex items-center gap-0.5 opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
+                    <div className="flex shrink-0 items-center gap-0.5 self-center opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100 lg:focus-within:opacity-100">
                       <button
                         type="button"
-                        onClick={() => setEditing({ from: tag, to: tag })}
+                        onClick={() =>
+                          setEditing({
+                            from: tag,
+                            draft: { name: tag, slug },
+                          })
+                        }
                         className="inline-flex size-8 items-center justify-center rounded-lg text-ink-faint transition-colors hover:bg-brand-100 hover:text-brand-800"
                       >
                         <Pencil className="size-3.5" aria-hidden="true" />
@@ -267,29 +316,16 @@ export function NewsTagManager({ initial }: { initial: string[] }) {
         </ul>
       )}
 
-      <form
+      <TaxonomyAdder
+        draft={adding}
+        locale={addingLocale}
+        basePath="/events"
+        namePlaceholder={st.newTagName}
+        busy={busy === "add"}
+        onChange={setAdding}
+        onLocaleChange={setAddingLocale}
         onSubmit={add}
-        className="flex gap-2 border-t border-brand-100 px-5 py-3.5"
-      >
-        <input
-          value={adding}
-          onChange={(e) => setAdding(e.target.value)}
-          placeholder={st.newCategoryName}
-          className="flex-1 rounded-xl border border-brand-200/80 bg-white px-3.5 py-2 text-sm text-ink shadow-sm transition-colors placeholder:text-ink-faint focus:border-brand-600 focus:outline-none"
-        />
-        <button
-          type="submit"
-          disabled={!adding.trim() || busy === "add"}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-800 disabled:opacity-50"
-        >
-          {busy === "add" ? (
-            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <Plus className="size-4" aria-hidden="true" />
-          )}
-          {t.common.add}
-        </button>
-      </form>
+      />
 
       {confirming && (
         <DeleteWarning

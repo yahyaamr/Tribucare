@@ -121,6 +121,7 @@ interface AdminStringsShape {
     list: string;
     quote: string;
     takeaways: string;
+    table: string;
     image: string;
     shortcutHint: string;
     linkPrompt: string;
@@ -134,6 +135,13 @@ interface AdminStringsShape {
     removeTakeaways: string;
     removeList: string;
     takeawaysHeading: string;
+    tableHeaderPlaceholder: string;
+    tableCellPlaceholder: string;
+    addRow: string;
+    addColumn: string;
+    removeRow: string;
+    removeColumn: string;
+    removeTable: string;
     altPlaceholder: string;
     captionPlaceholder: string;
     removeImage: string;
@@ -141,6 +149,10 @@ interface AdminStringsShape {
     uploading: string;
     fetching: string;
     uploadFailed: string;
+    /** `{count}` is the number of images. Two strings rather than an appended
+     *  "s": Arabic does not form its plural that way. */
+    imageLost: string;
+    imagesLost: string;
   };
 
   login: {
@@ -192,10 +204,19 @@ interface AdminStringsShape {
     newsTagsIntro: string;
     newsTagsEmpty: string;
     newCategoryName: string;
+    newTagName: string;
     addFailed: string;
     renameFailed: string;
     deleteFailed: string;
     moveFailed: string;
+    nameLabel: string;
+    /** The permalink slug every category and tag carries. */
+    permalinkLabel: string;
+    permalinkPlaceholder: string;
+    permalinkHint: string;
+    permalinkMoved: string;
+    /** `{label}` — the language site a row would move to. */
+    moveToNamed: string;
     authorsTitle: string;
     authorsIntro: string;
     authorsEmpty: string;
@@ -262,6 +283,7 @@ interface AdminStringsShape {
     uploading: string;
     /** `{size}` */
     formats: string;
+    convertedNote: string;
     loading: string;
     empty: string;
     loadFailed: string;
@@ -276,6 +298,18 @@ interface AdminStringsShape {
     library: string;
     closeLibrary: string;
     close: string;
+    /** Alt text and description, kept per image rather than per use. */
+    altLabel: string;
+    altPlaceholder: string;
+    descriptionLabel: string;
+    descriptionPlaceholder: string;
+    /** `{name}` */
+    editNamed: string;
+    describeUpload: string;
+    describeUploadHint: string;
+    needsAlt: string;
+    saveFailed: string;
+    savedNotice: string;
     removeImage: string;
   };
 
@@ -331,6 +365,9 @@ interface AdminStringsShape {
     metaDescription: string;
     /** `{n}` */
     charsUnder60: string;
+    /** `{n}` the count, `{over}` how far past, `{limit}` the recommendation.
+     *  One string for both fields — the numbers say which. */
+    charsOverLimit: string;
     /** `{n}` */
     chars120to160: string;
   };
@@ -505,6 +542,7 @@ const en: AdminStringsShape = {
     list: "List",
     quote: "Quote",
     takeaways: "Key takeaways",
+    table: "Table",
     image: "Image",
     shortcutHint: "## heading · - list · 1. numbered · > quote",
     linkPrompt: "Link to… (leave empty to remove the link)",
@@ -519,6 +557,13 @@ const en: AdminStringsShape = {
     removeTakeaways: "Remove key takeaways",
     removeList: "Remove list",
     takeawaysHeading: "Key takeaways",
+    tableHeaderPlaceholder: "Column heading",
+    tableCellPlaceholder: "Cell",
+    addRow: "Row",
+    addColumn: "Column",
+    removeRow: "Remove this row",
+    removeColumn: "Remove this column",
+    removeTable: "Remove table",
     altPlaceholder:
       "Alt text — describe the image for screen readers and search",
     captionPlaceholder: "Caption (optional)",
@@ -527,6 +572,10 @@ const en: AdminStringsShape = {
     uploading: "Uploading…",
     fetching: "Fetching…",
     uploadFailed: "Could not upload the image.",
+    imageLost:
+      "{count} image could not be copied across — add it with the Image button.",
+    imagesLost:
+      "{count} images could not be copied across — add them with the Image button.",
   },
 
   login: {
@@ -586,6 +635,15 @@ const en: AdminStringsShape = {
     newsTagsEmpty:
       "No news tags yet. Add one below, or create tags as you write from the editor.",
     newCategoryName: "New category name",
+    newTagName: "New category name",
+    nameLabel: "Name",
+    permalinkLabel: "Permalink",
+    permalinkPlaceholder: "Made from the name when left empty",
+    permalinkHint:
+      "The address of this category's own page — send it, share it, it filters the list to this one. Letters, numbers and hyphens; Arabic is fine.",
+    permalinkMoved:
+      "Changing it moves the page: links to the old address stop working.",
+    moveToNamed: "Move to the {label} site",
     addFailed: "Could not add that category.",
     renameFailed: "Could not rename that category.",
     deleteFailed: "Could not delete that category.",
@@ -661,6 +719,7 @@ const en: AdminStringsShape = {
     chooseFiles: "Choose files",
     uploading: "Uploading…",
     formats: "JPG, PNG, WebP, AVIF or GIF · up to {size} each",
+    convertedNote: "Everything is converted to WebP on upload, animation included.",
     loading: "Loading…",
     empty: "No images yet. Upload one above.",
     loadFailed: "Could not load the media library.",
@@ -673,6 +732,17 @@ const en: AdminStringsShape = {
     closeLibrary: "Close media library",
     close: "Close",
     removeImage: "Remove image",
+    altLabel: "Alt text",
+    altPlaceholder: "Describe the image for screen readers and search",
+    descriptionLabel: "Description",
+    descriptionPlaceholder: "Caption — shown under the image in an article",
+    editNamed: "Edit {name}",
+    describeUpload: "Describe the upload",
+    describeUploadHint:
+      "Optional, and applied to every file you upload next. These follow the image into every article and event that uses it, and editing them anywhere updates them everywhere.",
+    needsAlt: "No alt text",
+    saveFailed: "Could not save that.",
+    savedNotice: "Saved",
   },
 
   leaveGuard: {
@@ -726,6 +796,8 @@ const en: AdminStringsShape = {
     metaTitle: "Meta title",
     metaDescription: "Meta description",
     charsUnder60: "{n} characters · aim for under 60",
+    charsOverLimit:
+      "{n} characters · {over} over the recommended {limit}. Search results may cut it short.",
     chars120to160: "{n} characters · aim for 120–160",
   },
 
@@ -912,6 +984,7 @@ const ar: AdminStringsShape = {
     list: "قائمة",
     quote: "اقتباس",
     takeaways: "أبرز النقاط",
+    table: "جدول",
     image: "صورة",
     shortcutHint: "## عنوان · - قائمة · 1. مرقّمة · > اقتباس",
     linkPrompt: "الرابط… (اتركه فارغًا لإزالة الرابط)",
@@ -925,6 +998,13 @@ const ar: AdminStringsShape = {
     removeTakeaways: "إزالة أبرز النقاط",
     removeList: "إزالة القائمة",
     takeawaysHeading: "أبرز النقاط",
+    tableHeaderPlaceholder: "عنوان العمود",
+    tableCellPlaceholder: "خلية",
+    addRow: "صف",
+    addColumn: "عمود",
+    removeRow: "إزالة هذا الصف",
+    removeColumn: "إزالة هذا العمود",
+    removeTable: "إزالة الجدول",
     altPlaceholder: "النص البديل — صِف الصورة لقارئات الشاشة ومحركات البحث",
     captionPlaceholder: "تعليق الصورة (اختياري)",
     removeImage: "إزالة الصورة",
@@ -932,6 +1012,8 @@ const ar: AdminStringsShape = {
     uploading: "جارٍ الرفع…",
     fetching: "جارٍ الجلب…",
     uploadFailed: "تعذّر رفع الصورة.",
+    imageLost: "تعذّر نقل {count} صورة — أضفها بزر الصورة.",
+    imagesLost: "تعذّر نقل {count} صور — أضفها بزر الصورة.",
   },
 
   login: {
@@ -991,6 +1073,14 @@ const ar: AdminStringsShape = {
     newsTagsEmpty:
       "لا توجد وسوم أخبار بعد. أضف واحدًا من الأسفل، أو أنشئ الوسوم أثناء الكتابة من المحرّر.",
     newCategoryName: "اسم التصنيف الجديد",
+    newTagName: "اسم التصنيف الجديد",
+    nameLabel: "الاسم",
+    permalinkLabel: "الرابط الدائم",
+    permalinkPlaceholder: "يُشتق من الاسم إن تُرك فارغًا",
+    permalinkHint:
+      "عنوان صفحة هذا التصنيف — أرسله أو شاركه، فيعرض القائمة مصفّاة عليه. حروف وأرقام وشرطات، والعربية مقبولة.",
+    permalinkMoved: "تغييره ينقل الصفحة: الروابط إلى العنوان القديم تتوقف عن العمل.",
+    moveToNamed: "انقله إلى موقع {label}",
     addFailed: "تعذّرت إضافة هذا التصنيف.",
     renameFailed: "تعذّر تغيير اسم هذا التصنيف.",
     deleteFailed: "تعذّر حذف هذا التصنيف.",
@@ -1064,6 +1154,7 @@ const ar: AdminStringsShape = {
     chooseFiles: "اختر ملفات",
     uploading: "جارٍ الرفع…",
     formats: "JPG أو PNG أو WebP أو AVIF أو GIF · بحد أقصى {size} للملف",
+    convertedNote: "يُحوَّل كل ملف إلى WebP عند الرفع، بما في ذلك الصور المتحركة.",
     loading: "جارٍ التحميل…",
     empty: "لا توجد صور بعد. ارفع صورة من الأعلى.",
     loadFailed: "تعذّر تحميل مكتبة الوسائط.",
@@ -1076,6 +1167,17 @@ const ar: AdminStringsShape = {
     closeLibrary: "إغلاق مكتبة الوسائط",
     close: "إغلاق",
     removeImage: "إزالة الصورة",
+    altLabel: "النص البديل",
+    altPlaceholder: "صِف الصورة لقارئات الشاشة ومحركات البحث",
+    descriptionLabel: "الوصف",
+    descriptionPlaceholder: "التعليق — يظهر تحت الصورة داخل المقال",
+    editNamed: "تعديل {name}",
+    describeUpload: "وصف الملفات المرفوعة",
+    describeUploadHint:
+      "اختياري، ويُطبَّق على كل ملف ترفعه بعد ذلك. ينتقل هذان الحقلان مع الصورة إلى كل مقال وحدث يستخدمها، وتعديلهما من أي مكان يُحدّثهما في كل مكان.",
+    needsAlt: "بدون نص بديل",
+    saveFailed: "تعذّر الحفظ.",
+    savedNotice: "تم الحفظ",
   },
 
   leaveGuard: {
@@ -1129,6 +1231,8 @@ const ar: AdminStringsShape = {
     metaTitle: "عنوان الميتا",
     metaDescription: "وصف الميتا",
     charsUnder60: "{n} حرفًا · يُفضّل أقل من 60",
+    charsOverLimit:
+      "{n} حرفًا · تجاوزت الحد المُوصى به ({limit}) بمقدار {over}. قد تقتطعه نتائج البحث.",
     chars120to160: "{n} حرفًا · يُفضّل بين 120 و160",
   },
 

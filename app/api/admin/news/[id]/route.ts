@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/cms/session";
+import { getNewsTags } from "@/lib/cms/news-tags";
 import { guardStore } from "@/lib/cms/store";
 import { revalidateNews } from "@/lib/cms/revalidate";
 import {
@@ -53,7 +54,10 @@ async function PUT_(request: Request, { params }: Context) {
   // The uniqueness scan reads every item; only pay for it when the slug is
   // actually new. An unchanged slug is unique by construction.
   if (!next.slug || next.slug !== existing.slug) {
-    next.slug = await uniqueNewsSlug(next.slug || next.title, next.id);
+    next.slug = await uniqueNewsSlug(next.slug || next.title, next.id,
+      // A category page shares this path level, so its slug is spoken for.
+      (await getNewsTags()).map((c) => c.slug),
+    );
   }
 
   const saved = await saveNews(next);

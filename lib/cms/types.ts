@@ -41,7 +41,27 @@ export type Block =
   | { id: string; type: "quote"; text: string; attribution?: string }
   /** The mint "Key Takeaways" panel. */
   | { id: string; type: "takeaways"; items: string[] }
-  | { id: string; type: "image"; src: string; alt: string; caption?: string };
+  | { id: string; type: "image"; src: string; alt: string; caption?: string }
+  /**
+   * A table.
+   *
+   * `head` is the header row and `rows` the body. A table with nothing in its
+   * header renders without one, which is what a pasted table that never had a
+   * header needs — the shape stays the same either way rather than there being
+   * two kinds of table to handle.
+   *
+   * Every cell is an inline fragment like any other block's text, so the
+   * whitelist in `lib/cms/rich-text.ts` is untouched: a cell may carry bold,
+   * a link or a footnote marker and cannot carry a width, a colour or an
+   * alignment. That is the whole reason a table can exist here without being
+   * the hole in the design system — the *grid* is the article template's, and
+   * only the words come from the source document.
+   *
+   * Rows are kept rectangular by `tableBlock` on the way in and by the editor
+   * on every column change, so `rows[n].length === head.length` always holds
+   * and the renderer never has to reason about a ragged row.
+   */
+  | { id: string; type: "table"; head: string[]; rows: string[][] };
 
 export type BlockType = Block["type"];
 
@@ -143,6 +163,21 @@ export interface MediaItem {
    * change, so the panel offers to select it and nothing else.
    */
   source: "upload" | "site";
+  /**
+   * Alt text and a description, kept **per image** rather than per use.
+   *
+   * Alt text describes the picture, so the same picture wants the same
+   * sentence wherever it appears — a cover on one post and an in-body figure
+   * on another should not need it typed twice and cannot then disagree. They
+   * live in a sidecar (`cms/media-meta.json`) because the library itself is
+   * derived from a blob listing and object storage has nowhere to hang a
+   * caption; the sidecar is keyed by `pathname`, which both an upload and a
+   * committed site image have.
+   *
+   * Plain strings, always present, possibly empty.
+   */
+  alt: string;
+  description: string;
 }
 
 /* -------------------------------------------------------------- news ----- */

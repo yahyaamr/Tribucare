@@ -7,7 +7,10 @@ import {
   getNewsTags,
   getNewsTagUsage,
   renameNewsTag,
+  setNewsTagLocale,
+  setNewsTagSlug,
 } from "@/lib/cms/news-tags";
+import { LOCALES } from "@/lib/i18n/config";
 
 /**
  * The news vocabulary.
@@ -43,14 +46,33 @@ async function POST_(request: Request) {
 
   const body = (await request.json().catch(() => null)) as {
     name?: string;
+    locale?: string;
+    slug?: string;
   } | null;
-  const result = await addNewsTag(body?.name ?? "");
+
+  // A tag belongs to one language site, and the editor knows which one because
+  // the item being written says so. Defaulted rather than refused, so a caller
+  // that predates the field still creates an English tag. The slug is optional
+  // in the same way: Settings offers it up front, the editor's inline "Create"
+  // row sends only a name and gets one made.
+  const locale = LOCALES.find((l) => l === body?.locale) ?? LOCALES[0];
+  const result = await addNewsTag(body?.name ?? "", locale, body?.slug);
 
   if (!result.ok) return Response.json({ error: result.error }, { status: 400 });
   return Response.json({ tag: result.tag, tags: result.tags }, { status: 201 });
 }
 
-/** Rename. Rewrites every news item carrying the old name in the same call. */
+/**
+ * Rename, move between language sites, and move the page.
+ *
+ * The panel's edit row submits the name and the permalink together, so they
+ * are applied in one request: the rename first, because the slug is addressed
+ * by name and applying it under the old one would write a second record. The
+ * slug is written only when it actually differs, so saving a row untouched
+ * moves nothing. `locale` alone, with no `to`, moves the tag between sites —
+ * the items carrying it are untouched, since the name has not changed, only
+ * which editor is offered it.
+ */
 async function PUT_(request: Request) {
   const denied = await requireSession();
   if (denied) return denied;
@@ -58,17 +80,50 @@ async function PUT_(request: Request) {
   const body = (await request.json().catch(() => null)) as {
     from?: string;
     to?: string;
+    locale?: string;
+    slug?: string;
   } | null;
 
   if (!body?.from) {
     return Response.json({ error: "No tag given." }, { status: 400 });
   }
 
-  const result = await renameNewsTag(body.from, body.to ?? "");
-  if (!result.ok) return Response.json({ error: result.error }, { status: 400 });
+  const moveTo = LOCALES.find((l) => l === body.locale);
+  if (moveTo && body.to === undefined) {
+    const moved = await setNewsTagLocale(body.from, moveTo);
+    if (!moved.ok) return Response.json({ error: moved.error }, { status: 400 });
+    revalidateNews();
+    return Response.json({ tags: moved.tags });
+  }
+
+  let tags = await getNewsTags();
+  let name = body.from;
+
+  if (body.to !== undefined) {
+    const renamed = await renameNewsTag(body.from, body.to);
+    if (!renamed.ok) {
+      return Response.json({ error: renamed.error }, { status: 400 });
+    }
+    tags = renamed.tags;
+    // Whatever the rename settled on is what the notes must be filed under.
+    name = tags.find((t) => t.name.toLowerCase() === body.to!.trim().toLowerCase())
+      ? body.to
+      : body.from;
+  }
+
+  if (body.slug !== undefined) {
+    const current = tags.find(
+      (t) => t.name.toLowerCase() === name.trim().toLowerCase(),
+    );
+    if (current && current.slug !== body.slug.trim()) {
+      const moved = await setNewsTagSlug(name, body.slug);
+      if (!moved.ok) return Response.json({ error: moved.error }, { status: 400 });
+      tags = moved.tags;
+    }
+  }
 
   revalidateNews();
-  return Response.json({ tags: result.tags });
+  return Response.json({ tags });
 }
 
 /**

@@ -294,14 +294,39 @@ page. So:
   one to make while implementing something else.
 - **Pasting is structure in, styling out.** `lib/cms/paste-html.ts` reads the
   clipboard's `text/html` flavour and maps it onto blocks — headings,
-  paragraphs, bulleted and numbered lists, quotes, images and the marks above.
-  Everything the source document said about *appearance* is dropped and
+  paragraphs, bulleted and numbered lists, quotes, tables, images and the marks
+  above. Everything the source document said about *appearance* is dropped and
   re-derived from the design system. It is browser-only (`DOMParser`), so never
   import it from a server component. Emphasis that Word and Google Docs express
   in CSS (`style="font-weight:700"`) is promoted to real tags first, and the
   self-cancelling `<b style="font-weight:normal">` both wrap a selection in is
   unwrapped — miss either and a pasted article loses all its bold, or gains it
   everywhere.
+- **A table is a block, not a widening of the whitelist.** A `table` block is
+  a `head` row and a `rows` grid whose every cell is an inline fragment like
+  any other block's text, so the closed list in `rich-text.ts` is untouched: a
+  cell may carry bold, a link or a footnote marker and cannot carry a width, a
+  colour, a background or an alignment. The *grid* is the article template's
+  and only the words come from the source document, which is what lets a
+  pasted comparison table exist without being the hole in the design system
+  the whitelist exists to prevent. Its shell is the takeaways panel's frame and
+  tint, its row rules are the card hairline, its header cells wear the
+  takeaways heading's face — nothing new entered the design.
+
+  Three things keep it honest, and each is load-bearing:
+  - **The grid is rectangular, always.** `tableBlock` squares a pasted table up
+    (`colspan` expanded to that many cells, short rows padded) and the editor
+    adds or removes a column across the header *and* every row in one commit.
+    `article-body.tsx` squares it up once more at render, because it is the only
+    gate on the way out and a ragged row from a hand-edited record would be a
+    crashed article page rather than a malformed one.
+  - **A one-cell `<table>` is a layout wrapper, not a table.** Word, Outlook
+    and older templates position things with tables, and rendering one as data
+    puts a border around an entire pasted article — so it is descended into.
+  - **A cell is one line.** Enter walks down the column and adds a row at the
+    bottom rather than opening a second line inside the cell, because
+    `sanitizeInline` unwraps the `<div>` the browser would insert and would
+    silently run the two lines together.
 - **Editor rows are `contenteditable`, and the rule is: never write to one
   while the writer is typing into it.** Re-setting `innerHTML` collapses the
   selection to the start of the node, so a controlled field moves the caret to
@@ -338,6 +363,134 @@ page. So:
   answer — a legacy list, or a legacy post still naming both languages. A name
   may be taken once across both, so Settings can move a category between them
   rather than forcing a delete and re-create.
+
+  **An Events & News tag works exactly the same way** (`lib/cms/news-tags.ts`),
+  down to the script-based one-time upgrade and the cross-language name
+  refusal. It stays a separate module from `categories.ts` on purpose — see
+  that file's header — so the two lists have no path to each other. Changing
+  one means reading the other and deciding deliberately whether the change
+  belongs there too.
+- **The SEO meta fields recommend, they never cap.** `<CharCount>` warns above
+  60 characters for a title and 160 for a description, in `signal-600` with the
+  `TriangleAlert` the delete confirmation and the storage notice already use.
+  Those numbers are where Google *truncates*, not where either becomes wrong,
+  and a long title that reads well truncated is a legitimate choice a panel
+  should not be able to veto — so the inputs carry no `maxLength` and going
+  over is only ever *said*. It counts the **effective** value: an empty meta
+  title publishes the post title, so that is the length worth warning about.
+- **Every upload is stored as WebP**, converted with `sharp` in
+  `lib/cms/media.ts`. On the **server**, deliberately: there are four ways an
+  image reaches storage — the library page, the library dialog inside an
+  editor, a paste into the article body, and a direct call to the API — and
+  converting at the last of those covers all four at once. A browser-side
+  conversion would have to be added to each, and the one that was forgotten
+  would quietly keep publishing PNGs.
+
+  Three details, each of which is a bug if changed:
+  - **An animated GIF is read with `{ animated: true }`**, or WebP gets the
+    first frame and the animation is thrown away. `rotate()` is skipped for
+    those — it is an EXIF auto-orient, which an animation does not carry.
+  - **A file that is already WebP is stored byte for byte.** Re-encoding would
+    spend a generation of quality to save nothing.
+  - **`sharp` is named in `package.json`** even though Next already installs it
+    for `next/image`. This file imports it directly, so a transitive dependency
+    a future Next release moved or dropped would take uploads with it, silently.
+
+  The conversion happens *after* the size check, so the cap still applies to
+  what the writer chose, and the stored object is smaller again. The upload
+  form says so: the file that comes back out of the library is not the file
+  that went in.
+- **An image carries alt text and a description, kept per image rather than
+  per use** (`cms/media-meta.json`, a sidecar keyed by `pathname`). The library
+  is *derived* — `listMedia` reads a blob listing and `listSiteMedia` reads what
+  the content references — so there is no record per image to hang a caption
+  on, and object storage has nowhere to put one. One sidecar object, read once
+  per listing, covers both kinds: a committed site image can be described
+  exactly like an upload even though replacing it needs a code change.
+
+  Per image, not per use, because alt text describes the *picture* — a cover on
+  one post and an in-body figure on another should not need it typed twice and
+  must not be able to disagree.
+
+  **The library is the source of truth, and the copies are kept honest.** An
+  `image` block still stores its own `alt` and `caption`, because
+  `article-body.tsx` renders a `Block[]` and nothing else on both the published
+  page and the editor preview — making the renderer look every image up would
+  mean handing it a lookup table on both paths and would change what a block
+  means, which is the one contract this CMS keeps. So the notes are copied, and
+  every copy is rewritten in the same request, exactly as `renameCategory`
+  rewrites every post carrying a renamed category. A half-synced caption is the
+  same class of bug as a half-renamed tab.
+
+  It runs in both directions, and `media.description` is the block's `caption`:
+  - Picking an image in an editor fills the block from the library, so a reused
+    photograph is described once.
+  - Editing a block's alt or caption **writes back** on blur — not on change,
+    since each write walks the store — and the library then updates every other
+    article and event using that image.
+  - `syncMediaMetaToContent` matches on the *resolved pathname*, not the raw
+    `src`, so an upload referenced by its CDN URL and a site image referenced
+    by its root-relative path both find their record. It compares by reference
+    and saves only what actually moved, and `setMediaMeta` reports whether
+    anything changed at all so an untouched blur skips the pass entirely.
+
+  Three consequences of keeping them per image:
+  - They are written **on upload** (the library's form sends them with the
+    file) and editable afterwards on the card. An article-body paste sends
+    neither and never touches the sidecar.
+  - `<CoverNotes>` in the editors' rail edits the **media item**, not the
+    record, so it saves on its own button — it is not part of the draft, and
+    must neither ride its Save nor be lost when one is abandoned. Mount it with
+    `key={url}`, since the loaded notes are its initial state.
+  - Deleting an image deletes its notes, best-effort: leaving them would orphan
+    a key that a later upload reusing the pathname could inherit.
+
+  A card with no alt text says **"No alt text"** in `signal-600` rather than
+  just looking untidy, because a library where you cannot see what is
+  undescribed is a library nobody finishes describing.
+- **A category and a tag each have a permalink**, and it is a real page:
+  `/blogs/<slug>` and `/events/<slug>` render the index filtered to that one,
+  so a filtered view can be sent, bookmarked and crawled, and the sitemap lists
+  one URL per shelf. On `/blogs` and `/events` themselves the tabs still
+  filter in place — one click, no navigation, as they always did. On a
+  category page the route owns the filter and the tabs become `<Link>`s to the
+  other pages, so the address never names one category while the grid shows
+  another. `BlogIndex` / `EventsIndex` switch on `active !== undefined`; do
+  not collapse the two modes into one, because each fixes what the other
+  breaks: buttons on a category page would let the URL lie, links on the index
+  would turn a filter into a page load. The links carry `prefetch={false}`:
+  every tab is in view, and Next's viewport prefetch fetched every sibling
+  page's payload on load — measured at 171 KB on mobile, a third again on top
+  of the page. Hover still prefetches, so a click is as quick as before.
+
+  The category route is the article route. `/blogs/<slug>` tries the article
+  first and then the category (`findPublicCategory`), and the two may never
+  share a slug: `slugConflict` refuses a category on an article's address, and
+  the post routes pass the category slugs into `uniqueSlug` as `reserved`, so
+  an article titled like a category gets `-2`. Passed in rather than read
+  there, because `categories.ts` already imports `posts.ts`.
+
+  Both indexes live in a `listing.tsx` beside their `page.tsx`, rendered by
+  the index route with nothing active and by the `[slug]` route with the
+  category active — one page, not a second copy that would drift.
+
+  Four rules, each of which has a link-breaking failure mode:
+  - **The slug is frozen on rename.** A renamed shelf is the same page, and a
+    moved page is a link that stops working. Moving it is its own edit,
+    `setCategorySlug`, and the form turns the hint `signal-600` the moment the
+    slug differs from what it was.
+  - **Arabic slugs are Arabic.** `slugifyTaxonomy` keeps letters of any script
+    (`slugify` is for post slugs and would reduce `مؤتمرات` to nothing);
+    `taxonomyPath` percent-encodes for hrefs, canonicals and the sitemap, and
+    the route `decodeSlug`s on the way in. `/ar/blogs/موتمرات` ranks for the
+    word in it; `/ar/blogs/category-2` ranks for nothing.
+  - **A page exists only when the language has something on it.**
+    `getPublicCategories(locale)` is what both the tabs and the route read, so
+    a category with no published post in that language is a 404 there, not an
+    empty page — and an English category slug under `/ar` is a 404 too.
+  - **The sitemap lists each under its own locale only**, with no alternate in
+    the other: a category belongs to one site, and an `hreflang` to a 404 is
+    worse than none.
 - **Panel strings go in `lib/i18n/admin-strings.ts`, never in `content/`, and
   nothing in the panel may hardcode a word of English.** That file is software
   chrome — "Permanently delete" does not belong beside the homepage headline.
@@ -427,6 +580,11 @@ Defined in `app/globals.css`:
 | Need | Use |
 |---|---|
 | A content card (article, event, anything) | `<PostCard>` / `<EventCard>` — copy one, never invent |
+| A table inside an article | a `table` block — `<ArticleBody>` renders it; never a bespoke `<table>` |
+| A character count under an SEO field | `<CharCount value limit okTemplate>` — a recommendation, never a `maxLength` |
+| Alt text / description for an image | the media sidecar — `<CoverNotes>` in an editor rail, the card's Edit button in `<MediaLibrary>`; never a second field on the post |
+| A row in Settings that edits, adds or links a category or tag | `<TaxonomyEditor>` / `<TaxonomyAdder>` / `<TaxonomyPermalink>` from `settings/category-manager.tsx` — both managers import them |
+| A category or tag page | the `[slug]` route falling through to `findPublicCategory` / `findPublicNewsTag`, rendering `<BlogListing active>` / `<EventsListing active>` — never a separate route |
 | One of the three verticals, as a feature card | `<VerticalCard vertical brandLogos locale>` — one component, one content array, two pages |
 | A channel, an address, anything icon + title + body | `<ChannelCard channel tone href? image?>` |
 | Horizontal card scroller | `<Rail>` (wheel + drag + edge fades), items get `rail-item` |
@@ -647,6 +805,13 @@ Add to that only when the change earns it:
   resolution, the two root layouts and `generateStaticParams` are only fully
   exercised at build time, and `tsc` will not catch a client component pulling
   in `next/root-params`.
+
+  **Stop `next dev` first.** Both write `.next`, and a build landing under a
+  running dev server leaves it serving half-replaced chunks — every request
+  then fails with `TypeError: Cannot read properties of undefined (reading
+  'call')` or a truncated `SyntaxError: Unexpected end of JSON input`, which
+  read as bugs in whatever you just touched and are not. The fix is
+  `rm -rf .next` and a restart, so it is cheaper not to cause it.
 - **Touched a client component or a hook:** `npx eslint .`. The React rules
   catch the two failures that look fine in review and break at runtime —
   setState in an effect body, and a component declared inside a render (which

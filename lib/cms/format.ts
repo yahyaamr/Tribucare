@@ -57,6 +57,54 @@ export function slugifyDraft(input: string) {
     .slice(0, 80);
 }
 
+/**
+ * A category or tag slug — the segment of its permalink.
+ *
+ * Deliberately not `slugify`. That one is for post slugs and keeps to ASCII,
+ * so an Arabic title becomes an empty string and the post falls back to
+ * `post-2`. A category page is a landing page whose URL should carry its own
+ * name in its own language — `/ar/blogs/مؤتمرات` ranks for the word in it,
+ * `/ar/blogs/category-2` ranks for nothing — so letters and digits of *any*
+ * script survive here. The wire form is percent-encoded (see `taxonomyPath`),
+ * which every browser decodes back for display.
+ *
+ * Diacritics are dropped after NFD — Latin accents and Arabic tashkeel both
+ * — so two spellings that differ only in vowel marks land on one page. That
+ * also folds hamza forms (إ أ آ → ا), the same normalisation search engines
+ * apply, which is what makes a searcher's spelling and the writer's meet.
+ */
+export function slugifyTaxonomy(input: string) {
+  return input
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/\p{M}+/gu, "")
+    .replace(/[^\p{L}\p{N}_]+/gu, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+/** `slugifyTaxonomy` while typing: a trailing hyphen is allowed to stand so
+ *  one can be typed at all — the same reason `slugifyDraft` exists. */
+export function slugifyTaxonomyDraft(input: string) {
+  return input
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}+/gu, "")
+    .replace(/[^\p{L}\p{N}_]+/gu, "-")
+    .replace(/^-+/, "")
+    .slice(0, 80);
+}
+
+/**
+ * The public path for a category or tag page, ready for an `href`, a
+ * canonical or a sitemap. An ASCII slug passes through unchanged; an Arabic one
+ * is percent-encoded, which is the only form a sitemap or a `<link>` may carry.
+ */
+export function taxonomyPath(base: string, slug: string) {
+  return `${base}/${encodeURIComponent(slug)}`;
+}
+
 const MONTHS = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December",
@@ -92,9 +140,11 @@ export function countWords(blocks: Block[]) {
     const text =
       block.type === "list" || block.type === "takeaways"
         ? block.items.join(" ")
-        : block.type === "image"
-          ? (block.caption ?? "")
-          : block.text;
+        : block.type === "table"
+          ? [...block.head, ...block.rows.flat()].join(" ")
+          : block.type === "image"
+            ? (block.caption ?? "")
+            : block.text;
     words += inlineToPlain(text).trim().split(/\s+/).filter(Boolean).length;
   }
   return words;

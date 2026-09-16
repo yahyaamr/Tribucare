@@ -1,4 +1,4 @@
-import { getStore } from "./store";
+import { getStore, mapLimited } from "./store";
 import { formatPostDate, newBlockId, newId, slugify, todayIso } from "./format";
 import { sanitizeBlocks } from "./rich-text";
 import type { Block, NewsItem, NewsSummary, PostStatus } from "./types";
@@ -99,15 +99,17 @@ async function readAllNews(strict: boolean): Promise<NewsItem[]> {
     return [];
   }
 
-  const items = await Promise.all(
-    objects
-      .filter((o) => o.pathname.endsWith(".json"))
-      .map(async (o) => {
-        const raw = strict
-          ? await store.read(o.pathname)
-          : await store.read(o.pathname).catch(() => null);
-        return raw ? parseNews(raw) : null;
-      }),
+  // Through `mapLimited`, not `Promise.all`: one request per record means a
+  // bare fan-out is a burst as wide as the collection, and a blip in any one
+  // socket fails the whole read. See store.ts.
+  const items = await mapLimited(
+    objects.filter((o) => o.pathname.endsWith(".json")),
+    async (o) => {
+      const raw = strict
+        ? await store.read(o.pathname)
+        : await store.read(o.pathname).catch(() => null);
+      return raw ? parseNews(raw) : null;
+    },
   );
 
   return items.filter((n): n is NewsItem => n !== null).sort(byDateDesc);
@@ -155,36 +157,29 @@ export async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
   return (await getAllNews()).find((n) => n.slug === slug) ?? null;
 }
 
-/**
- * Every tag actually carried by a published item.
- *
- * What the public filter row offers, so a tab can never return an empty list —
- * the same rule `getPublicCategories` follows for the blog.
- */
-export async function getPublicNewsTags(locale?: Locale): Promise<string[]> {
-  const items =
-    locale === undefined
-      ? await getPublishedNews()
-      : await getPublishedNewsFor(locale);
-  const seen = new Map<string, string>();
-  for (const tag of items.flatMap((n) => n.tags)) {
-    const key = tag.toLowerCase();
-    if (!seen.has(key)) seen.set(key, tag);
-  }
-  return [...seen.values()].sort((a, b) => a.localeCompare(b));
-}
-
 /* ----------------------------------------------------------------- write -- */
 
 /** Appends `-2`, `-3`… until free. `excludeId` lets an item keep its own slug
  *  when saved without renaming. Scoped to news, so a news item and a post may
  *  share a slug — they live on different routes. */
-export async function uniqueNewsSlug(desired: string, excludeId?: string) {
+export async function uniqueNewsSlug(
+  desired: string,
+  excludeId?: string,
+  /**
+   * Slugs that are spoken for by something other than a record of this kind.
+   * A category page lives at the same path level as an article — `/blogs/x`
+   * is one or the other — so the route passes the category slugs here and a
+   * post cannot be saved onto a category's address. Passed in rather than
+   * read here, because the taxonomy module already imports this one.
+   */
+  reserved: Iterable<string> = [],
+) {
   const base = slugify(desired) || "news";
   const items = await getAllNewsStrict();
   const taken = new Set(
     items.filter((n) => n.id !== excludeId).map((n) => n.slug),
   );
+  for (const slug of reserved) taken.add(slug);
 
   if (!taken.has(base)) return base;
   let n = 2;

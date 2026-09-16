@@ -1,4 +1,5 @@
 import { requireSession } from "@/lib/cms/session";
+import { getCategories } from "@/lib/cms/categories";
 import { guardStore } from "@/lib/cms/store";
 import { revalidateBlog } from "@/lib/cms/revalidate";
 import {
@@ -42,7 +43,10 @@ async function POST_(request: Request) {
     return Response.json({ errors }, { status: 422 });
   }
 
-  draft.slug = await uniqueSlug(draft.slug || draft.title, draft.id);
+  draft.slug = await uniqueSlug(draft.slug || draft.title, draft.id,
+      // A category page shares this path level, so its slug is spoken for.
+      (await getCategories()).map((c) => c.slug),
+    );
 
   const saved = await savePost(draft);
   revalidateBlog(saved.slug);

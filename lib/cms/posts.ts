@@ -1,4 +1,4 @@
-import { getStore } from "./store";
+import { getStore, mapLimited } from "./store";
 import {
   countWords,
   newBlockId,
@@ -229,15 +229,17 @@ async function readAllPosts(strict: boolean): Promise<Post[]> {
     return [];
   }
 
-  const posts = await Promise.all(
-    objects
-      .filter((o) => o.pathname.endsWith(".json"))
-      .map(async (o) => {
-        const raw = strict
-          ? await store.read(o.pathname)
-          : await store.read(o.pathname).catch(() => null);
-        return raw ? parsePost(raw) : null;
-      }),
+  // Through `mapLimited`, not `Promise.all`: one request per record means a
+  // bare fan-out is a burst as wide as the collection, and a blip in any one
+  // socket fails the whole read. See store.ts.
+  const posts = await mapLimited(
+    objects.filter((o) => o.pathname.endsWith(".json")),
+    async (o) => {
+      const raw = strict
+        ? await store.read(o.pathname)
+        : await store.read(o.pathname).catch(() => null);
+      return raw ? parsePost(raw) : null;
+    },
   );
 
   return posts.filter((p): p is Post => p !== null).sort(byDateDesc);
@@ -322,12 +324,24 @@ export async function getPostBySlug(slug: string): Promise<ResolvedPost | null> 
 
 /** Appends `-2`, `-3`… until the slug is free. `excludeId` lets a post keep
  *  its own slug when it is saved without renaming. */
-export async function uniqueSlug(desired: string, excludeId?: string) {
+export async function uniqueSlug(
+  desired: string,
+  excludeId?: string,
+  /**
+   * Slugs that are spoken for by something other than a record of this kind.
+   * A category page lives at the same path level as an article — `/blogs/x`
+   * is one or the other — so the route passes the category slugs here and a
+   * post cannot be saved onto a category's address. Passed in rather than
+   * read here, because the taxonomy module already imports this one.
+   */
+  reserved: Iterable<string> = [],
+) {
   const base = slugify(desired) || "post";
   const posts = await getAllPostsStrict();
   const taken = new Set(
     posts.filter((p) => p.id !== excludeId).map((p) => p.slug),
   );
+  for (const slug of reserved) taken.add(slug);
 
   if (!taken.has(base)) return base;
   let n = 2;

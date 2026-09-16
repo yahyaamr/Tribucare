@@ -33,7 +33,8 @@ import {
 import type { Category } from "@/lib/cms/categories";
 import type { Author, Post, ResolvedPost } from "@/lib/cms/types";
 import { DocEditor } from "./doc-editor";
-import { MediaPickerDialog } from "./media-picker";
+import { CoverNotes, MediaPickerDialog } from "./media-picker";
+import { CharCount } from "./char-count";
 import { StatusPill } from "./status-pill";
 import { fill, useAdminStrings } from "@/components/admin/strings";
 import { CategorySelect } from "./category-select";
@@ -648,6 +649,12 @@ export function PostEditor({
                       {t.common.remove}
                     </button>
                   </div>
+                  {/* Keyed on the URL: the notes belong to the image, so
+                      swapping the cover loads the new one's rather than
+                      resetting the old one's inside an effect. They save on
+                      their own button — they are not part of this draft, and
+                      must neither ride its Save nor be lost with it. */}
+                  <CoverNotes key={post.image} url={post.image} />
                 </>
               ) : (
                 <button
@@ -798,11 +805,14 @@ export function PostEditor({
                   placeholder={post.title || t.postEditor.metaTitleDefault}
                   className={cn(FIELD, "mt-1.5")}
                 />
-                <p className="mt-1 text-xs text-ink-faint">
-                  {fill(t.editor.charsUnder60, {
-                    n: (post.seo.metaTitle || post.title).length,
-                  })}
-                </p>
+                {/* The effective title, not just the field: an empty meta
+                    title publishes the post title, so that is the length worth
+                    warning about. */}
+                <CharCount
+                  value={post.seo.metaTitle || post.title}
+                  limit={60}
+                  okTemplate={t.editor.charsUnder60}
+                />
               </div>
               <div>
                 <label htmlFor="seo-description" className={LABEL}>
@@ -823,11 +833,11 @@ export function PostEditor({
                   }
                   className={cn(FIELD, "mt-1.5 resize-y leading-relaxed")}
                 />
-                <p className="mt-1 text-xs text-ink-faint">
-                  {fill(t.editor.chars120to160, {
-                    n: (post.seo.metaDescription || post.excerpt).length,
-                  })}
-                </p>
+                <CharCount
+                  value={post.seo.metaDescription || post.excerpt}
+                  limit={160}
+                  okTemplate={t.editor.chars120to160}
+                />
               </div>
             </Panel>
 

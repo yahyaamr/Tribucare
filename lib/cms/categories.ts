@@ -1,5 +1,6 @@
 import { getStore } from "./store";
 import { getAllPosts, getAllPostsStrict, savePost } from "./posts";
+import { slugifyTaxonomy } from "./format";
 import { LOCALES, type Locale } from "@/lib/i18n/config";
 import { blogCategories } from "@/content/blogs";
 
@@ -32,21 +33,31 @@ import { blogCategories } from "@/content/blogs";
  * this field existed, which happens once. A category the posts already carry
  * needs no guess at all: it inherits the language of the post carrying it,
  * which is a fact rather than an inference.
+ *
+ * A category also has a **permalink**: `/blogs/<slug>` is its own page, the
+ * index filtered to it, so a link can carry a filter and a sitemap can list
+ * one URL per shelf. The slug is set once from the name and then *frozen* — a
+ * rename does not move the page, because a moved page is a link that stops
+ * working, and the panel exists to keep links working. It is editable on its
+ * own, with that consequence spelled out.
  */
 
 const CATEGORIES_PATH = "cms/categories.json";
 
-/** A category and the language site it belongs to. */
+/** A category, the language site it belongs to, and its permalink slug. */
 export interface Category {
   name: string;
   locale: Locale;
+  /** The last segment of `/blogs/<slug>`. Unique across both languages and
+   *  never equal to an article's slug, because the two share that path. */
+  slug: string;
 }
 
 /** The starter list is the English blog's, which is the only one that existed
  *  when it was written. */
 const SEED: Category[] = blogCategories
   .filter((c) => c !== "All Articles")
-  .map((name) => ({ name, locale: LOCALES[0] }));
+  .map((name) => ({ name, locale: LOCALES[0], slug: slugifyTaxonomy(name) }));
 
 /**
  * The language of a name written before categories had one.
@@ -55,7 +66,7 @@ const SEED: Category[] = blogCategories
  * legacy list — never to classify anything written since, which carries its
  * language explicitly.
  */
-const ARABIC = /[\u0600-\u06ff\u0750-\u077f\ufb50-\ufdff\ufe70-\ufeff]/;
+const ARABIC = /[؀-ۿݐ-ݿﭐ-﷿ﹰ-﻿]/;
 
 function guessLocale(name: string): Locale {
   return ARABIC.test(name) ? "ar" : LOCALES[0];
@@ -78,6 +89,32 @@ function localeOfPostCategory(name: string, locales: Locale[]): Locale {
  *  spacing would render as duplicate filter tabs. */
 export function normaliseCategory(name: string) {
   return name.trim().replace(/\s+/g, " ").slice(0, 60);
+}
+
+/** A slug as typed, reduced to what a permalink may carry. Anything that is
+ *  not a string is no slug at all. */
+function normaliseSlug(value: unknown) {
+  return typeof value === "string" ? slugifyTaxonomy(value) : "";
+}
+
+/**
+ * Every slug in the list made distinct, in order, by numbering the later
+ * duplicates — the same `-2`, `-3` an article slug gets.
+ *
+ * Two different names can slug the same way ("Skin Care" and "Skin-Care"),
+ * and a legacy list is upgraded with a slug derived from each name, so the
+ * list has to be squared up after any derivation. First seen keeps the plain
+ * slug, which is why the stored list is always passed before anything derived.
+ */
+function ensureUniqueSlugs(categories: Category[]): Category[] {
+  const seen = new Set<string>();
+  return categories.map((category) => {
+    const base = category.slug || "category";
+    let slug = base;
+    for (let n = 2; seen.has(slug); n += 1) slug = `${base}-${n}`;
+    seen.add(slug);
+    return slug === category.slug ? category : { ...category, slug };
+  });
 }
 
 /**
@@ -104,23 +141,31 @@ async function readStored(strict = false): Promise<Category[]> {
   try {
     const value = JSON.parse(raw) as { categories?: unknown };
     if (!Array.isArray(value.categories)) return [];
-    // Both shapes are read: a bare string is a record from before the language
-    // existed and is upgraded on the spot, so the next write persists it.
-    return value.categories.flatMap((entry): Category[] => {
+    // Every earlier shape is read: a bare string is a record from before the
+    // language existed, and an object without a slug is one from before the
+    // permalink did. Both are upgraded on the spot, so the next write persists
+    // them. Fields no longer carried — the notes a record briefly had — are
+    // simply not read, and fall away on that same write.
+    const upgraded = value.categories.flatMap((entry): Category[] => {
       if (typeof entry === "string") {
         const name = normaliseCategory(entry);
-        return name ? [{ name, locale: guessLocale(name) }] : [];
+        return name
+          ? [{ name, locale: guessLocale(name), slug: slugifyTaxonomy(name) }]
+          : [];
       }
       if (entry && typeof entry === "object") {
-        const record = entry as { name?: unknown; locale?: unknown };
+        const record = entry as { name?: unknown; locale?: unknown; slug?: unknown };
         const name =
           typeof record.name === "string" ? normaliseCategory(record.name) : "";
         if (!name) return [];
         const locale = LOCALES.find((l) => l === record.locale) ?? guessLocale(name);
-        return [{ name, locale }];
+        return [
+          { name, locale, slug: normaliseSlug(record.slug) || slugifyTaxonomy(name) },
+        ];
       }
       return [];
     });
+    return ensureUniqueSlugs(upgraded);
   } catch {
     return [];
   }
@@ -142,7 +187,8 @@ async function writeStored(categories: Category[]) {
  * one shelf with one name, and letting the same name exist twice would make
  * the Settings list show two identical rows that rename and delete
  * differently. The first record seen wins, which is why the stored list is
- * passed before the one derived from posts.
+ * passed before the one derived from posts — so a category's slug comes from
+ * its stored record rather than being re-derived from its name.
  */
 function dedupe(categories: Category[]) {
   const seen = new Map<string, Category>();
@@ -150,13 +196,16 @@ function dedupe(categories: Category[]) {
     const name = normaliseCategory(entry.name);
     if (!name) continue;
     const key = name.toLowerCase();
-    if (!seen.has(key)) seen.set(key, { name, locale: entry.locale });
+    if (!seen.has(key)) {
+      seen.set(key, { name, locale: entry.locale, slug: entry.slug });
+    }
   }
-  return [...seen.values()];
+  return ensureUniqueSlugs([...seen.values()]);
 }
 
 /** Every category the panel knows about, each with the language site it
- *  belongs to. A category carried by a post inherits that post's language. */
+ *  belongs to and its slug. A category carried by a post inherits that post's
+ *  language, and — until it is stored — a slug derived from its name. */
 export async function getCategories(): Promise<Category[]> {
   const [stored, posts] = await Promise.all([readStored(), getAllPostsStrict()]);
   return dedupe([
@@ -165,43 +214,84 @@ export async function getCategories(): Promise<Category[]> {
       post.categories.map((name) => ({
         name,
         locale: localeOfPostCategory(name, post.locales),
+        slug: slugifyTaxonomy(name),
       })),
     ),
   ]).sort((a, b) => a.name.localeCompare(b.name));
 }
 
-/** Only categories attached to a published post — what the /blog filter row
- *  offers, so a tab can never return an empty list. */
 /**
- * The filter tabs one language's blog index shows.
+ * The filter tabs one language's blog index shows, and the category pages
+ * that language has.
  *
- * Scoped to the locale for the reason the unscoped version existed: a tab with
- * nothing behind it. Once a post can be English-only, counting its categories
- * on the Arabic index would put a tab there that filters to an empty list.
+ * Only categories with a published post behind them *in this language*, so a
+ * tab can never lead to an empty list and a category page cannot exist with
+ * nothing on it. Read through `getCategories` rather than derived from the
+ * posts alone, so each carries the slug its stored record holds.
  */
-export async function getPublicCategories(locale?: Locale): Promise<string[]> {
-  const posts = await getAllPosts();
-  return dedupe(
+export async function getPublicCategories(locale: Locale): Promise<Category[]> {
+  const [all, posts] = await Promise.all([getCategories(), getAllPosts()]);
+  const carried = new Set(
     posts
-      .filter(
-        (p) =>
-          p.status === "published" &&
-          (locale === undefined || p.locales.includes(locale)),
-      )
-      .flatMap((p) =>
-        p.categories.map((name) => ({
-          name,
-          locale: localeOfPostCategory(name, p.locales),
-        })),
-      ),
-  )
-    .map((c) => c.name)
-    .sort((a, b) => a.localeCompare(b));
+      .filter((p) => p.status === "published" && p.locales.includes(locale))
+      .flatMap((p) => p.categories.map((name) => name.toLowerCase())),
+  );
+  return all.filter(
+    (c) => c.locale === locale && carried.has(c.name.toLowerCase()),
+  );
 }
 
+/** The category a `/blogs/<slug>` request is for, if that page exists in this
+ *  language. `null` is a 404, the same way an unknown article slug is. */
+export async function findPublicCategory(
+  slug: string,
+  locale: Locale,
+): Promise<Category | null> {
+  const wanted = normaliseSlug(slug);
+  if (!wanted) return null;
+  return (
+    (await getPublicCategories(locale)).find((c) => c.slug === wanted) ?? null
+  );
+}
+
+/**
+ * Why a slug cannot be used, or `null` when it can.
+ *
+ * Two things can already own it: another category, in either language, and
+ * an article — `/blogs/<slug>` is one or the other, and the route tries the
+ * article first, so a category on an article's address would be unreachable.
+ * `except` is the category being edited, which may of course keep its own.
+ */
+async function slugConflict(
+  slug: string,
+  except?: string,
+): Promise<string | null> {
+  const [categories, posts] = await Promise.all([
+    getCategories(),
+    getAllPostsStrict(),
+  ]);
+  const key = except?.toLowerCase();
+  const category = categories.find(
+    (c) => c.slug === slug && c.name.toLowerCase() !== key,
+  );
+  if (category) {
+    return `“${slug}” is already the permalink of “${category.name}”.`;
+  }
+  if (posts.some((p) => p.slug === slug)) {
+    return `“${slug}” is already the address of an article. Give the category a different permalink.`;
+  }
+  return null;
+}
+
+/**
+ * Creates a category. The slug is taken as given when one is sent and made
+ * from the name otherwise — the editor's inline "Create" row sends only a
+ * name, while Settings offers the permalink up front.
+ */
 export async function addCategory(
   name: string,
   locale: Locale,
+  slug?: unknown,
 ): Promise<
   | { ok: true; category: string; categories: Category[] }
   | { ok: false; error: string }
@@ -229,13 +319,18 @@ export async function addCategory(
     return { ok: true, category: match.name, categories: existing };
   }
 
+  const wanted = normaliseSlug(slug) || slugifyTaxonomy(clean) || "category";
+  const conflict = await slugConflict(wanted);
+  if (conflict) return { ok: false, error: conflict };
+
+  const fresh: Category = { name: clean, locale, slug: wanted };
   const stored = await readStored(true);
-  await writeStored([...stored, { name: clean, locale }]);
+  await writeStored([...stored, fresh]);
 
   return {
     ok: true,
     category: clean,
-    categories: dedupe([...existing, { name: clean, locale }]).sort((a, b) =>
+    categories: dedupe([...existing, fresh]).sort((a, b) =>
       a.name.localeCompare(b.name),
     ),
   };
@@ -275,6 +370,10 @@ export async function getCategoryUsage(name: string): Promise<CategoryUsage> {
  * Done as one operation rather than leaving the old name on posts, because a
  * half-renamed category shows up as two filter tabs on /blog, one of which is
  * the name nobody meant to keep.
+ *
+ * The slug stays. A renamed shelf is the same shelf, and its page is the same
+ * page — moving it would break every link that was ever sent to it. The slug
+ * has its own edit, `setCategorySlug`, for when moving is the intent.
  */
 export async function renameCategory(
   from: string,
@@ -317,21 +416,24 @@ export async function renameCategory(
   }
 
   const stored = await readStored(true);
-  // A rename keeps the record's language: renaming a shelf does not move it to
-  // the other site.
-  const locale =
-    stored.find((c) => c.name.toLowerCase() === before.toLowerCase())?.locale ??
-    existing.find((c) => c.name.toLowerCase() === before.toLowerCase())?.locale ??
-    LOCALES[0];
+  // A rename keeps the record's language and slug: renaming a shelf does not
+  // move it to the other site, and does not move its page.
+  const current =
+    stored.find((c) => c.name.toLowerCase() === before.toLowerCase()) ??
+    existing.find((c) => c.name.toLowerCase() === before.toLowerCase());
+  const locale = current?.locale ?? LOCALES[0];
+  const slug = current?.slug ?? slugifyTaxonomy(after);
 
   const renamed = stored.map((c) =>
-    c.name.toLowerCase() === before.toLowerCase() ? { name: after, locale } : c,
+    c.name.toLowerCase() === before.toLowerCase()
+      ? { ...c, name: after, locale, slug }
+      : c,
   );
   await writeStored(
     dedupe(
       renamed.some((c) => c.name.toLowerCase() === after.toLowerCase())
         ? renamed
-        : [...renamed, { name: after, locale }],
+        : [...renamed, { name: after, locale, slug }],
     ),
   );
 
@@ -348,7 +450,8 @@ export async function renameCategory(
  * strips it from every post it is on.
  *
  * The posts are untouched: they store the category's *name*, and the name has
- * not changed. What moves is which editor is offered it.
+ * not changed. What moves is which editor is offered it, and which language's
+ * `/blogs/<slug>` answers for it.
  */
 export async function setCategoryLocale(
   name: string,
@@ -364,7 +467,53 @@ export async function setCategoryLocale(
   // record yet; writing one is what makes the choice stick.
   const next = stored.some((c) => c.name.toLowerCase() === key)
     ? stored.map((c) => (c.name.toLowerCase() === key ? { ...c, locale } : c))
-    : [...stored, { name: clean, locale }];
+    : [...stored, { name: clean, locale, slug: slugifyTaxonomy(clean) }];
+
+  await writeStored(dedupe(next));
+  return { ok: true, categories: await getCategories() };
+}
+
+/**
+ * Moves a category's page.
+ *
+ * Its own operation, deliberately apart from the rename, because the two have
+ * opposite consequences: a rename changes what readers see and keeps every
+ * link working, while this keeps what readers see and breaks every link to
+ * the old address. The panel says so beside the field.
+ *
+ * The posts are untouched — they store the name, and the name has not moved.
+ */
+export async function setCategorySlug(
+  name: string,
+  slug: unknown,
+): Promise<{ ok: true; categories: Category[] } | { ok: false; error: string }> {
+  const clean = normaliseCategory(name);
+  if (!clean) return { ok: false, error: "No category given." };
+
+  const wanted = normaliseSlug(slug);
+  if (!wanted) {
+    return { ok: false, error: "Give the permalink some letters or numbers." };
+  }
+
+  const conflict = await slugConflict(wanted, clean);
+  if (conflict) return { ok: false, error: conflict };
+
+  const stored = await readStored(true);
+  const key = clean.toLowerCase();
+  const next = stored.some((c) => c.name.toLowerCase() === key)
+    ? stored.map((c) => (c.name.toLowerCase() === key ? { ...c, slug: wanted } : c))
+    : [
+        ...stored,
+        {
+          name: clean,
+          // A category known only from a post: keep the language the list
+          // already reports for it rather than re-guessing from the script.
+          locale:
+            (await getCategories()).find((c) => c.name.toLowerCase() === key)
+              ?.locale ?? guessLocale(clean),
+          slug: wanted,
+        },
+      ];
 
   await writeStored(dedupe(next));
   return { ok: true, categories: await getCategories() };

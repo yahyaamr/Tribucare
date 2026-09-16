@@ -12,9 +12,29 @@ import {
   getPublishedPostsFor,
 } from "@/lib/cms/posts";
 import { content, currentLocale } from "@/content/server";
-import { localePath } from "@/lib/i18n/config";
+import { LOCALES, localePath } from "@/lib/i18n/config";
 import { JsonLd } from "@/components/site/json-ld";
 import { articleSchema, breadcrumbSchema, pageMetadata } from "@/lib/seo";
+import { findPublicCategory, getPublicCategories } from "@/lib/cms/categories";
+import { taxonomyPath } from "@/lib/cms/format";
+import { BlogListing } from "../listing";
+
+/**
+ * `/blogs/<slug>` is an article or a category page — the two share the path
+ * level on purpose, so a category's address is simply its name. The article
+ * is tried first; a category may never take an article's slug (see
+ * `slugConflict` in categories.ts), so the order cannot hide anything.
+ *
+ * A category slug can be Arabic, which some clients send percent-encoded and
+ * Next hands over decoded. Both forms resolve.
+ */
+function decodeSlug(slug: string) {
+  try {
+    return decodeURIComponent(slug);
+  } catch {
+    return slug;
+  }
+}
 
 /**
  * Articles are ISR-cached rather than fully static: they are authored in the
@@ -28,8 +48,18 @@ export const revalidate = 3600;
  *  one language still needs its slug prerendered for that one. The page itself
  *  404s the locales the post was not ticked for. */
 export async function generateStaticParams() {
-  const posts = await getPublishedPosts();
-  return posts.map((post) => ({ slug: post.slug }));
+  const [posts, ...perLocale] = await Promise.all([
+    getPublishedPosts(),
+    ...LOCALES.map((locale) => getPublicCategories(locale)),
+  ]);
+  // Category pages are prerendered alongside the articles. A category that
+  // gains its first post after the build is rendered on demand, the same way a
+  // newly published article is.
+  const slugs = new Set([
+    ...posts.map((post) => post.slug),
+    ...perLocale.flat().map((category) => category.slug),
+  ]);
+  return [...slugs].map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -41,7 +71,21 @@ export async function generateMetadata({
   const locale = await currentLocale();
   const post = await getPostBySlug(slug);
   if (!post || post.status !== "published" || !post.locales.includes(locale)) {
-    return {};
+    // Not an article this language has. Perhaps a category page, which is
+    // the index with a filter on and is described as such.
+    const category = await findPublicCategory(decodeSlug(slug), locale);
+    if (!category) return {};
+    const { ui } = await content();
+    return pageMetadata({
+      locale,
+      path: taxonomyPath("/blogs", category.slug),
+      locales: [category.locale],
+      title: ui.blog.categoryMetaTitle.replace("{category}", category.name),
+      description: ui.blog.categoryMetaDescription.replace(
+        "{category}",
+        category.name,
+      ),
+    });
   }
 
   const title = post.seo.metaTitle.trim() || post.title;
@@ -77,8 +121,11 @@ export default async function BlogPostDetailPage({
 
   // A draft is a 404 to the public, exactly as an unpublished post should be —
   // and so is a post this language was not ticked for, rather than a page that
-  // exists but nothing on the site links to.
+  // exists but nothing on the site links to. Before giving up, the slug is
+  // tried as a category's: `/blogs/<category>` is the index filtered to it.
   if (!post || post.status !== "published" || !post.locales.includes(locale)) {
+    const category = await findPublicCategory(decodeSlug(slug), locale);
+    if (category) return <BlogListing active={category} />;
     notFound();
   }
 
