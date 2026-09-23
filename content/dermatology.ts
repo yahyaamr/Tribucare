@@ -729,29 +729,3 @@ export const dermatology = {
   },
 } as const;
 
-/* -------------------------------------------------------------------------
-   Requests
-   ------------------------------------------------------------------------- */
-
-export const requestKinds = [
-  {
-    id: "demo" as const,
-    label: "Request a demo",
-    blurb: "See the system in your own clinic, run by our clinical trainer.",
-    icon: "monitor-play",
-  },
-  {
-    id: "quotation" as const,
-    label: "Request a quotation",
-    blurb: "Pricing, configuration and lead time for your practice.",
-    icon: "file-text",
-  },
-  {
-    id: "support" as const,
-    label: "Request a technical support visit",
-    blurb: "A field engineer on site for installation, service or calibration.",
-    icon: "wrench",
-  },
-];
-
-export type RequestKind = (typeof requestKinds)[number]["id"];

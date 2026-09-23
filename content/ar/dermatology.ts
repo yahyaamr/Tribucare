@@ -79,22 +79,6 @@ export const dermatology = {
 export { products } from "./products-dermatology";
 
 
-/** The three request types on a product page. */
-export const requestKinds = [
-  {
-    label: "اطلب عرضًا تجريبيًا",
-    blurb: "شاهد الجهاز في عيادتك، يشغّله مدرّبنا الإكلينيكي.",
-  },
-  {
-    label: "اطلب عرض سعر",
-    blurb: "السعر والتكوين ومدة التوريد لعيادتك.",
-  },
-  {
-    label: "اطلب زيارة دعم فني",
-    blurb: "مهندس خدمة في الموقع للتركيب أو الصيانة أو المعايرة.",
-  },
-];
-
 /** The two catalogue lines. */
 export const productLines = [
   {

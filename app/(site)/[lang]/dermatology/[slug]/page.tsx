@@ -107,7 +107,6 @@ export default async function ProductPage({
     products,
     productBySlug,
     brandLogos,
-    requestKinds,
     contact,
     ui,
     nav,
@@ -411,7 +410,7 @@ export default async function ProductPage({
               <div className="mx-auto max-w-2xl text-center">
                 <Eyebrow className="justify-center">{ui.pages.requestEyebrow}</Eyebrow>
                 <h2 className="mt-3 font-display text-3xl font-semibold text-ink">
-                  Request {product.name}
+                  {ui.pages.requestHeading.replace("{name}", product.name)}
                 </h2>
                 <p className="mt-4 text-base leading-relaxed text-ink-soft">
 {ui.pages.requestBody}
@@ -421,7 +420,6 @@ export default async function ProductPage({
               <div className="mt-10">
                 <ProductRequest
                   productName={product.name}
-                  requestKinds={requestKinds}
                   contact={contact}
                   ui={ui.productRequest}
                 />

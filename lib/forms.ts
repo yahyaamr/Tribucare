@@ -19,16 +19,11 @@ export type SubmitResult =
   | { ok: false; reason: "unconfigured" | "failed" };
 
 /**
- * What the submission is. The three `request-*` kinds come from the dermatology
- * product pages, and are carried through to the endpoint so an enquiry about a
- * specific device arrives already routed — a demo booking and a service call
- * reach different desks.
+ * What the submission is. `product-enquiry` comes from a dermatology product
+ * page and always carries the product and the page it was sent from, so an
+ * enquiry never arrives without saying what it is about.
  */
-export type InquiryKind =
-  | "partnership"
-  | "request-demo"
-  | "request-quotation"
-  | "request-support";
+export type InquiryKind = "partnership" | "product-enquiry";
 
 /**
  * Field and label styling, shared so every form on the site is the same object.

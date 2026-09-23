@@ -246,8 +246,10 @@ const ui = {
     otherDevices: "Other devices we supply",
     otherInjectables: "Other injectables we supply",
     requestEyebrow: "Get in touch",
+    /** `{name}` is the product. */
+    requestHeading: "Request {name}",
     requestBody:
-      "Choose what you need and our clinical team will follow up directly.",
+      "Tell us about your clinic and our clinical team will follow up directly.",
     viewAll: "View all",
     tailoredCollaboration: "Tailored collaboration for every partner",
   },
@@ -270,24 +272,23 @@ const ui = {
     emailPlaceholder: "doctor@clinic.com",
     phoneLabel: "Phone / WhatsApp *",
     phonePlaceholder: "+20 100 000 0000",
+    cityLabel: "City *",
+    cityPlaceholder: "Cairo",
+    messageLabel: "Details",
+    messagePlaceholder:
+      "What you would like to know: pricing, a demo, training, or anything else.",
+    submit: "Send request",
     sending: "Sending…",
-    prompts: {
-      demo: {
-        placeholder:
-          "Which treatments you plan to offer, your clinic's location, and when you'd like the demo.",
-        submit: "Request demo",
-      },
-      quotation: {
-        placeholder:
-          "Configuration or accessories you need, quantity, and any timeline you are working to.",
-        submit: "Request quotation",
-      },
-      support: {
-        placeholder:
-          "The fault or service needed, the system's serial number if you have it, and your site address.",
-        submit: "Request support visit",
-      },
-    },
+    received: "Request received",
+    /** `{name}` is the sender, `{product}` the product page it came from. */
+    receivedBody: "Thank you, {name}. Our team will be in touch about {product}.",
+    submitAnother: "Send another request",
+    /** `{email}` is TribuCare's contact address. */
+    unconfiguredWithEmail:
+      "This form isn't connected to our inbox yet — please email {email} so your request reaches the team.",
+    unconfigured:
+      "This form isn't connected to our inbox yet, so please contact us directly — your request has not been sent.",
+    failed: "Something went wrong sending that. Please try again.",
   },
   partnerForm: {
     getInTouch: "Get in touch",
@@ -431,7 +432,6 @@ export const data = {
   products: derm.products,
   productLines: derm.productLines,
   dermatology: derm.dermatology,
-  requestKinds: derm.requestKinds,
 
   altesseCollections: altesse.altesseCollections,
   altesse: altesse.altesse,

@@ -5,7 +5,6 @@ import {
   dermatology,
   products,
   productLines,
-  requestKinds,
 } from "./dermatology";
 import { altesse, altesseCollections } from "./altesse";
 import { mlay, mlayCollections } from "./mlay";
@@ -217,7 +216,8 @@ const ui = {
     otherDevices: "أجهزة أخرى نوفّرها",
     otherInjectables: "مستحضرات حقن أخرى نوفّرها",
     requestEyebrow: "تواصل معنا",
-    requestBody: "اختر ما تحتاجه وسيتابع معك فريقنا الإكلينيكي مباشرةً.",
+    requestHeading: "اطلب {name}",
+    requestBody: "أخبرنا عن عيادتك وسيتابع معك فريقنا الإكلينيكي مباشرةً.",
     viewAll: "عرض الكل",
     tailoredCollaboration: "تعاون مصمَّم لكل شريك",
   },
@@ -240,24 +240,21 @@ const ui = {
     emailPlaceholder: "doctor@clinic.com",
     phoneLabel: "الهاتف / واتساب *",
     phonePlaceholder: "+20 100 000 0000",
+    cityLabel: "المدينة *",
+    cityPlaceholder: "القاهرة",
+    messageLabel: "التفاصيل",
+    messagePlaceholder:
+      "ما الذي تودّ معرفته: الأسعار، أو عرض تجريبي، أو التدريب، أو أي شيء آخر.",
+    submit: "أرسل الطلب",
     sending: "جارٍ الإرسال…",
-    prompts: {
-      demo: {
-        placeholder:
-          "العلاجات التي تنوي تقديمها، وموقع عيادتك، والموعد الذي يناسبك للعرض التجريبي.",
-        submit: "اطلب عرضًا تجريبيًا",
-      },
-      quotation: {
-        placeholder:
-          "التكوين أو الملحقات التي تحتاجها، والكمية، والإطار الزمني الذي تعمل ضمنه.",
-        submit: "اطلب عرض سعر",
-      },
-      support: {
-        placeholder:
-          "العطل أو الخدمة المطلوبة، والرقم التسلسلي للجهاز إن توفّر، وعنوان الموقع.",
-        submit: "اطلب زيارة دعم فني",
-      },
-    },
+    received: "تم استلام طلبك",
+    receivedBody: "شكرًا لك، {name}. سيتواصل معك فريقنا بخصوص {product}.",
+    submitAnother: "إرسال طلب آخر",
+    unconfiguredWithEmail:
+      "هذا النموذج غير متصل ببريدنا بعد — يُرجى مراسلتنا على {email} ليصل طلبك إلى الفريق.",
+    unconfigured:
+      "هذا النموذج غير متصل ببريدنا بعد، لذا يُرجى التواصل معنا مباشرةً — لم يُرسَل طلبك.",
+    failed: "حدث خطأ أثناء الإرسال. يُرجى المحاولة مرة أخرى.",
   },
   partnerForm: {
     getInTouch: "تواصل معنا",
@@ -385,7 +382,6 @@ export const ar: DeepPartial<ContentData> = {
   dermatology,
   products,
   productLines,
-  requestKinds,
   altesseCollections,
   mlayCollections,
   altesse,
