@@ -652,6 +652,11 @@ Fixed values in that block — reuse them exactly:
 - Product shots: `.webp`, cut-out on transparent, anchored
   `object-contain object-right-bottom` over a soft mint disc
   (`bg-gradient-to-b from-brand-100/90 to-brand-50/30`, `rounded-full`).
+  **Dermatology product photos are the exception**: each is shot on its own
+  opaque ground, so the product page, its card and its gallery all show it
+  `fill` + `object-cover`. A contained opaque photo reads as a box inside the
+  frame. Gallery tiles are 4:3, so a portrait shot is widened to 4:3 on its own
+  background before it is added, or the tile crops the device.
 - Hover on media: `transition-transform duration-700 group-hover:scale-[1.03]`.
 - Keep page weight down — the mobile budget was cut to ~700KB and must stay
   there. Compress before adding.

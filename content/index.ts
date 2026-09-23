@@ -88,15 +88,21 @@ const BUNDLES: Record<Locale, ContentData> = {
   ar: deepMerge(en, ar),
 };
 
-/** Groups a product list into its categories, preserving first-seen order. */
-function groupByCategory<T extends { category: string }>(items: T[]) {
+/**
+ * Groups a product list by one of its fields, preserving first-seen order.
+ * Which field is the line's call (`productLines[].groupBy`).
+ */
+function groupProducts<T extends { category: string; brand: string }>(
+  items: T[],
+  key: "category" | "brand",
+) {
   const order: string[] = [];
   for (const item of items) {
-    if (!order.includes(item.category)) order.push(item.category);
+    if (!order.includes(item[key])) order.push(item[key]);
   }
   return order.map((category) => ({
     category,
-    items: items.filter((item) => item.category === category),
+    items: items.filter((item) => item[key] === category),
   }));
 }
 
@@ -114,7 +120,10 @@ export function getContent(locale: Locale = DEFAULT_LOCALE) {
   return {
     ...bundle,
     categoriesFor: (line: "devices" | "injectables") =>
-      groupByCategory(bundle.products.filter((p) => p.line === line)),
+      groupProducts(
+        bundle.products.filter((p) => p.line === line),
+        bundle.productLines.find((l) => l.id === line)?.groupBy ?? "category",
+      ),
     productBySlug: (slug: string) =>
       bundle.products.find((p) => p.slug === slug),
   };

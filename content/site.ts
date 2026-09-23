@@ -153,7 +153,7 @@ export const verticals = [
     headline: "Technology for the clinic.",
     body: "As the exclusive agent in Egypt for globally recognised German, Italian and Korean brands, we deliver top-tier therapeutic and aesthetic technologies to dermatologists, clinics and aesthetic centres.",
     audience: "Dermatologists · Clinics · Aesthetic centres",
-    brands: ["Zimmer Medical", "Rejuran", "beaumed", "IDS", "AGEX Beauty", "BV Laser"],
+    brands: ["Zimmer Medical", "Rejuran", "beaumed", "IDS", "AGEX Beauty", "BV Laser", "GENEXIA"],
     cta: { label: "Dermatology solutions", href: "/dermatology" },
     image: {
       src: "/brand/derma-solutions.webp",
@@ -204,7 +204,7 @@ export const verticals = [
  * Each was supplied on a white background; the stored WebP has that background
  * keyed out, so they sit on any light surface. Intrinsic dimensions are recorded
  * to keep next/image from guessing — render them at a fixed height and let the
- * width follow, since the aspect ratios run from 1.4:1 (IDS) to 6:1 (MLAY).
+ * width follow, since the aspect ratios run from 1.4:1 (IDS) to 6.2:1 (GENEXIA).
  *
  * `light` is only present where a mark has to sit on a dark ground. Altesse Soin
  * is pure monochrome black, so its variant is the same artwork knocked out white
@@ -230,6 +230,7 @@ export const brandLogos: Record<
   "BV Laser": { src: "/brand/logos/bv-laser.webp", width: 595, height: 125 },
   AMI: { src: "/brand/logos/ami.webp", width: 260, height: 155 },
   Kiusera: { src: "/brand/logos/kiusera.webp", width: 450, height: 86 },
+  GENEXIA: { src: "/brand/logos/genexia.webp", width: 317, height: 51 },
   MLAY: { src: "/brand/logos/mlay.webp", width: 705, height: 118 },
   "Altesse Soin": {
     src: "/brand/logos/altesse-soin.webp",

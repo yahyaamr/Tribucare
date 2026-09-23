@@ -103,67 +103,14 @@ export const products: Product[] = [
       { label: "ISO 13485", reference: "Medical Device Quality Management" },
       { label: "MFDS Clearance", reference: "Ministry of Food and Drug Safety, Korea" },
     ],
-    image: "/brand/dermatology/ami-rex-an-main.webp",
+    image: "/brand/dermatology/ami-rex-an-dual-01.webp",
     imageAlt: "AMI REX-AN DUAL Long-pulsed Nd:YAG and Alexandrite Laser System",
     gallery: [
-      "/brand/dermatology/ami-rex-an-studio.jpg",
-      "/brand/dermatology/ami-rex-an-studio-24.jpg",
-      "/brand/dermatology/ami-rex-an-studio-19.jpg",
-      "/brand/dermatology/ami-rex-an-studio-4.jpg",
-    ],
-    video: "",
-    videoPoster: "",
-  },
-  {
-    slug: "ids-tridi",
-    name: "IDS Tridi",
-    brand: "IDS",
-    category: "Laser Hair Reduction",
-    line: "devices",
-    summary:
-      "High-power 2,500W 3-Wave Diode Laser (755nm + 808nm + 1064nm) with Intelligent AI Parameter Optimization and Tridi UP skin revitalization.",
-    overview:
-      "The TRIDI 3-Wave Diode Laser from IDS is a next-generation hair removal and skin conditioning workstation. By delivering three synchronized wavelengths (755nm Alexandrite spectrum, 808nm Gold Standard Diode, and 1064nm Nd:YAG spectrum) simultaneously, TRIDI addresses the complete anatomical depth of hair follicles from superficial bulges to deep bulbs. Featuring an AI-powered Intelligent Hair Removal (IHR) interface, high-speed DynaMotion in-motion gliding at 10Hz, and the patented Tridi UP (Brightening, Tightening, Lifting) protocol, TRIDI combines speed, efficacy, and patient comfort.",
-    features: [
-      "Synchronized 3-Wave Technology (755nm + 808nm + 1064nm) emitted simultaneously",
-      "2,500W Peak Optical Power with sub-millisecond to 100ms pulse durations",
-      "Intelligent Hair Removal (IHR) with AI-guided parameter selection by anatomical zone, skin type, and gender",
-      "Dual Operational Modes: Stacking Mode (Pulses 4/5/6) and high-speed DynaMotion Mode (10Hz)",
-      "Integrated Sapphire Contact Cooling with continuous 1°C epidermal protection",
-      "Tridi UP (BTL) Protocol: Non-invasive brightening, tightening, and dermal lifting",
-      "Optional TriV Handpiece with collimated beam for localized vascular and telangiectasia treatment",
-    ],
-    specs: [
-      { label: "Laser Type", value: "3-Wave Diode Laser (755 nm, 808 nm, 1064 nm)" },
-      { label: "Peak Power", value: "2,500 W" },
-      { label: "Repetition Rate", value: "1 – 10 Hz (DynaMotion Mode)" },
-      { label: "Pulse Duration", value: "2 – 100 ms" },
-      { label: "Spot Shapes & Sizes", value: "Square & Circle (12 × 24 mm, 12 × 12 mm, Ø6 mm)" },
-      { label: "Cooling Tip Temperature", value: "Continuous Contact Cooling at 1°C" },
-      { label: "Electrical Requirements", value: "230 V, Single Phase, 50/60 Hz" },
-      { label: "Dimensions & Weight", value: "400 × 640 × 1000 mm, 70 kg" },
-    ],
-    applications: [
-      "Full-body Hair Removal (Arms, beard, chest, axilla, groin, legs, and delicate zones)",
-      "Tridi UP Skin Revitalization (Skin brightening, pore refinement, dermal tightening & lifting)",
-      "Vascular Lesions (Telangiectasia, facial redness via optional TriV handpiece)",
-    ],
-    benefits: [
-      "Safe and painless treatments with advanced 1°C continuous sapphire contact cooling",
-      "Rapid treatment times covering full back or legs in under 15 minutes",
-      "Effective across all Fitzpatrick skin types (I to VI) and fine, stubborn hairs",
-      "Multi-purpose clinic ROI with both hair removal and Tridi UP skin tightening",
-    ],
-    certificates: [
-      { label: "CE Certified", reference: "CE 0197 Medical Device Directive" },
-      { label: "ISO 13485", reference: "International Quality Standard" },
-      { label: "GMP Certified", reference: "Good Manufacturing Practice" },
-    ],
-    image: "/brand/dermatology/ids-tridi.webp",
-    imageAlt: "IDS TRIDI 3-Wave Diode Laser Workstation",
-    gallery: [
-      "/brand/dermatology/tridi-catalog-p1.webp",
-      "/brand/dermatology/tridi-catalog-p2.webp",
+      "/brand/dermatology/ami-rex-an-dual-02.webp",
+      "/brand/dermatology/ami-rex-an-dual-03.webp",
+      "/brand/dermatology/ami-rex-an-dual-04.webp",
+      "/brand/dermatology/ami-rex-an-dual-05.webp",
+      "/brand/dermatology/ami-rex-an-dual-06-wide.webp",
     ],
     video: "",
     videoPoster: "",
@@ -172,7 +119,7 @@ export const products: Product[] = [
     slug: "bvlaser-fractional-co2",
     name: "BVLASER Fractional CO2",
     brand: "BV Laser",
-    category: "Fractional CO2 Laser",
+    category: "Tightening and Resurfacing",
     line: "devices",
     summary:
       "Medical-grade 10,600nm Fractional CO2 laser with multi-mode scanning, ultra-pulse ablation, and surgical precision for deep resurfacing and scar remodeling.",
@@ -214,67 +161,14 @@ export const products: Product[] = [
       { label: "ISO 13485", reference: "Quality Management System" },
       { label: "FDA 510(k)", reference: "Device Clearance" },
     ],
-    image: "/brand/dermatology/bvlaser-co2-main.webp",
+    image: "/brand/dermatology/bvlaser-fractional-co2-01.webp",
     imageAlt: "BVLASER Fractional CO2 Laser System",
     gallery: [
-      "/brand/dermatology/bvlaser-co2-2.webp",
-      "/brand/dermatology/bvlaser-co2-6.webp",
+      "/brand/dermatology/bvlaser-fractional-co2-04-wide.webp",
     ],
     video: "",
     videoPoster: "",
   },
-  {
-    slug: "ami-mt-smart",
-    name: "AMI MT-SMART",
-    brand: "AMI",
-    category: "Microneedling RF",
-    line: "devices",
-    summary:
-      "Precision Fractional Microneedle Radiofrequency system with vacuum-assisted delivery, adjustable needle depths (0.5–3.5mm), and bipolar/monopolar energy.",
-    overview:
-      "The AMI MT-SMART combines minimally invasive micro-needling with therapeutic RF energy delivered directly into the reticular dermis. Equipped with vacuum-assisted tip stabilization and high-precision motor control, it delivers targeted thermal coagulation zones at exact depths from 0.5mm to 3.5mm without epidermal thermal injury. Ideal for skin tightening, acne scar remodeling, pore refinement, and active acne reduction.",
-    features: [
-      "Vacuum-assisted suction handpiece for uniform needle penetration and minimal pain",
-      "Adjustable penetration depth from 0.5 mm to 3.5 mm in 0.1 mm increments",
-      "Dual RF modes: Bipolar RF for localized dermal tightening and Monopolar RF for deep tissue lifting",
-      "Gold-plated insulated and non-insulated microneedle cartridges (25, 49, and 81 pins)",
-      "Smart impedance feedback system for constant, reliable RF energy delivery",
-    ],
-    specs: [
-      { label: "RF Frequency", value: "2 MHz (Bipolar & Monopolar)" },
-      { label: "Max Power", value: "50 W" },
-      { label: "Needle Depth", value: "0.5 mm – 3.5 mm (0.1 mm step adjustment)" },
-      { label: "Cartridge Types", value: "25-pin, 49-pin, 81-pin (Insulated / Non-insulated)" },
-      { label: "Suction Level", value: "1 – 4 Levels (Vacuum Assist)" },
-      { label: "Display", value: "10.4-inch Color LCD Touch Screen" },
-    ],
-    applications: [
-      "Acne Scar Revision and Texture Smoothing",
-      "Non-surgical Facial Contouring and Jawline Tightening",
-      "Enlarged Pores and Sebum Regulation",
-      "Neck and Décolletage Skin Laxity",
-      "Striae (Stretch Marks) and Post-surgical Scars",
-    ],
-    benefits: [
-      "All-season, all-phototype safety with minimal risk of post-inflammatory hyperpigmentation",
-      "Rapid patient recovery with 24-hour downtime",
-      "Customizable treatment depth for delicate periorbital to thick cheek tissue",
-    ],
-    certificates: [
-      { label: "CE Certified", reference: "Medical Device Certification" },
-      { label: "ISO 13485", reference: "Quality Management" },
-      { label: "MFDS Approved", reference: "South Korea" },
-    ],
-    image: "/brand/dermatology/ami-mt-smart.webp",
-    imageAlt: "AMI MT-SMART Fractional Microneedle RF System",
-    gallery: [
-      "/brand/dermatology/ami-mt-smart.webp",
-    ],
-    video: "",
-    videoPoster: "",
-  },
-
-  /* ---- 02 / Professional Aesthetic Injectables -------------------------- */
   {
     slug: "rejuran-healer",
     name: "Rejuran Healer",
@@ -316,11 +210,9 @@ export const products: Product[] = [
       { label: "CE Marked", reference: "Medical Device Directive" },
       { label: "EDA Registered", reference: "Egyptian Drug Authority" },
     ],
-    image: "/brand/dermatology/rejuran-healer.webp",
+    image: "/brand/dermatology/rejuran-healer-01.webp",
     imageAlt: "Rejuran Healer 2% Polynucleotide Skin Booster Syringes and Packaging",
-    gallery: [
-      "/brand/dermatology/rejuran-healer.webp",
-    ],
+    gallery: [],
     video: "",
     videoPoster: "",
   },
@@ -362,11 +254,9 @@ export const products: Product[] = [
       { label: "CE Certified", reference: "European Conformity" },
       { label: "EDA Registered", reference: "Egyptian Drug Authority" },
     ],
-    image: "/brand/dermatology/rejuran-s.webp",
+    image: "/brand/dermatology/rejuran-s-01.webp",
     imageAlt: "Rejuran S Acne Scar Polynucleotide Injectable",
-    gallery: [
-      "/brand/dermatology/rejuran-s.webp",
-    ],
+    gallery: [],
     video: "",
     videoPoster: "",
   },
@@ -409,11 +299,9 @@ export const products: Product[] = [
       { label: "CE Certified", reference: "European Conformity" },
       { label: "EDA Registered", reference: "Egyptian Drug Authority" },
     ],
-    image: "/brand/dermatology/rejuran-i.webp",
+    image: "/brand/dermatology/rejuran-i-01.webp",
     imageAlt: "Rejuran I Eye Treatment Polynucleotide Injectable",
-    gallery: [
-      "/brand/dermatology/rejuran-i.webp",
-    ],
+    gallery: [],
     video: "",
     videoPoster: "",
   },
@@ -452,11 +340,9 @@ export const products: Product[] = [
       { label: "MFDS Approved", reference: "Medical Device, South Korea" },
       { label: "CE Certified", reference: "European Conformity" },
     ],
-    image: "/brand/dermatology/rejuran-hb-plus.webp",
+    image: "/brand/dermatology/rejuran-hb-plus-01.webp",
     imageAlt: "Rejuran HB Plus Hydro Booster Injectable",
-    gallery: [
-      "/brand/dermatology/rejuran-hb-plus.webp",
-    ],
+    gallery: [],
     video: "",
     videoPoster: "",
   },
@@ -498,10 +384,10 @@ export const products: Product[] = [
       { label: "ISO 13485", reference: "Quality Management Standard" },
       { label: "MFDS Approved", reference: "South Korea" },
     ],
-    image: "/brand/dermatology/kiusera-p.webp",
+    image: "/brand/dermatology/kiusera-p-01.webp",
     imageAlt: "Kiusera P Poly-L-Lactic Acid Collagen Stimulator Vial and Box",
     gallery: [
-      "/brand/dermatology/kiusera-p.webp",
+      "/brand/dermatology/kiusera-p-02.webp",
     ],
     video: "",
     videoPoster: "",
@@ -543,26 +429,144 @@ export const products: Product[] = [
       { label: "CE Certified", reference: "Medical Device Directive" },
       { label: "ISO 13485", reference: "Quality Management Standard" },
     ],
-    image: "/brand/dermatology/kiusera-l.webp",
+    image: "/brand/dermatology/kiusera-l-01.webp",
     imageAlt: "Kiusera L Liquid Poly-L-Lactic Acid Skin Booster Vial and Box",
     gallery: [
-      "/brand/dermatology/kiusera-l.webp",
+      "/brand/dermatology/kiusera-l-02.webp",
     ],
+    video: "",
+    videoPoster: "",
+  },
+  /* ---- beaumed · PDNA ----------------------------------------------------
+     From beaumed's PDNA sheets: "What is PDNA", the PDNA protocol table and
+     the product comparison. Only SiiLK PDNA Platinum is carried; Lexna PDNA
+     and haPN 70 are on the same sheets and were left out on purpose. No
+     certificates are listed on the sheets, so none are claimed here.
+     ------------------------------------------------------------------------ */
+  {
+    slug: "siilk-pdna-platinum",
+    name: "SiiLK PDNA Platinum",
+    brand: "beaumed",
+    category: "Polynucleotide (PDNA)",
+    line: "injectables",
+    summary:
+      "PolyNucleotide (PDNA 4 mg/mL) with hyaluronic acid, glutathione, tranexamic acid and peptides with growth factors, for wrinkles, acne scars, hydration, skin whitening, melasma and skin elasticity.",
+    overview:
+      "SiiLK PDNA Platinum combines PDNA (PolyNucleotide 4 mg/mL) with hyaluronic acid (5 mg/mL), glutathione (2 mg/mL), tranexamic acid (2 mg/mL) and peptides with growth factors. PolyNucleotide, derived from salmon DNA, promotes skin regeneration and enhances the elasticity of skin tissue. It is compatible with human DNA, and is safe and effective for the human body. Delivered into the dermis by direct injection or MTS, for the face, neck, décolleté and any area with a skin concern.",
+    features: [
+      "PDNA (PolyNucleotide) 4 mg/mL, derived from salmon DNA",
+      "HA (Hyaluronic Acid) 5 mg/mL",
+      "Glutathione 2 mg/mL and Tranexamic Acid 2 mg/mL",
+      "Peptides with growth factors",
+      "Packaging: 3 mL × 5 vials",
+    ],
+    specs: [
+      { label: "Composition", value: "PDNA 4 mg/mL · HA 5 mg/mL · Glutathione 2 mg/mL · Tranexamic Acid 2 mg/mL · Peptides with Growth Factors" },
+      { label: "Package", value: "3 mL × 5 vials" },
+      { label: "Method", value: "Direct injection (30G–34G needle) or MTS (meso injector, meso roller)" },
+      { label: "Layer", value: "Dermis" },
+      { label: "Injection Depth", value: "Direct: 0.5–1 mm (superficial dermis) · MTS: 0.25–0.5 mm" },
+      { label: "Injection Spacing", value: "Direct: 0.5–2 cm apart · MTS: 0.1–0.5 cm apart" },
+      { label: "Dose", value: "Direct: 0.02–0.05 mL per point · MTS: desired amount" },
+      { label: "Treatment Course", value: "One vial per treatment, every 2 weeks, for 3 to 5 treatments" },
+      { label: "Treatment Areas", value: "Face, neck, décolleté and any area with a skin concern" },
+    ],
+    applications: [
+      "Wrinkles improvement",
+      "Skin curing and restructuring",
+      "Acne scars",
+      "Hydration and moisture",
+      "Skin whitening",
+      "Treating melasma",
+      "Skin elasticity and regeneration",
+    ],
+    benefits: [
+      "Promotes skin regeneration and collagen production",
+      "Enhances the elasticity of skin tissue",
+      "Helps restore damaged cells and tissue",
+      "Visible results may appear 3–4 weeks after the procedure; the best results show once the full course is complete",
+    ],
+    certificates: [],
+    image: "/brand/dermatology/siilk-pdna-platinum-03.webp",
+    imageAlt: "SiiLK PDNA Platinum vial and box",
+    gallery: [
+      "/brand/dermatology/siilk-pdna-platinum-01.webp",
+    ],
+    video: "",
+    videoPoster: "",
+  },
+  /* ---- GENEXIA · Pharmabeau ----------------------------------------------
+     From Pharmabeau's GENEXIA brochure: the overview, "Why Plant-Derived
+     Exosomes?", the highlights, "How GENEXIA Works", the protocol, the
+     how-to-use steps and the packing info. TribuCare sells V1 (the powder)
+     and V2 (the activator) together as one pack, and the Skin and Hair uses
+     share one preparation, so this is one product carrying both protocols.
+     No certificates are listed, so none are claimed.
+     ------------------------------------------------------------------------ */
+  {
+    slug: "genexia",
+    name: "GENEXIA",
+    brand: "GENEXIA",
+    category: "Plant-Derived Exosomes",
+    line: "injectables",
+    summary:
+      "Plant-derived exosome solution for skin and scalp regeneration, sold as a V1 powder and V2 activator pack that delivers purified exosomes deep into the skin.",
+    overview:
+      "GENEXIA is a safe and innovative exosome-based skin revitalizing solution. It enhances skin regeneration and scalp health by delivering purified exosomes and active ingredients deep into the skin. Its nano-size vesicles, derived from plant stem cells, play an important role in accelerating cell repair, improving skin elasticity and restoring a healthy skin balance. Exosomes carry bioactive molecules — DNA, RNA and proteins — and act as intercellular signalling mediators: they penetrate the skin surface, activate fibroblasts, and stimulate collagen and elastin production while reducing inflammation and strengthening hydration, for healthy, firm and smooth skin.",
+    features: [
+      "Plant-derived exosomes: nano-size vesicles from plant stem cells",
+      "Formulated with Lactobacillus, Sodium DNA and Peptides",
+      "Rich in functional bioactives: antioxidants and growth factors",
+      "Two-vial pack: V1 powder (35 mg) and V2 activator (5.0 mL)",
+      "One preparation for both skin and scalp treatment",
+      "Delivered with an MTS device (meso injector or meso roller)",
+    ],
+    specs: [
+      { label: "Active", value: "Plant-derived exosomes · Lactobacillus · Sodium DNA · Peptides" },
+      { label: "Package", value: "V1 powder 35 mg × 1 vial · V2 activator 5.0 mL × 1 vial" },
+      { label: "Preparation", value: "Inject the V2 activator into the V1 powder vial and shake gently for 2 minutes until fully dissolved" },
+      { label: "Device", value: "Meso injector or meso roller" },
+      { label: "Depth", value: "0.25–0.5 mm" },
+      { label: "Spacing", value: "0.1–0.5 cm" },
+      { label: "Dose", value: "0.02–0.05 mL" },
+      { label: "Interval · Skin", value: "Every week for the first 2 sessions, then every 2 weeks for the next 2" },
+      { label: "Interval · Hair", value: "Every 2 weeks for at least 3 months" },
+      { label: "Treatment Areas", value: "Skin: face, neck · Hair: hair loss areas" },
+    ],
+    applications: [
+      "Cell regeneration: stimulates new cell growth for healthier, revitalized skin",
+      "Skin barrier repair: strengthens the skin's defense and moisture retention",
+      "Anti-inflammatory action: soothes irritation and reduces redness or swelling",
+      "Hair follicle activation: energizes follicles to support hair growth",
+      "Skin elasticity, scalp health and a healthy skin balance",
+    ],
+    benefits: [
+      "High safety and biocompatibility: minimizes the risk of immune response and disease transmission",
+      "Sustainable and ethical: a natural supply from plants",
+      "Stimulates collagen and elastin production",
+      "High-purity exosome delivery deep into the skin",
+    ],
+    certificates: [],
+    image: "/brand/dermatology/genexia-v1-v2-01.webp",
+    imageAlt: "GENEXIA V1 exosome powder and V2 activator vials",
+    gallery: [],
     video: "",
     videoPoster: "",
   },
 ];
 
 /**
- * The two business lines, in the order TribuCare states them. Categories are
+ * The two business lines, in the order TribuCare states them. Headings are
  * derived from the catalogue rather than restated, so a product can never
- * appear under a heading it does not belong to.
+ * appear under a heading it does not belong to. `groupBy` picks which field
+ * those headings come from: devices read by function, injectables by brand.
  */
 export const productLines = [
   {
     id: "devices" as const,
     number: "01",
     label: "Professional Aesthetic & Dermatology Devices",
+    groupBy: "category" as const,
     blurb:
       "Energy-based systems for dermatologists, clinics and aesthetic centres, installed and supported by our own field engineers.",
   },
@@ -570,19 +574,21 @@ export const productLines = [
     id: "injectables" as const,
     number: "02",
     label: "Professional Aesthetic Injectables",
+    groupBy: "brand" as const,
     blurb:
       "Regenerative and volumising injectables supplied to licensed practitioners, with protocol training delivered alongside.",
   },
 ];
 
-/** Category headings for a line, in catalogue order, with their products. */
+/** Headings for a line, in catalogue order, with their products. */
 export function categoriesFor(line: "devices" | "injectables") {
   const inLine = products.filter((p) => p.line === line);
+  const key = productLines.find((l) => l.id === line)?.groupBy ?? "category";
   const order: string[] = [];
-  for (const p of inLine) if (!order.includes(p.category)) order.push(p.category);
+  for (const p of inLine) if (!order.includes(p[key])) order.push(p[key]);
   return order.map((category) => ({
     category,
-    items: inLine.filter((p) => p.category === category),
+    items: inLine.filter((p) => p[key] === category),
   }));
 }
 
@@ -609,10 +615,10 @@ export const dermatology = {
     "Zimmer Medical",
     "Rejuran",
     "beaumed",
-    "IDS",
     "AGEX Beauty",
     "BV Laser",
     "AMI",
+    "GENEXIA",
   ],
 
   /**

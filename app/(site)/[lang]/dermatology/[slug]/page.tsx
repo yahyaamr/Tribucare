@@ -16,6 +16,10 @@ import { ProductCard } from "@/components/dermatology/product-card";
 import { ProductVideo } from "@/components/dermatology/product-video";
 import { ProductRequest } from "@/components/dermatology/product-request";
 import { ProductPlaceholder } from "@/components/dermatology/product-placeholder";
+import {
+  ProductLightbox,
+  LightboxTrigger,
+} from "@/components/dermatology/product-lightbox";
 import { content, currentLocale } from "@/content/server";
 import { localePath } from "@/lib/i18n/config";
 import { getContent } from "@/content";
@@ -139,6 +143,16 @@ export default async function ProductPage({
         ])}
       />
 
+      <ProductLightbox
+        images={[product.image, ...product.gallery]}
+        alt={product.imageAlt || product.name}
+        labels={{
+          open: ui.pages.imageOpen,
+          close: ui.pages.imageClose,
+          prev: ui.pages.imagePrev,
+          next: ui.pages.imageNext,
+        }}
+      >
       <Shell>
         <Reveal>
           <Link
@@ -226,21 +240,21 @@ export default async function ProductPage({
           {/* Holds the slot whether or not a shot exists, so the header keeps
               its proportions and the page does not reflow when one lands. */}
           <Reveal className="lg:col-span-6" delay={140} from="scale">
-            <div className="card-surface relative aspect-[4/3] w-full overflow-hidden bg-brand-50">
+            <div className="card-surface group relative aspect-[4/3] w-full overflow-hidden bg-brand-50">
+              {/* Filled, not contained: every product shot is a photograph on
+                  its own opaque ground, and a contained one sits in the frame
+                  as a box within a box. */}
               {product.image ? (
                 <>
-                  <div
-                    aria-hidden="true"
-                    className="absolute top-1/2 start-1/2 aspect-square w-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-b from-brand-100/90 to-brand-50/30"
-                  />
                   <Image
                     src={product.image}
                     alt={product.imageAlt || product.name}
                     fill
                     priority
                     sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-contain object-center p-8"
+                    className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
                   />
+                  <LightboxTrigger src={product.image} />
                 </>
               ) : (
                 <ProductPlaceholder brand={product.brand} />
@@ -314,15 +328,16 @@ export default async function ProductPage({
                   {product.gallery.map((src) => (
                     <li
                       key={src}
-                      className="card-surface relative aspect-[4/3] overflow-hidden bg-brand-50"
+                      className="card-surface group relative aspect-[4/3] overflow-hidden bg-brand-50"
                     >
                       <Image
                         src={src}
                         alt=""
                         fill
                         sizes="(max-width: 640px) 100vw, 28vw"
-                        className="object-cover"
+                        className="object-cover transition-transform duration-700 group-hover:scale-[1.03]"
                       />
+                      <LightboxTrigger src={src} />
                     </li>
                   ))}
                 </ul>
@@ -457,6 +472,7 @@ export default async function ProductPage({
           </div>
         )}
       </Shell>
+      </ProductLightbox>
     </article>
   );
 }
