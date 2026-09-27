@@ -94,6 +94,13 @@ export function VerticalCard({
   brandLogos: ContentData["brandLogos"];
   locale: Locale;
 }) {
+  // Only some shots re-frame themselves, so the optional fields are read
+  // through the wider shape rather than off the literal union.
+  const image: typeof vertical.image & {
+    frameClassName?: string;
+    className?: string;
+  } = vertical.image;
+
   return (
     <article className="group relative isolate flex min-h-[var(--stack-card-height,auto)] flex-col overflow-hidden rounded-[1.75rem] border border-black/[0.05] bg-white shadow-[0_40px_80px_-56px_rgb(7_42_42/0.55)] transition-shadow duration-700 hover:shadow-[0_54px_100px_-58px_rgb(7_42_42/0.62)] lg:rounded-[2.25rem]">
       {/* Wave field washes across the card's bottom-left corner,
@@ -199,7 +206,7 @@ export function VerticalCard({
 
         {/* Light media panel: the cut-out product floats over a soft
             mint disc, with the TribuCare lock-up in the corner. */}
-        <div className="relative order-1 min-h-[22rem] sm:min-h-[26rem] lg:order-2 lg:min-h-[min(28rem,48dvh)]">
+        <div className="relative order-1 min-h-[22rem] overflow-hidden sm:min-h-[26rem] lg:order-2 lg:min-h-[min(28rem,48dvh)]">
           {/* Bottom-anchored rather than centred on the panel: the
               product image is itself bottom-anchored, so the disc
               has to sit at the same edge to stay coupled to it
@@ -230,17 +237,30 @@ export function VerticalCard({
               purpose-made mirrored sources is the fix for that; the
               transform is what mirrors the layout today.
 
+              A shot can re-frame itself from content/site.ts:
+              `frameClassName` moves this box (the panel clips, so a box run
+              past its bottom edge crops the foot of the shot) and
+              `className` re-anchors the image inside it.
+
               The padding is physical (`pl-`) on purpose: `ps-`
               already flips itself under RTL, and inside a flipped
               wrapper it would flip a second time and land back on
               the outer edge it is meant to clear. */}
-          <div className="absolute inset-x-0 -top-[8%] bottom-0 rtl:-scale-x-100">
+          <div
+            className={cn(
+              "absolute inset-x-0 -top-[8%] bottom-0 rtl:-scale-x-100",
+              image.frameClassName,
+            )}
+          >
             <Image
-              src={vertical.image.src}
-              alt={vertical.image.alt}
+              src={image.src}
+              alt={image.alt}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-contain object-right-bottom pl-6 transition-transform duration-700 group-hover:scale-[1.03] sm:pl-8 lg:pl-8"
+              className={cn(
+                "object-contain object-right-bottom pl-6 transition-transform duration-700 group-hover:scale-[1.03] sm:pl-8 lg:pl-8",
+                image.className,
+              )}
             />
           </div>
 

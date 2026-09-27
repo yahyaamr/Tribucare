@@ -59,7 +59,7 @@ export const products: Product[] = [
     slug: "ami-rex-an-dual",
     name: "AMI REX-AN DUAL",
     brand: "AMI",
-    category: "Laser Hair Reduction",
+    category: "Professional Laser Devices",
     line: "devices",
     summary:
       "Dual-wavelength long-pulsed Alexandrite (755nm) & Nd:YAG (1064nm) laser system with simultaneous emission, top-hat beam, and dual cooling for high-efficiency hair reduction and vascular treatments.",
@@ -119,7 +119,7 @@ export const products: Product[] = [
     slug: "bvlaser-fractional-co2",
     name: "BVLASER Fractional CO2",
     brand: "BV Laser",
-    category: "Tightening and Resurfacing",
+    category: "Professional Laser Devices",
     line: "devices",
     summary:
       "Medical-grade 10,600nm Fractional CO2 laser with multi-mode scanning, ultra-pulse ablation, and surgical precision for deep resurfacing and scar remodeling.",
@@ -349,7 +349,7 @@ export const products: Product[] = [
   {
     slug: "kiusera-p",
     name: "Kiusera P",
-    brand: "Kiusera",
+    brand: "beaumed",
     category: "Poly-L-Lactic Acid",
     line: "injectables",
     summary:
@@ -395,7 +395,7 @@ export const products: Product[] = [
   {
     slug: "kiusera-l",
     name: "Kiusera L",
-    brand: "Kiusera",
+    brand: "beaumed",
     category: "Poly-L-Lactic Acid",
     line: "injectables",
     summary:
@@ -506,7 +506,7 @@ export const products: Product[] = [
   {
     slug: "genexia",
     name: "GENEXIA",
-    brand: "GENEXIA",
+    brand: "beaumed",
     category: "Plant-Derived Exosomes",
     line: "injectables",
     summary:
@@ -610,16 +610,18 @@ export const dermatology = {
     "As the exclusive agent in Egypt for globally recognised German, Italian and Korean brands, we deliver top-tier therapeutic and aesthetic technologies to dermatologists, clinics and aesthetic centres.",
   audience: "Dermatologists · Clinics · Aesthetic centres",
 
-  /** Brands on this page. Keys match `brandLogos`. */
-  brands: [
-    "Zimmer Medical",
-    "Rejuran",
-    "beaumed",
-    "AGEX Beauty",
-    "BV Laser",
-    "AMI",
-    "GENEXIA",
-  ],
+  /**
+   * The Events & News tag this page's events rail shows — its *slug*, not its
+   * name, because a tag's slug is frozen on rename (Settings → Events & News
+   * tags) while its name is not. A tag belongs to one language site, so the
+   * Arabic override names the Arabic tag's slug. Tag an item with it in the
+   * panel and it appears here; untag it and it leaves.
+   */
+  eventsTag: "derma-solutions",
+
+  /** Brands on this page — the homepage card's list, not a copy of it. Edit
+   *  `verticals[0].brands` in content/site.ts. */
+  brands: verticals[0].brands,
 
   /**
    * Hero visual. Taken from the homepage's own Professional Dermatology card
@@ -634,34 +636,30 @@ export const dermatology = {
    * reads the length, so adding or removing one needs no code change, and a
    * single slide simply renders as a still.
    *
-   * Slide one is framed to sit flush on the section's bottom edge; two and three
-   * are wider crops that park against the same corner with headroom above.
+   * One product per slide — AMI REX-AN DUAL, Rejuran Healing Essence,
+   * Kiusera P — each cut out to a transparent ground and centred on the same
+   * 1200×1100 canvas with the same margin, so every slide sits in the middle
+   * of the hero's image area at a matching scale. A new slide is made the same
+   * way rather than nudged into place with per-slide offsets.
    */
   heroSlides: [
     {
-      src: "/brand/dermatology/derma-hero-1.webp",
-      alt: "A clinic laser system beside a smiling model, with a South Korean flag.",
-      width: 1362,
-      height: 1155,
+      src: "/brand/dermatology/derma-hero-rex-an-dual-3f37ad1a.webp",
+      alt: "The AMI REX-AN DUAL laser system.",
+      width: 1200,
+      height: 1100,
     },
     {
-      src: "/brand/dermatology/derma-hero-rejuran.webp",
-      alt: "A Rejuran Healer firming cream tube and cartons.",
-      width: 1024,
-      height: 1536,
-      // Cut-out product shots — scaled up and pulled in from the section's
-      // bottom-right corner (which they scale from), then pushed down so the
-      // cluster only ever runs off the section's bottom edge, never the sides.
-      imageClassName:
-        "lg:origin-bottom-right lg:-translate-x-[38px] lg:translate-y-[240px] lg:scale-[1.1]",
+      src: "/brand/dermatology/derma-hero-rejuran-healing-essence-c8439551.webp",
+      alt: "A Rejuran Healing Essence carton between two syringes.",
+      width: 1200,
+      height: 1100,
     },
     {
-      src: "/brand/dermatology/derma-hero-agex.webp",
-      alt: "A line-up of AGEX Beauty professional skincare bottles and cartons.",
-      width: 1024,
-      height: 1536,
-      imageClassName:
-        "lg:origin-bottom-right lg:-translate-x-[38px] lg:translate-y-[240px] lg:scale-[1.1]",
+      src: "/brand/dermatology/derma-hero-kiusera-p-27914235.webp",
+      alt: "A Kiusera P vial beside its carton.",
+      width: 1200,
+      height: 1100,
     },
   ],
 

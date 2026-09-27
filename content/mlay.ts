@@ -5,6 +5,7 @@
  */
 
 import type { BrandCollection } from "./collections";
+import { verticals } from "./site";
 
 export type { BrandCollection };
 
@@ -94,7 +95,8 @@ export const mlay = {
   intro:
     "In exclusive partnership with MLAY, TribuCare brings clinical-performance IPL hair removal and skin rejuvenation devices into Egyptian homes — supported by official manufacturer warranty, dedicated clinical advisors, and premier retail presence.",
   audience: "Consumers · Retail · E-commerce · Flagship Malls",
-  brands: ["MLAY"],
+  /** The homepage card's list — edit `verticals[1].brands` in site.ts. */
+  brands: verticals[1].brands,
   image: {
     src: "/brand/laser-products.webp",
     alt: "MLAY home-use laser device held in two hands.",

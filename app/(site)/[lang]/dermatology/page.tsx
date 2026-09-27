@@ -16,9 +16,10 @@ import { EventCard } from "@/components/events/event-card";
 import { ProductCard } from "@/components/dermatology/product-card";
 import { ProductVideo } from "@/components/dermatology/product-video";
 import { HeroSlideshow } from "@/components/dermatology/hero-slideshow";
-import { BrandPlate } from "@/components/brand/brand-plate";
+import { LogoMarquee } from "@/components/site/logo-marquee";
 import { content, currentLocale } from "@/content/server";
 import { getPublishedNewsFor, toEventCard } from "@/lib/cms/news";
+import { findPublicNewsTag } from "@/lib/cms/news-tags";
 import { localePath } from "@/lib/i18n/config";
 import { pageMetadata } from "@/lib/seo";
 
@@ -51,23 +52,29 @@ const TRUST_ICONS: Record<string, LucideIcon> = {
 const HERO_IMAGE_SIZES = "(max-width: 1024px) 88vw, 54vw";
 
 export default async function DermatologyPage() {
-  const { dermatology, productLines, categoriesFor, events, ui } = await content();
+  const { dermatology, productLines, categoriesFor, events, ui, brandLogos } =
+    await content();
   const locale = await currentLocale();
-  // The same records the homepage carousel and /events show, each card going
-  // to its own page — this rail used to render the static placeholder six
-  // regardless of what the panel held. Those remain the fallback for an
-  // unreachable store, linking to the index since they have no page.
-  const stored = await getPublishedNewsFor(locale);
-  const eventItems =
-    stored.length > 0
-      ? stored.map((item) => ({
+  // Only the items carrying this page's tag — "Derma Solutions" on the English
+  // site, its Arabic twin on the Arabic one — each card going to its own page.
+  // Matched through the tag's slug, which survives a rename in Settings, and
+  // then by name, which is what an item actually stores. No placeholder
+  // fallback: the static six in `content/site.ts` are not dermatology events,
+  // so with none tagged (or the store unreachable) the section is left out
+  // rather than filled with somebody else's.
+  const tag = await findPublicNewsTag(dermatology.eventsTag, locale).catch(
+    () => null,
+  );
+  const eventItems = tag
+    ? (await getPublishedNewsFor(locale))
+        .filter((item) =>
+          item.tags.some((t) => t.toLowerCase() === tag.name.toLowerCase()),
+        )
+        .map((item) => ({
           ...toEventCard(item),
           href: localePath(locale, `/events/${item.slug}`),
         }))
-      : events.items.map((item) => ({
-          ...item,
-          href: localePath(locale, events.cta.href),
-        }));
+    : [];
 
   return (
     <>
@@ -79,19 +86,15 @@ export default async function DermatologyPage() {
           className="absolute left-0 -bottom-16 h-[58%] w-[200%] opacity-45"
         />
 
-        {/* The shot is cropped in the source — the subject runs out at the
-            bottom and the right. Floated in the middle of the ground, both cut
-            lines are visible and it reads as a broken image. Hung off the
-            section's own bottom-right corner instead, those two edges land ON
-            the section's edges, where a straight edge is what you expect. It is
-            the same move the homepage's Professional Dermatology card makes,
-            for the same reason.
-
-            `object-contain object-right-bottom` is what pins it there: contain
-            keeps the shot whole, end-bottom parks it in the corner whatever
-            the box's aspect works out to, so it stays flush at every width. */}
+        {/* The product shots fill the right of the section from lg up. Each
+            is centred on a shared transparent canvas (see `heroSlides`), so
+            `object-contain object-center` places every slide in the middle of
+            this area at a matching scale, whatever its own proportions. The
+            area stops above the brand strip (`bottom-[17rem]` clears it, with
+            the section's bottom padding) so no mark ever runs across a
+            product. */}
         <div
-          className="pointer-events-none absolute end-0 bottom-0 z-0 hidden h-[86%] w-[54%] lg:block"
+          className="pointer-events-none absolute end-0 top-28 bottom-[17rem] z-0 hidden w-[54%] lg:block"
           aria-hidden="true"
         >
           <HeroSlideshow
@@ -99,7 +102,7 @@ export default async function DermatologyPage() {
             sizes={HERO_IMAGE_SIZES}
             priority
             className="h-full w-full"
-            imageClassName="object-contain object-right-bottom"
+            imageClassName="object-contain object-center"
           />
         </div>
 
@@ -162,36 +165,23 @@ export default async function DermatologyPage() {
 
           </div>
 
-          {/* Below lg the shot cannot hang off the section corner — the brand
-              row and the copy are stacked under it — so it runs in flow,
-              pushed hard against the right edge of the screen so that cut is
-              off-viewport, and its bottom cut is taken out by a wash back to
-              the ground colour instead of a hard line.
+          {/* Below lg the shot runs in flow under the copy, centred. Each
+              slide is a whole product centred on the same transparent canvas,
+              so nothing needs pushing off the screen edge or fading out.
 
               Rendered as a second copy rather than repositioned, the way the
               homepage hero does it: only one is ever displayed, and both carry
               the identical `sizes` list so the browser resolves the same
               srcset candidate and fetches the file once. */}
-          <div className="mt-10 -me-5 sm:-me-8 lg:hidden">
+          <div className="mt-10 lg:hidden">
             <HeroSlideshow
               slides={dermatology.heroSlides}
-              alt={dermatology.image.alt}
+              alt={dermatology.heroSlides.map((slide) => slide.alt).join(" ")}
               shape="flow"
               priority
               sizes={HERO_IMAGE_SIZES}
-              className="ms-auto w-[88%]"
-              // The bottom cut is taken out by masking the shot's own alpha
-              // rather than laying a coloured panel over it. The ground here is
-              // not flat — it carries two radial blooms and the wave field — so
-              // a solid fade would have to match a colour that changes across
-              // the section, and would band wherever it guessed wrong. Fading
-              // the image to transparent instead lets whatever is actually
-              // behind it show through, at any width and on any ground.
-              // `object-contain object-bottom` so the slides that are not the
-              // one holding the layout keep their own aspect ratio inside its
-              // box rather than being stretched to fill it — they sit on its
-              // bottom edge, where the mask is.
-              imageClassName="h-auto w-full max-w-none object-contain object-bottom [-webkit-mask-image:linear-gradient(to_top,transparent_0,#000_24%)] [mask-image:linear-gradient(to_top,transparent_0,#000_24%)]"
+              className="mx-auto w-[88%]"
+              imageClassName="h-auto w-full max-w-none object-contain"
             />
           </div>
 
@@ -208,25 +198,17 @@ export default async function DermatologyPage() {
             </Reveal>
           )}
 
-          {/* Brand marks. Shared height so the row reads as one set. */}
+          {/* Brand marks, looping across the ground — see <LogoMarquee>. */}
           <Reveal delay={340}>
             <div className="mt-16 border-t border-white/10 pt-8">
               <p className="eyebrow text-brand-300">{ui.sections.brandsWeRepresent}</p>
-              <div className="mt-6 space-y-3">
-                <ul className="flex flex-wrap items-center gap-3">
-                  {dermatology.brands.slice(0, 5).map((brand) => (
-                    <li key={brand}>
-                      <BrandPlate name={brand} />
-                    </li>
-                  ))}
-                </ul>
-                <ul className="flex flex-wrap items-center gap-3">
-                  {dermatology.brands.slice(5).map((brand) => (
-                    <li key={brand}>
-                      <BrandPlate name={brand} />
-                    </li>
-                  ))}
-                </ul>
+              <div className="mt-6">
+                <LogoMarquee
+                  names={dermatology.brands}
+                  brandLogos={brandLogos}
+                  label={ui.sections.brandsWeRepresent}
+                  tone="dark"
+                />
               </div>
             </div>
           </Reveal>
@@ -306,9 +288,87 @@ export default async function DermatologyPage() {
         </Shell>
       </section>
 
+      {/* ---- Where we show up ------------------------------------------- */}
+      {eventItems.length > 0 && (
+        <section className="ground-deep relative isolate overflow-hidden py-24 md:py-32">
+          <WaveField
+            tone="dark"
+            lines={22}
+            className="absolute left-0 top-1/4 h-[70%] w-[200%] opacity-25"
+          />
+  
+          <Shell className="relative">
+            <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
+              <Reveal className="lg:col-span-7">
+                <Eyebrow tone="light">{events.eyebrow}</Eyebrow>
+                <h2 className="mt-6 font-display text-[clamp(2.125rem,4.6vw,3.5rem)] font-semibold leading-[1.03] tracking-[-0.025em] text-balance text-white">
+                  {events.headlineLead}{" "}
+                  <span className="text-brand-300">{events.headlineAccent}</span>
+                </h2>
+              </Reveal>
+              <Reveal className="lg:col-span-5" delay={100} from="right">
+                <p className="text-[1.0625rem] leading-relaxed text-brand-100/80">
+                  {events.intro}
+                </p>
+              </Reveal>
+            </div>
+  
+            <div className="mt-16">
+              <Reveal className="max-lg:hidden">
+                <div className="flex justify-end border-t border-white/10 pt-8">
+                  <p className="text-[0.8125rem] text-brand-100/50">
+                    {ui.sections.railHint}
+                  </p>
+                </div>
+              </Reveal>
+  
+              {/* Below lg the rail becomes a stepped carousel — a vertical swipe
+                  on a phone never drags the row sideways. */}
+              <CardStepper
+                aria-label={events.eyebrow}
+                tone="dark"
+                className="lg:hidden"
+              >
+                {eventItems.map((event) => (
+                  <EventCard
+                    key={event.title}
+                    event={event}
+                    labels={ui.events}
+                    href={event.href}
+                    sizes="100vw"
+                  />
+                ))}
+              </CardStepper>
+  
+              <Rail
+                aria-label={events.eyebrow}
+                className="mt-8 gap-5 pb-4 max-lg:hidden"
+              >
+                {eventItems.map((event, i) => (
+                  <Reveal
+                    as="li"
+                    key={event.title}
+                    delay={Math.min(i, 4) * 70}
+                    from="scale"
+                    className="rail-item w-[19rem] sm:w-[21rem]"
+                  >
+                    <EventCard
+                      event={event}
+                      labels={ui.events}
+                      href={event.href}
+                      sizes="(max-width: 640px) 80vw, 21rem"
+                    />
+                  </Reveal>
+                ))}
+              </Rail>
+            </div>
+          </Shell>
+        </section>
+      )}
+
       {/* ---- Trusted in practice ---------------------------------------- */}
       {/* Stays on `ground-light` rather than taking the deep ground: the events
-          section directly below is already deep, and two deep grounds running
+          section directly above is already deep, and two deep grounds running
           together would read as one section. */}
       <section className="ground-light relative py-24 md:py-32">
         <Shell>
@@ -386,82 +446,6 @@ export default async function DermatologyPage() {
               ))}
             </div>
           </Reveal>
-        </Shell>
-      </section>
-
-      {/* ---- Where we show up ------------------------------------------- */}
-      <section className="ground-deep relative isolate overflow-hidden py-24 md:py-32">
-        <WaveField
-          tone="dark"
-          lines={22}
-          className="absolute left-0 top-1/4 h-[70%] w-[200%] opacity-25"
-        />
-
-        <Shell className="relative">
-          <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
-            <Reveal className="lg:col-span-7">
-              <Eyebrow tone="light">{events.eyebrow}</Eyebrow>
-              <h2 className="mt-6 font-display text-[clamp(2.125rem,4.6vw,3.5rem)] font-semibold leading-[1.03] tracking-[-0.025em] text-balance text-white">
-                {events.headlineLead}{" "}
-                <span className="text-brand-300">{events.headlineAccent}</span>
-              </h2>
-            </Reveal>
-            <Reveal className="lg:col-span-5" delay={100} from="right">
-              <p className="text-[1.0625rem] leading-relaxed text-brand-100/80">
-                {events.intro}
-              </p>
-            </Reveal>
-          </div>
-
-          <div className="mt-16">
-            <Reveal className="max-lg:hidden">
-              <div className="flex justify-end border-t border-white/10 pt-8">
-                <p className="text-[0.8125rem] text-brand-100/50">
-                  {ui.sections.railHint}
-                </p>
-              </div>
-            </Reveal>
-
-            {/* Below lg the rail becomes a stepped carousel — a vertical swipe
-                on a phone never drags the row sideways. */}
-            <CardStepper
-              aria-label={events.eyebrow}
-              tone="dark"
-              className="lg:hidden"
-            >
-              {eventItems.map((event) => (
-                <EventCard
-                  key={event.title}
-                  event={event}
-                  labels={ui.events}
-                  href={event.href}
-                  sizes="100vw"
-                />
-              ))}
-            </CardStepper>
-
-            <Rail
-              aria-label={events.eyebrow}
-              className="mt-8 gap-5 pb-4 max-lg:hidden"
-            >
-              {eventItems.map((event, i) => (
-                <Reveal
-                  as="li"
-                  key={event.title}
-                  delay={Math.min(i, 4) * 70}
-                  from="scale"
-                  className="rail-item w-[19rem] sm:w-[21rem]"
-                >
-                  <EventCard
-                    event={event}
-                    labels={ui.events}
-                    href={event.href}
-                    sizes="(max-width: 640px) 80vw, 21rem"
-                  />
-                </Reveal>
-              ))}
-            </Rail>
-          </div>
         </Shell>
       </section>
 

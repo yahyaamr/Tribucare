@@ -739,6 +739,45 @@
   will-change: transform;
 }
 
+/* Brand-logo marquee. The track holds the row twice and `drift-x` slides it
+   left by exactly one copy, so the loop has no seam. The frame fades both
+   ends to transparent — symmetric, so it needs no RTL twin, and the component
+   pins the strip `dir="ltr"` since a row of marks has no reading order.
+   Hovering holds it still so a mark can be read. The global reduced-motion
+   switch collapses the loop to one instant pass, which leaves it at rest. */
+.logo-marquee {
+  --marquee-fade: 3rem;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--marquee-fade),
+    #000 calc(100% - var(--marquee-fade)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--marquee-fade),
+    #000 calc(100% - var(--marquee-fade)),
+    transparent 100%
+  );
+}
+
+@media (min-width: 48rem) {
+  .logo-marquee {
+    --marquee-fade: 6rem;
+  }
+}
+
+.logo-marquee-track {
+  animation: drift-x var(--marquee-duration, 48s) linear infinite;
+  will-change: transform;
+}
+
+.logo-marquee:hover .logo-marquee-track {
+  animation-play-state: paused;
+}
+
 /* Touch devices drop the ambient drift entirely.
    The field is a large masked SVG, so animating it keeps a filtered layer live
    for the whole session and forces anything blurring over it to recompute every

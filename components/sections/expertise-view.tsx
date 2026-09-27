@@ -13,14 +13,32 @@ import {
 import type { ContentData } from "@/content/en";
 import { type Locale } from "@/lib/i18n/config";
 
-const DERMATOLOGY_STACK_BRANDS = [
-  { name: "Rejuran", className: "h-5 max-w-[6.5rem]" },
-  { name: "beaumed", className: "h-4 max-w-[5.25rem]" },
-  { name: "Zimmer Medical", className: "h-3.5 max-w-[5rem]" },
-  { name: "IDS", className: "h-4.5 max-w-[3.5rem]" },
-  { name: "AGEX Beauty", className: "h-4 max-w-[5rem]" },
-  { name: "BV Laser", className: "h-4 max-w-[5.25rem]" },
-] as const;
+/**
+ * The first vertical's brands, as the diagram's fanned stack. *Which* brands
+ * is not decided here: it is `verticals[0].brands`, the same list the card and
+ * /dermatology show, so dropping a brand there drops its chip here too. This
+ * only says which one sits on top and how tall each mark is drawn — the marks'
+ * aspect ratios differ too much for one height to read evenly inside a chip.
+ */
+const STACK_LEAD = "Rejuran";
+const STACK_LOGO_CLASS: Record<string, string> = {
+  Rejuran: "h-5 max-w-[6.5rem]",
+  beaumed: "h-4 max-w-[5.25rem]",
+  "Zimmer Medical": "h-3.5 max-w-[5rem]",
+  "AGEX Beauty": "h-4 max-w-[5rem]",
+  "BV Laser": "h-4 max-w-[5.25rem]",
+  AMI: "h-5 max-w-[3.5rem]",
+};
+
+function stackBrands(names: readonly string[]) {
+  const ordered = names.includes(STACK_LEAD)
+    ? [STACK_LEAD, ...names.filter((name) => name !== STACK_LEAD)]
+    : [...names];
+  return ordered.map((name) => ({
+    name,
+    className: STACK_LOGO_CLASS[name] ?? "h-4 max-w-[5rem]",
+  }));
+}
 
 /**
  * Renamed from `Expertise` and given props: the homepage's section list still
@@ -117,7 +135,7 @@ export function ExpertiseView({
                         stackExpanded && "is-expanded",
                       )}
                     >
-                      {DERMATOLOGY_STACK_BRANDS.map((brand, idx) => {
+                      {stackBrands(verticals[0].brands).map((brand, idx) => {
                         const isTop = idx === 0;
                         const zIndex = 60 - idx * 10;
                         const defaultY = `${idx * 5}px`;

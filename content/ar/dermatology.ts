@@ -15,12 +15,15 @@ export const dermatology = {
   intro: site.verticals[0].body,
   audience: "أطباء الجلدية · العيادات · مراكز التجميل",
 
+  /** The Arabic site's own tag — see the English file. */
+  eventsTag: "حلول-طب-الجلد",
+
   image: { alt: site.verticals[0].image.alt },
 
   heroSlides: [
-    { alt: "جهاز ليزر للعيادات بجانب عارضة مبتسمة، مع علم كوريا الجنوبية." },
-    { alt: "أنبوب وعبوات كريم الشدّ من ريجوران هيلر." },
-    { alt: "مجموعة من عبوات وزجاجات AGEX Beauty للعناية المتخصصة بالبشرة." },
+    { alt: "جهاز الليزر AMI REX-AN DUAL." },
+    { alt: "علبة Rejuran Healing Essence بين حقنتين." },
+    { alt: "عبوة Kiusera P بجانب علبتها." },
   ],
 
   videoTitle: "حلول طب الجلد من تريبوكير",

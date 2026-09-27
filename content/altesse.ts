@@ -5,6 +5,7 @@
  */
 
 import type { BrandCollection } from "./collections";
+import { verticals } from "./site";
 
 export type { BrandCollection };
 
@@ -97,7 +98,8 @@ export const altesse = {
   intro:
     "Altesse Soin is TribuCare's flagship in-house skincare brand, engineering clean, clinically validated formulations tailored specifically to the unique environmental stressors and skin phototypes of Egypt and the Middle East.",
   audience: "Dermatologists · Pharmacies · Daily Skincare Rituals",
-  brands: ["Altesse Soin"],
+  /** The homepage card's list — edit `verticals[2].brands` in site.ts. */
+  brands: verticals[2].brands,
   image: {
     src: "/brand/altesse-soin-cutout.webp",
     alt: "Altesse Soin medicated skincare held in hands.",

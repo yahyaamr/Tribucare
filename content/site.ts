@@ -153,13 +153,23 @@ export const verticals = [
     headline: "Technology for the clinic.",
     body: "As the exclusive agent in Egypt for globally recognised German, Italian and Korean brands, we deliver top-tier therapeutic and aesthetic technologies to dermatologists, clinics and aesthetic centres.",
     audience: "Dermatologists · Clinics · Aesthetic centres",
-    brands: ["Zimmer Medical", "Rejuran", "beaumed", "IDS", "AGEX Beauty", "BV Laser", "GENEXIA"],
+    /** The one list of this vertical's brands. Its page (/dermatology) reads
+     *  it rather than keeping a copy, so the card and the page cannot drift —
+     *  add or drop a brand here and both move. Keys match `brandLogos`. */
+    brands: ["Zimmer Medical", "Rejuran", "beaumed", "AGEX Beauty", "BV Laser", "AMI"],
     cta: { label: "Dermatology solutions", href: "/dermatology" },
     image: {
-      src: "/brand/derma-solutions.webp",
-      alt: "A clinic laser system alongside a Rejuran polynucleotide box and syringe, with a South Korean flag and a smiling model.",
-      width: 1250,
-      height: 1253,
+      src: "/brand/derma-solutions-e10bb9cd.webp",
+      alt: "A model in a cream suit leaning on an oversized Kiusera PLLA vial, beside a clinic laser system.",
+      width: 1121,
+      height: 1266,
+      // Centred and full-width rather than parked in the corner. The file is
+      // cropped just above the shoes, so the cut lands on the card's edge.
+      // The box is shifted down by the 8% the others bleed off the top, plus
+      // 1rem, so the whole head shows with a little air above it; the same
+      // amount is clipped off the foot by the panel.
+      frameClassName: "top-4 -bottom-[calc(8%+1rem)]",
+      className: "object-bottom px-0 sm:px-0 lg:px-0",
     },
   },
   {
@@ -169,6 +179,7 @@ export const verticals = [
     headline: "Salon-grade technology at home.",
     body: "In partnership with MLAY, TribuCare brings high-performance beauty tech to the Egyptian market — empowering consumers with salon-grade skincare and hair care, supported by flagship retail and nationwide e-commerce.",
     audience: "Consumers · Retail · E-commerce",
+    /** Read by /mlay too — see the first vertical. */
     brands: ["MLAY"],
     cta: { label: "Discover MLAY", href: "/mlay" },
     image: {
@@ -185,6 +196,7 @@ export const verticals = [
     headline: "Formulated with dermatological science.",
     body: "Represented by our flagship brand Altesse Soin, we offer clinically inspired formulations that fuse advanced dermatological science with premium active ingredients.",
     audience: "Consumers · Pharmacy · Dermatology",
+    /** Read by /altesse-soin too — see the first vertical. */
     brands: ["Altesse Soin"],
     cta: { label: "Discover Altesse Soin", href: "/altesse-soin" },
     image: {
@@ -204,7 +216,7 @@ export const verticals = [
  * Each was supplied on a white background; the stored WebP has that background
  * keyed out, so they sit on any light surface. Intrinsic dimensions are recorded
  * to keep next/image from guessing — render them at a fixed height and let the
- * width follow, since the aspect ratios run from 1.4:1 (IDS) to 6.2:1 (GENEXIA).
+ * width follow, since the aspect ratios run from 1.4:1 (IDS) to 7:1 (Rejuran).
  *
  * `light` is only present where a mark has to sit on a dark ground. Altesse Soin
  * is pure monochrome black, so its variant is the same artwork knocked out white
@@ -215,22 +227,24 @@ export const brandLogos: Record<
   { src: string; width: number; height: number; light?: string }
 > = {
   "Zimmer Medical": {
-    src: "/brand/logos/zimmer-medical.webp",
-    width: 393,
-    height: 146,
+    src: "/brand/logos/zimmer-ba4144a7.webp",
+    width: 551,
+    height: 132,
   },
-  Rejuran: { src: "/brand/logos/rejuran.webp", width: 568, height: 99 },
-  beaumed: { src: "/brand/logos/beaumed.webp", width: 450, height: 86 },
+  Rejuran: { src: "/brand/logos/rejuran-c8cf46fa.webp", width: 392, height: 56 },
+  beaumed: { src: "/brand/logos/beaumed-044d29dd.webp", width: 735, height: 132 },
   IDS: { src: "/brand/logos/ids.webp", width: 185, height: 128 },
+  // Supplied white; `src` is the same artwork recoloured black for the white
+  // surfaces it mostly sits on, and the supplied white file is its `light`.
   "AGEX Beauty": {
-    src: "/brand/logos/agex-beauty.webp",
-    width: 254,
-    height: 83,
+    src: "/brand/logos/agex-0866fe37.webp",
+    width: 305,
+    height: 132,
+    light: "/brand/logos/agex-light-60246ad7.webp",
   },
-  "BV Laser": { src: "/brand/logos/bv-laser.webp", width: 595, height: 125 },
-  AMI: { src: "/brand/logos/ami.webp", width: 260, height: 155 },
+  "BV Laser": { src: "/brand/logos/bv-laser-c8d1f1a1.webp", width: 199, height: 41 },
+  AMI: { src: "/brand/logos/ami-782cd02e.webp", width: 534, height: 343 },
   Kiusera: { src: "/brand/logos/kiusera.webp", width: 450, height: 86 },
-  GENEXIA: { src: "/brand/logos/genexia.webp", width: 317, height: 51 },
   MLAY: { src: "/brand/logos/mlay.webp", width: 705, height: 118 },
   "Altesse Soin": {
     src: "/brand/logos/altesse-soin.webp",

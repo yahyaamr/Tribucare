@@ -14,7 +14,7 @@ type Slide = {
 };
 
 /** How long each slide holds before the crossfade to the next begins. */
-const DWELL = 5200;
+const DWELL = 4420;
 
 /**
  * The dermatology hero shot, cycling through its slides on a slow crossfade.
