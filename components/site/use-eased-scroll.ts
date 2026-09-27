@@ -228,13 +228,21 @@ export function useEasedScroll(
       moved = false;
       startPointer = horizontal ? event.clientX : event.clientY;
       startOffset = position();
-      el.setPointerCapture(event.pointerId);
+      // No pointer capture yet. Capturing on press retargets the release and
+      // its click to the rail itself, so a plain click on a card's link never
+      // reached the link and the card went nowhere. The pointer is captured
+      // once the press has become a drag — below — which is the only case
+      // capture is for: keeping the drag alive when the cursor leaves the rail.
     };
 
     const onPointerMove = (event: PointerEvent) => {
       if (!dragging) return;
       const travel = (horizontal ? event.clientX : event.clientY) - startPointer;
-      if (Math.abs(travel) > 3) moved = true;
+      if (!moved && Math.abs(travel) > 3) {
+        moved = true;
+        el.setPointerCapture(event.pointerId);
+      }
+      if (!moved) return;
       // Same conversion: the cursor moves in physical pixels, `current` counts
       // from the start. Dragging right in an RTL rail pulls the next card in,
       // just as dragging left does in an LTR one.
