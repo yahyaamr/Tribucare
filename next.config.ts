@@ -6,9 +6,10 @@ import type { NextConfig } from "next";
  * The set Lighthouse and the usual scanners look for, minus a Content Security
  * Policy: Next's own inline scripts and the JSON-LD blocks would need a
  * per-request nonce, which means moving rendering off the static path for
- * every page. That trade is not worth making for a marketing site with no
- * third-party scripts; the headers below cover clickjacking, MIME sniffing,
- * referrer leakage and window-opener isolation without touching rendering.
+ * every page. That trade is not worth making for a marketing site whose only
+ * third-party script is Google Analytics (components/site/analytics.tsx);
+ * the headers below cover clickjacking, MIME sniffing, referrer leakage and
+ * window-opener isolation without touching rendering.
  *
  * HSTS is what Vercel already sends; restating it here keeps the behaviour
  * when the site is hosted anywhere else, and adds `includeSubDomains` so a

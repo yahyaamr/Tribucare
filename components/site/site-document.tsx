@@ -2,6 +2,7 @@ import { SiteNav } from "@/components/site/nav";
 import { Footer } from "@/components/sections/footer";
 import { SmoothScroll } from "@/components/site/smooth-scroll";
 import { JsonLd } from "@/components/site/json-ld";
+import { Analytics } from "@/components/site/analytics";
 import { getContent } from "@/content";
 import { fontClassNames } from "@/lib/fonts";
 import { directionOf, type Locale } from "@/lib/i18n/config";
@@ -10,7 +11,8 @@ import "@/app/globals.css";
 
 /**
  * The public site's document: `<html>` through `</html>`, with the header,
- * footer, smooth scroll and site-wide structured data around `children`.
+ * footer, smooth scroll, site-wide structured data and analytics around
+ * `children`.
  *
  * Shared by the `[lang]` root layout and by the app-level `not-found.tsx`. The
  * site's root layouts live inside route groups, so a path that never reaches
@@ -76,6 +78,8 @@ export function SiteDocument({
             ui={ui.footer}
           />
         </SmoothScroll>
+
+        <Analytics />
       </body>
     </html>
   );
