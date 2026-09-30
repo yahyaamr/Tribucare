@@ -5,6 +5,7 @@ import { Why } from "@/components/sections/why";
 import { Reach } from "@/components/sections/reach";
 import { Teams } from "@/components/sections/teams";
 import { Careers } from "@/components/sections/careers";
+import { SuccessPartners } from "@/components/sections/success-partners";
 import { BlogSection } from "@/components/sections/blog-section";
 import { Faq } from "@/components/sections/faq";
 import { Partner } from "@/components/sections/partner";
@@ -23,6 +24,7 @@ export default function Home() {
       <Reach />
       <Teams />
       <Careers />
+      <SuccessPartners page="home" />
       <BlogSection />
       <Faq />
       <Partner />

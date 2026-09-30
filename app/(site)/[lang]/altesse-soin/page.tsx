@@ -8,6 +8,7 @@ import { WaveField } from "@/components/brand/wave-field";
 import { CollectionCard } from "@/components/brand/collection-card";
 import { ChannelCard } from "@/components/distribution/channel-card";
 import { BrandPlate } from "@/components/brand/brand-plate";
+import { SuccessPartners } from "@/components/sections/success-partners";
 import { content, currentLocale } from "@/content/server";
 import { localePath } from "@/lib/i18n/config";
 import { pageMetadata } from "@/lib/seo";
@@ -234,6 +235,9 @@ export default async function AltesseSoinPage() {
           </ul>
         </Shell>
       </section>
+
+      {/* ---- Success partners ------------------------------------------- */}
+      <SuccessPartners page="altesse" />
 
       {/* ---- Distribution partners --------------------------------------- */}
       {/* Closes the page on the deep ground, so the run reads

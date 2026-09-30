@@ -378,6 +378,7 @@ export const ar: DeepPartial<ContentData> = {
   footerNav: site.footerNav,
   careers: site.careers,
   about: site.about,
+  successPartners: site.successPartners,
 
   dermatology,
   products,

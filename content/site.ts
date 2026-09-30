@@ -647,6 +647,93 @@ export const faq = {
   ],
 } as const;
 
+/**
+ * Success partners — a logo strip near the foot of the homepage and of each
+ * vertical's page (`<SuccessPartners page>`). The header is shared; each page
+ * has its own list of names, and an empty list renders no section at all.
+ *
+ * Names key into `partnerLogos` below, the same way `brandLogos` works for the
+ * brands TribuCare represents. A partner is not a represented brand, so the
+ * two registries stay apart. A name with no registered mark renders as text.
+ */
+export const successPartners: {
+  eyebrow: string;
+  headlineLead: string;
+  headlineAccent: string;
+  intro: string;
+  lists: Record<"home" | "dermatology" | "mlay" | "altesse", readonly string[]>;
+} = {
+  eyebrow: "Success Partners",
+  headlineLead: "Growing together",
+  headlineAccent: "with the partners we trust.",
+  intro: "The organisations TribuCare works alongside.",
+  lists: {
+    home: [
+      "Khalifa Pharmacies",
+      "El Khabiry Pharmacy",
+      "Source Beauty",
+      "Myli",
+      "Misr Pharmacies",
+      "Amazon",
+      "B.TECH",
+      "Belbaa Pharmacies",
+      "Nour Pharmacies",
+      "noon",
+      "Raya",
+      "El Ezaby Pharmacy",
+      "El Tayeby Pharmacies",
+      "El Beisy Pharmacies",
+      "Dao Derma Skin Clinic",
+      "International Medical Center",
+      "Palestinian Red Crescent Society",
+      "Scar Clinic",
+      "ZO Skin Centre",
+    ],
+    dermatology: [
+      "Dao Derma Skin Clinic",
+      "International Medical Center",
+      "Palestinian Red Crescent Society",
+      "Scar Clinic",
+      "ZO Skin Centre",
+      "Kobri El Kobba Medical Complex",
+    ],
+    mlay: [],
+    altesse: [],
+  },
+};
+
+/** Partner marks, keyed by name. Explicit width/height, rendered at a shared
+ *  height — the brand-mark rule. Taken from the Success Partners strip on
+ *  tribucare.com (the Shopify store), with the white ground around each mark
+ *  cut to transparent so none reads as a box on the section's tint.
+ *  `scale` enlarges a mark that reads small at the shared height (the round
+ *  seals). */
+export const partnerLogos: Record<
+  string,
+  { src: string; width: number; height: number; scale?: number }
+> = {
+  "Khalifa Pharmacies": { src: "/brand/partners/khalifa-2b73e734.webp", width: 421, height: 132 },
+  "El Khabiry Pharmacy": { src: "/brand/partners/el-khabiry-882ba2d6.webp", width: 200, height: 132 },
+  "Source Beauty": { src: "/brand/partners/source-beauty-871d6682.webp", width: 423, height: 132 },
+  "Myli": { src: "/brand/partners/myli-de74149d.webp", width: 165, height: 83 },
+  "Misr Pharmacies": { src: "/brand/partners/misr-pharmacies-b0d676e7.webp", width: 430, height: 132 },
+  "Amazon": { src: "/brand/partners/amazon-902a30fd.webp", width: 393, height: 132 },
+  "B.TECH": { src: "/brand/partners/btech-be8f54bc.webp", width: 308, height: 54, scale: 0.85 },
+  "Belbaa Pharmacies": { src: "/brand/partners/belbaa-86d6c915.webp", width: 163, height: 132 },
+  "Nour Pharmacies": { src: "/brand/partners/nour-aba0e594.webp", width: 149, height: 132 },
+  "noon": { src: "/brand/partners/noon-91c2f3d0.webp", width: 300, height: 113 },
+  "Raya": { src: "/brand/partners/raya-f5f43472.webp", width: 351, height: 95, scale: 0.85 },
+  "El Ezaby Pharmacy": { src: "/brand/partners/el-ezaby-55481f95.webp", width: 381, height: 132 },
+  "El Tayeby Pharmacies": { src: "/brand/partners/el-tayeby-8a645fcf.webp", width: 350, height: 132 },
+  "El Beisy Pharmacies": { src: "/brand/partners/el-beisy-f49ed12b.webp", width: 284, height: 132 },
+  "Dao Derma Skin Clinic": { src: "/brand/partners/dao-derma-6fab8846.webp", width: 231, height: 132 },
+  "International Medical Center": { src: "/brand/partners/international-medical-center-694c0f98.webp", width: 123, height: 132, scale: 1.43 },
+  "Palestinian Red Crescent Society": { src: "/brand/partners/palestinian-red-crescent-89efb8c6.webp", width: 131, height: 132, scale: 1.3 },
+  "Scar Clinic": { src: "/brand/partners/scar-clinic-53c40eab.webp", width: 269, height: 132 },
+  "ZO Skin Centre": { src: "/brand/partners/zo-skin-centre-ebc0f049.webp", width: 1036, height: 93 },
+  "Kobri El Kobba Medical Complex": { src: "/brand/partners/kobri-el-kobba-medical-complex-aa15dc11.webp", width: 140, height: 132, scale: 1.3 },
+};
+
 export const partner = {
   eyebrow: "Partnerships",
   headline: "Let's build what's next in beauty and healthcare.",

@@ -17,6 +17,7 @@ import { ProductCard } from "@/components/dermatology/product-card";
 import { ProductVideo } from "@/components/dermatology/product-video";
 import { HeroSlideshow } from "@/components/dermatology/hero-slideshow";
 import { LogoMarquee } from "@/components/site/logo-marquee";
+import { SuccessPartners } from "@/components/sections/success-partners";
 import { content, currentLocale } from "@/content/server";
 import { getPublishedNewsFor, toEventCard } from "@/lib/cms/news";
 import { findPublicNewsTag } from "@/lib/cms/news-tags";
@@ -448,6 +449,9 @@ export default async function DermatologyPage() {
           </Reveal>
         </Shell>
       </section>
+
+      {/* ---- Success partners ------------------------------------------- */}
+      <SuccessPartners page="dermatology" />
 
       {/* ---- Support ----------------------------------------------------- */}
       <section className="ground-light relative py-24 md:py-32">

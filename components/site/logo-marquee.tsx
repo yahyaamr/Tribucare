@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import type { ContentData } from "@/content/en";
 
 /**
  * A row of brand marks gliding sideways in an endless loop, straight on the
@@ -13,7 +12,11 @@ import type { ContentData } from "@/content/en";
  * Each half of the track is the list twice over, so a half is always wider
  * than the frame and the loop never shows a gap, however few brands there
  * are. The second half is a visual repeat only: `aria-hidden`, empty alts.
- * Marks share one height, never one box, per the brand-mark rule.
+ * Marks share one height, never one box, per the brand-mark rule. A mark
+ * that reads too small or too heavy at that height — a round seal beside
+ * wide wordmarks, a solid block wordmark — carries a `scale` in its registry
+ * entry. It multiplies the width cap as well as the height, so a wide mark
+ * held by the cap resizes too.
  */
 export function LogoMarquee({
   names,
@@ -22,7 +25,10 @@ export function LogoMarquee({
   tone = "light",
 }: {
   names: readonly string[];
-  brandLogos: ContentData["brandLogos"];
+  brandLogos: Record<
+    string,
+    { src: string; width: number; height: number; scale?: number }
+  >;
   label: string;
   tone?: "light" | "dark";
 }) {
@@ -41,7 +47,7 @@ export function LogoMarquee({
           <li
             key={`${name}-${i}`}
             aria-hidden={!hidden && repeat ? true : undefined}
-            className="flex h-14 shrink-0 items-center"
+            className="flex min-h-14 shrink-0 items-center"
           >
             {logo ? (
               <Image
@@ -49,8 +55,13 @@ export function LogoMarquee({
                 alt={repeat ? "" : name}
                 width={logo.width}
                 height={logo.height}
+                style={
+                  logo.scale
+                    ? ({ "--logo-scale": logo.scale } as React.CSSProperties)
+                    : undefined
+                }
                 className={cn(
-                  "h-9 w-auto max-w-[10rem] object-contain md:h-11 md:max-w-[12rem]",
+                  "h-[calc(2.25rem*var(--logo-scale,1))] w-auto max-w-[calc(10rem*var(--logo-scale,1))] object-contain md:h-[calc(2.75rem*var(--logo-scale,1))] md:max-w-[calc(12rem*var(--logo-scale,1))]",
                   tone === "dark" && "brightness-0 invert",
                 )}
               />

@@ -476,6 +476,13 @@ export const contactOffice = {
   image: { alt: "مبنى تريبوكير في زهراء المعادي بالقاهرة، من الشارع." },
 };
 
+export const successPartners = {
+  eyebrow: "شركاء النجاح",
+  headlineLead: "ننمو معًا",
+  headlineAccent: "مع شركاء نثق بهم.",
+  intro: "المؤسسات التي تعمل تريبوكير إلى جانبها.",
+};
+
 export const footerNav = [
   {
     title: "الشركة",

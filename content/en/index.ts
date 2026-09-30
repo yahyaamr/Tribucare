@@ -428,6 +428,8 @@ export const data = {
   footerNav: site.footerNav,
   careers: site.careers,
   about: site.about,
+  successPartners: site.successPartners,
+  partnerLogos: site.partnerLogos,
 
   products: derm.products,
   productLines: derm.productLines,
