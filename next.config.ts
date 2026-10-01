@@ -83,6 +83,18 @@ const nextConfig: NextConfig = {
         destination: "/ar/blogs/:slug",
         permanent: true,
       },
+      // GENEXIA was one product until it split into Skin and Hair; the old
+      // address lands on Skin rather than a 404.
+      {
+        source: "/dermatology/genexia",
+        destination: "/dermatology/genexia-skin",
+        permanent: true,
+      },
+      {
+        source: "/ar/dermatology/genexia",
+        destination: "/ar/dermatology/genexia-skin",
+        permanent: true,
+      },
     ];
   },
 

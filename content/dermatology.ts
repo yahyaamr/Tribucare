@@ -496,55 +496,110 @@ export const products: Product[] = [
     videoPoster: "",
   },
   /* ---- GENEXIA · Pharmabeau ----------------------------------------------
-     From Pharmabeau's GENEXIA brochure: the overview, "Why Plant-Derived
-     Exosomes?", the highlights, "How GENEXIA Works", the protocol, the
-     how-to-use steps and the packing info. TribuCare sells V1 (the powder)
-     and V2 (the activator) together as one pack, and the Skin and Hair uses
-     share one preparation, so this is one product carrying both protocols.
-     No certificates are listed, so none are claimed.
+     From Pharmabeau's GENEXIA brochures: the intro, the technical pages, the
+     product line-up, the active ingredients, the before & after and the
+     how-to-use table. The line-up is two solutions — Skin and Hair — each a
+     35 mg lyophilized exosome powder (V1) with its own 5.0 mL activator (V2),
+     so they are two products here, each carrying only its own activator,
+     protocol and results. Both share one product photograph on purpose. No
+     certificates are listed, so none are claimed.
      ------------------------------------------------------------------------ */
   {
-    slug: "genexia",
-    name: "GENEXIA",
+    slug: "genexia-skin",
+    name: "GENEXIA Skin",
     brand: "beaumed",
     category: "Plant-Derived Exosomes",
     line: "injectables",
     summary:
-      "Plant-derived exosome solution for skin and scalp regeneration, sold as a V1 powder and V2 activator pack that delivers purified exosomes deep into the skin.",
+      "Plant-derived exosome solution for skin regeneration and wrinkle improvement: a V1 exosome powder and V2 skin activator for the face and neck.",
     overview:
-      "GENEXIA is a safe and innovative exosome-based skin revitalizing solution. It enhances skin regeneration and scalp health by delivering purified exosomes and active ingredients deep into the skin. Its nano-size vesicles, derived from plant stem cells, play an important role in accelerating cell repair, improving skin elasticity and restoring a healthy skin balance. Exosomes carry bioactive molecules — DNA, RNA and proteins — and act as intercellular signalling mediators: they penetrate the skin surface, activate fibroblasts, and stimulate collagen and elastin production while reducing inflammation and strengthening hydration, for healthy, firm and smooth skin.",
+      "GENEXIA Skin is an exosome-based skin revitalizing solution for skin regeneration and wrinkle improvement. Exosomes are nano-sized (30–200 nm) vesicles with a stable lipid bilayer that carry biomolecules — proteins, miRNAs and lipids — regulating cell behaviour and mediating cell-to-cell interactions. Derived from plant stem cells and purified by nano-scale filtration, they deliver growth factors and collagen to areas that need repair, helping damaged or weakened cells recover faster: activating fibroblasts and stimulating collagen and elastin production while reducing inflammation and strengthening hydration, for healthy, firm and smooth skin. The V1 exosome powder is reconstituted with a skin activator of niacinamide, adenosine, glutamic acid and glutathione.",
     features: [
-      "Plant-derived exosomes: nano-size vesicles from plant stem cells",
-      "Formulated with Lactobacillus, Sodium DNA and Peptides",
-      "Rich in functional bioactives: antioxidants and growth factors",
-      "Two-vial pack: V1 powder (35 mg) and V2 activator (5.0 mL)",
-      "One preparation for both skin and scalp treatment",
-      "Delivered with an MTS device (meso injector or meso roller)",
+      "Exosome 800,000 ppm: nano-size vesicles from plant stem cells",
+      "High-concentration fibronectin, with Sodium DNA, patented Lactobacillus, Centella Asiatica and peptides",
+      "Skin activator: niacinamide, adenosine, glutamic acid and glutathione",
+      "Bio-encapsulation keeps the exosomes potent until they reach the skin",
+      "Two-vial pack: skin lyophilized powder (35 mg) and skin liquid activator (5.0 mL)",
+      "Direct injection or MTS (meso injector or meso roller)",
     ],
     specs: [
-      { label: "Active", value: "Plant-derived exosomes · Lactobacillus · Sodium DNA · Peptides" },
-      { label: "Package", value: "V1 powder 35 mg × 1 vial · V2 activator 5.0 mL × 1 vial" },
-      { label: "Preparation", value: "Inject the V2 activator into the V1 powder vial and shake gently for 2 minutes until fully dissolved" },
-      { label: "Device", value: "Meso injector or meso roller" },
-      { label: "Depth", value: "0.25–0.5 mm" },
-      { label: "Spacing", value: "0.1–0.5 cm" },
-      { label: "Dose", value: "0.02–0.05 mL" },
-      { label: "Interval · Skin", value: "Every week for the first 2 sessions, then every 2 weeks for the next 2" },
-      { label: "Interval · Hair", value: "Every 2 weeks for at least 3 months" },
-      { label: "Treatment Areas", value: "Skin: face, neck · Hair: hair loss areas" },
+      { label: "Exosome Powder", value: "Exosome 800,000 ppm · Fibronectin · Sodium DNA · Lactobacillus · Centella Asiatica · Peptides" },
+      { label: "Skin Activator", value: "Niacinamide · Adenosine · Glutamic Acid · Glutathione" },
+      { label: "Package", value: "Skin lyophilized powder 35 mg × 1 vial · Skin liquid activator 5.0 mL × 1 vial" },
+      { label: "Method", value: "Direct injection, or MTS (meso injector, meso roller)" },
+      { label: "Preparation", value: "Direct: mix 4–5 mL saline with the lyophilized powder · MTS: mix the GENEXIA activator with the lyophilized powder" },
+      { label: "Injection Depth", value: "Direct: 1–2 mm · MTS: 0.25–0.5 mm" },
+      { label: "Injection Spacing", value: "Direct: 0.5–1 cm apart · MTS: 0.1–0.5 cm apart" },
+      { label: "Dose", value: "Direct: 0.02 mL · MTS: 0.02–0.05 mL" },
+      { label: "Procedure Interval", value: "First 2 sessions 1 week apart, the next 2 sessions 2 weeks apart" },
+      { label: "Treatment Areas", value: "Face, neck" },
+      { label: "Storage", value: "Room temperature (best at 2–8 °C), away from direct sunlight" },
     ],
     applications: [
-      "Cell regeneration: stimulates new cell growth for healthier, revitalized skin",
+      "Skin regeneration: stimulates new cell growth for healthier, revitalized skin",
+      "Wrinkle improvement and skin elasticity",
       "Skin barrier repair: strengthens the skin's defense and moisture retention",
       "Anti-inflammatory action: soothes irritation and reduces redness or swelling",
-      "Hair follicle activation: energizes follicles to support hair growth",
-      "Skin elasticity, scalp health and a healthy skin balance",
+      "Brighter, more even skin tone",
     ],
     benefits: [
-      "High safety and biocompatibility: minimizes the risk of immune response and disease transmission",
-      "Sustainable and ethical: a natural supply from plants",
       "Stimulates collagen and elastin production",
       "High-purity exosome delivery deep into the skin",
+      "High safety and biocompatibility: minimizes the risk of immune response and disease transmission",
+      "Sustainable and ethical: a natural supply from plants",
+      "In the brochure's case, 3 treatments every 2 weeks left the skin tone brighter and improved",
+    ],
+    certificates: [],
+    image: "/brand/dermatology/genexia-v1-v2-01.webp",
+    imageAlt: "GENEXIA V1 exosome powder and V2 activator vials",
+    gallery: [],
+    video: "",
+    videoPoster: "",
+  },
+  {
+    slug: "genexia-hair",
+    name: "GENEXIA Hair",
+    brand: "beaumed",
+    category: "Plant-Derived Exosomes",
+    line: "injectables",
+    summary:
+      "Plant-derived exosome solution for scalp care and hair loss prevention: a V1 exosome powder and V2 hair activator delivered to the hair loss area by MTS.",
+    overview:
+      "GENEXIA Hair is an exosome-based solution for scalp care and hair loss prevention. Exosomes are nano-sized (30–200 nm) vesicles with a stable lipid bilayer that carry biomolecules — proteins, miRNAs and lipids — regulating cell behaviour and mediating cell-to-cell interactions. Derived from plant stem cells and purified by nano-scale filtration, they are bio-encapsulated so they remain potent when they reach the scalp, where they help damaged or weakened cells recover faster and energize hair follicles to support hair growth. The V1 exosome powder is reconstituted with a hair activator of biotin, saccharomyces, niacinamide and an amino acid complex, and delivered by MTS.",
+    features: [
+      "Exosome 800,000 ppm: nano-size vesicles from plant stem cells",
+      "High-concentration fibronectin, with Sodium DNA, patented Lactobacillus, Centella Asiatica and peptides",
+      "Hair activator: biotin, saccharomyces, niacinamide and an amino acid complex",
+      "Bio-encapsulation keeps the exosomes potent until they reach the scalp",
+      "Two-vial pack: hair lyophilized powder (35 mg) and hair liquid activator (5.0 mL)",
+      "Delivered by MTS (meso injector or meso roller)",
+    ],
+    specs: [
+      { label: "Exosome Powder", value: "Exosome 800,000 ppm · Fibronectin · Sodium DNA · Lactobacillus · Centella Asiatica · Peptides" },
+      { label: "Hair Activator", value: "Biotin · Saccharomyces · Niacinamide · Amino Acid Complex" },
+      { label: "Package", value: "Hair lyophilized powder 35 mg × 1 vial · Hair liquid activator 5.0 mL × 1 vial" },
+      { label: "Method", value: "MTS (meso injector, meso roller)" },
+      { label: "Preparation", value: "Mix the GENEXIA activator with the lyophilized powder" },
+      { label: "Injection Depth", value: "0.25–0.5 mm" },
+      { label: "Injection Spacing", value: "0.1–0.5 cm apart" },
+      { label: "Dose", value: "0.02–0.05 mL" },
+      { label: "Procedure Interval", value: "Every 2 weeks, for at least 3 months" },
+      { label: "Treatment Areas", value: "Hair loss area" },
+      { label: "Storage", value: "Room temperature (best at 2–8 °C), away from direct sunlight" },
+    ],
+    applications: [
+      "Hair loss prevention",
+      "Hair follicle activation: energizes follicles to support hair growth",
+      "Scalp care and scalp health",
+      "Anti-inflammatory action: soothes irritation and reduces redness or swelling",
+      "Thicker, stronger hair",
+    ],
+    benefits: [
+      "Exosome delivery formulated for the scalp and hair loss",
+      "Helps damaged or weakened cells recover faster",
+      "High safety and biocompatibility: minimizes the risk of immune response and disease transmission",
+      "Sustainable and ethical: a natural supply from plants",
+      "In the brochure's case, 5 treatments every 2 weeks left the hair thicker and stronger",
     ],
     certificates: [],
     image: "/brand/dermatology/genexia-v1-v2-01.webp",
