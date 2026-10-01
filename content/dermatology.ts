@@ -501,7 +501,7 @@ export const products: Product[] = [
      how-to-use table. The line-up is two solutions — Skin and Hair — each a
      35 mg lyophilized exosome powder (V1) with its own 5.0 mL activator (V2),
      so they are two products here, each carrying only its own activator,
-     protocol and results. Both share one product photograph on purpose. No
+     protocol, results and its own vial photograph. No
      certificates are listed, so none are claimed.
      ------------------------------------------------------------------------ */
   {
@@ -602,8 +602,8 @@ export const products: Product[] = [
       "In the brochure's case, 5 treatments every 2 weeks left the hair thicker and stronger",
     ],
     certificates: [],
-    image: "/brand/dermatology/genexia-v1-v2-01.webp",
-    imageAlt: "GENEXIA V1 exosome powder and V2 activator vials",
+    image: "/brand/dermatology/genexia-hair-v1-v2-91971d69.webp",
+    imageAlt: "GENEXIA for Hair V1 exosome powder and V2 activator vials",
     gallery: [],
     video: "",
     videoPoster: "",
